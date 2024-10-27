@@ -70,7 +70,7 @@ struct GetstartedView: View {
             VStack(){
                 Text("By continuing, you agree to our")
                     .font(.footnote)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.black)
                 
                 HStack(spacing: 5) {
                     Text("Terms of Services")
