@@ -16,7 +16,7 @@ struct SplashScreenView: View {
             VStack {
                 if isActive {
                     // afters plash screen navigate to onboarding
-                   Next()
+                   OnboardingView()
                     
                 } else {
                     VStack {

@@ -18,6 +18,7 @@
 		9EE4F1112CCE119A009D0F71 /* PlanMateUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F1102CCE119A009D0F71 /* PlanMateUITestsLaunchTests.swift */; };
 		9EE4F11E2CCE1592009D0F71 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F11D2CCE1592009D0F71 /* SplashScreenView.swift */; };
 		9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */; };
+		9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +53,7 @@
 		9EE4F1102CCE119A009D0F71 /* PlanMateUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanMateUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		9EE4F11D2CCE1592009D0F71 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetstartedView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +107,7 @@
 				9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */,
 				9EE4F11D2CCE1592009D0F71 /* SplashScreenView.swift */,
 				9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */,
+				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
 				9EE4F0F02CCE1199009D0F71 /* ContentView.swift */,
 				9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */,
 				9EE4F0F72CCE119A009D0F71 /* Persistence.swift */,
@@ -272,6 +275,7 @@
 				9EE4F0F82CCE119A009D0F71 /* Persistence.swift in Sources */,
 				9EE4F0F12CCE1199009D0F71 /* ContentView.swift in Sources */,
 				9EE4F11E2CCE1592009D0F71 /* SplashScreenView.swift in Sources */,
+				9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */,
 				9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */,
 				9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */,
 				9EE4F0FB2CCE119A009D0F71 /* PlanMate.xcdatamodeld in Sources */,
