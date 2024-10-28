@@ -24,6 +24,20 @@
 		9EE971D52CCF53F000108C12 /* EmailVerificationCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */; };
 		9EE971D72CCF582500108C12 /* FindAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D62CCF582500108C12 /* FindAccountView.swift */; };
 		9EE971D92CCF59C400108C12 /* ResetPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */; };
+		9EE971DB2CCF5C4E00108C12 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971DA2CCF5C4E00108C12 /* HomeView.swift */; };
+		9EE971DD2CCF60B300108C12 /* TaskBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971DC2CCF60B300108C12 /* TaskBarView.swift */; };
+		9EE971DF2CCF6A2D00108C12 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971DE2CCF6A2D00108C12 /* CalendarView.swift */; };
+		9EE971E12CCF6B0200108C12 /* CreateActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971E02CCF6B0200108C12 /* CreateActivityView.swift */; };
+		9EE971E32CCF6DB500108C12 /* CreateGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971E22CCF6DB500108C12 /* CreateGroupView.swift */; };
+		9EE971E52CCF6E5500108C12 /* JoinGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971E42CCF6E5500108C12 /* JoinGroupView.swift */; };
+		9EE971E72CCF6E9900108C12 /* ActivityListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971E62CCF6E9900108C12 /* ActivityListView.swift */; };
+		9EE971E92CCF72EE00108C12 /* ActivityDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971E82CCF72EE00108C12 /* ActivityDetailView.swift */; };
+		9EE971EB2CCF8A1200108C12 /* GroupListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971EA2CCF8A1200108C12 /* GroupListView.swift */; };
+		9EE971ED2CCF8C4000108C12 /* GroupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971EC2CCF8C4000108C12 /* GroupDetailView.swift */; };
+		9EE971EF2CCF8E5800108C12 /* ProposeActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971EE2CCF8E5800108C12 /* ProposeActivityView.swift */; };
+		9EE971F12CCF916900108C12 /* VotingProposeActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */; };
+		9EE971F32CCF930500108C12 /* AvailabilityListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F22CCF930500108C12 /* AvailabilityListView.swift */; };
+		9EE971F52CCF945600108C12 /* MyAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F42CCF945600108C12 /* MyAccountView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +78,20 @@
 		9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailVerificationCodeView.swift; sourceTree = "<group>"; };
 		9EE971D62CCF582500108C12 /* FindAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindAccountView.swift; sourceTree = "<group>"; };
 		9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetPasswordView.swift; sourceTree = "<group>"; };
+		9EE971DA2CCF5C4E00108C12 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		9EE971DC2CCF60B300108C12 /* TaskBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskBarView.swift; sourceTree = "<group>"; };
+		9EE971DE2CCF6A2D00108C12 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		9EE971E02CCF6B0200108C12 /* CreateActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateActivityView.swift; sourceTree = "<group>"; };
+		9EE971E22CCF6DB500108C12 /* CreateGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGroupView.swift; sourceTree = "<group>"; };
+		9EE971E42CCF6E5500108C12 /* JoinGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupView.swift; sourceTree = "<group>"; };
+		9EE971E62CCF6E9900108C12 /* ActivityListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityListView.swift; sourceTree = "<group>"; };
+		9EE971E82CCF72EE00108C12 /* ActivityDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityDetailView.swift; sourceTree = "<group>"; };
+		9EE971EA2CCF8A1200108C12 /* GroupListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupListView.swift; sourceTree = "<group>"; };
+		9EE971EC2CCF8C4000108C12 /* GroupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailView.swift; sourceTree = "<group>"; };
+		9EE971EE2CCF8E5800108C12 /* ProposeActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeActivityView.swift; sourceTree = "<group>"; };
+		9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingProposeActivityView.swift; sourceTree = "<group>"; };
+		9EE971F22CCF930500108C12 /* AvailabilityListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailabilityListView.swift; sourceTree = "<group>"; };
+		9EE971F42CCF945600108C12 /* MyAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +150,20 @@
 				9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */,
 				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
 				9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */,
+				9EE971DA2CCF5C4E00108C12 /* HomeView.swift */,
+				9EE971DE2CCF6A2D00108C12 /* CalendarView.swift */,
+				9EE971E02CCF6B0200108C12 /* CreateActivityView.swift */,
+				9EE971DC2CCF60B300108C12 /* TaskBarView.swift */,
+				9EE971E22CCF6DB500108C12 /* CreateGroupView.swift */,
+				9EE971E42CCF6E5500108C12 /* JoinGroupView.swift */,
+				9EE971E62CCF6E9900108C12 /* ActivityListView.swift */,
+				9EE971E82CCF72EE00108C12 /* ActivityDetailView.swift */,
+				9EE971EA2CCF8A1200108C12 /* GroupListView.swift */,
+				9EE971EC2CCF8C4000108C12 /* GroupDetailView.swift */,
+				9EE971EE2CCF8E5800108C12 /* ProposeActivityView.swift */,
+				9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */,
+				9EE971F22CCF930500108C12 /* AvailabilityListView.swift */,
+				9EE971F42CCF945600108C12 /* MyAccountView.swift */,
 				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
 				9EE4F0F02CCE1199009D0F71 /* ContentView.swift */,
 				9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */,
@@ -287,18 +329,32 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9EE971EF2CCF8E5800108C12 /* ProposeActivityView.swift in Sources */,
+				9EE971F12CCF916900108C12 /* VotingProposeActivityView.swift in Sources */,
 				9EE4F1262CCE2B96009D0F71 /* SignInView.swift in Sources */,
 				9EE4F0F82CCE119A009D0F71 /* Persistence.swift in Sources */,
+				9EE971DB2CCF5C4E00108C12 /* HomeView.swift in Sources */,
 				9EE971D72CCF582500108C12 /* FindAccountView.swift in Sources */,
 				9EE971D92CCF59C400108C12 /* ResetPasswordView.swift in Sources */,
+				9EE971DF2CCF6A2D00108C12 /* CalendarView.swift in Sources */,
 				9EE971D52CCF53F000108C12 /* EmailVerificationCodeView.swift in Sources */,
 				9EE4F0F12CCE1199009D0F71 /* ContentView.swift in Sources */,
+				9EE971E72CCF6E9900108C12 /* ActivityListView.swift in Sources */,
 				9EE4F11E2CCE1592009D0F71 /* SplashScreenView.swift in Sources */,
 				9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */,
+				9EE971F32CCF930500108C12 /* AvailabilityListView.swift in Sources */,
 				9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */,
 				9EE4F1242CCE2634009D0F71 /* RegisterView.swift in Sources */,
 				9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */,
+				9EE971DD2CCF60B300108C12 /* TaskBarView.swift in Sources */,
+				9EE971E52CCF6E5500108C12 /* JoinGroupView.swift in Sources */,
+				9EE971EB2CCF8A1200108C12 /* GroupListView.swift in Sources */,
+				9EE971E32CCF6DB500108C12 /* CreateGroupView.swift in Sources */,
 				9EE4F0FB2CCE119A009D0F71 /* PlanMate.xcdatamodeld in Sources */,
+				9EE971ED2CCF8C4000108C12 /* GroupDetailView.swift in Sources */,
+				9EE971E92CCF72EE00108C12 /* ActivityDetailView.swift in Sources */,
+				9EE971F52CCF945600108C12 /* MyAccountView.swift in Sources */,
+				9EE971E12CCF6B0200108C12 /* CreateActivityView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
