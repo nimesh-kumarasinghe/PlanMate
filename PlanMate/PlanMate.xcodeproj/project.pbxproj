@@ -20,6 +20,7 @@
 		9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */; };
 		9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */; };
 		9EE4F1242CCE2634009D0F71 /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F1232CCE2634009D0F71 /* RegisterView.swift */; };
+		9EE4F1262CCE2B96009D0F71 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F1252CCE2B96009D0F71 /* SignInView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 		9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetstartedView.swift; sourceTree = "<group>"; };
 		9EE4F1232CCE2634009D0F71 /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		9EE4F1252CCE2B96009D0F71 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +112,7 @@
 				9EE4F11D2CCE1592009D0F71 /* SplashScreenView.swift */,
 				9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */,
 				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
+				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
 				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
 				9EE4F0F02CCE1199009D0F71 /* ContentView.swift */,
 				9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */,
@@ -275,6 +278,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9EE4F1262CCE2B96009D0F71 /* SignInView.swift in Sources */,
 				9EE4F0F82CCE119A009D0F71 /* Persistence.swift in Sources */,
 				9EE4F0F12CCE1199009D0F71 /* ContentView.swift in Sources */,
 				9EE4F11E2CCE1592009D0F71 /* SplashScreenView.swift in Sources */,
