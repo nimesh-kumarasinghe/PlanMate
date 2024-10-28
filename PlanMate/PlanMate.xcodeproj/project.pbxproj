@@ -21,6 +21,9 @@
 		9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */; };
 		9EE4F1242CCE2634009D0F71 /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F1232CCE2634009D0F71 /* RegisterView.swift */; };
 		9EE4F1262CCE2B96009D0F71 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F1252CCE2B96009D0F71 /* SignInView.swift */; };
+		9EE971D52CCF53F000108C12 /* EmailVerificationCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */; };
+		9EE971D72CCF582500108C12 /* FindAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D62CCF582500108C12 /* FindAccountView.swift */; };
+		9EE971D92CCF59C400108C12 /* ResetPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +61,9 @@
 		9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetstartedView.swift; sourceTree = "<group>"; };
 		9EE4F1232CCE2634009D0F71 /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
 		9EE4F1252CCE2B96009D0F71 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailVerificationCodeView.swift; sourceTree = "<group>"; };
+		9EE971D62CCF582500108C12 /* FindAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindAccountView.swift; sourceTree = "<group>"; };
+		9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetPasswordView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +119,9 @@
 				9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */,
 				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
 				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
+				9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */,
+				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
+				9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */,
 				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
 				9EE4F0F02CCE1199009D0F71 /* ContentView.swift */,
 				9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */,
@@ -280,6 +289,9 @@
 			files = (
 				9EE4F1262CCE2B96009D0F71 /* SignInView.swift in Sources */,
 				9EE4F0F82CCE119A009D0F71 /* Persistence.swift in Sources */,
+				9EE971D72CCF582500108C12 /* FindAccountView.swift in Sources */,
+				9EE971D92CCF59C400108C12 /* ResetPasswordView.swift in Sources */,
+				9EE971D52CCF53F000108C12 /* EmailVerificationCodeView.swift in Sources */,
 				9EE4F0F12CCE1199009D0F71 /* ContentView.swift in Sources */,
 				9EE4F11E2CCE1592009D0F71 /* SplashScreenView.swift in Sources */,
 				9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */,
