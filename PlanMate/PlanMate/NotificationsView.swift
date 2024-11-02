@@ -17,6 +17,7 @@ struct NotificationItem: Identifiable {
 }
 
 struct NotificationsView: View {
+    
     @State private var notifications: [NotificationItem] = [
         NotificationItem(title: "Proposed an activity",
                         message: "Nimesh proposed and activity in campus friends group. Check and mark your availability.",
@@ -51,12 +52,14 @@ struct NotificationsView: View {
             }
             .listStyle(PlainListStyle())
             .navigationBarTitle("Notifications", displayMode: .inline)
-            .navigationBarItems(
-                leading: BackButton(),
-                trailing: MarkAllButton()
-            )
+//            .navigationBarItems(
+//                //leading: BackButton(),
+//                //trailing: MarkAllButton()
+//            )
         }
+        
     }
+    
 }
 
 struct NotificationCell: View {
@@ -90,34 +93,15 @@ struct NotificationCell: View {
         .padding(.vertical, 4)
     }
 }
-
-//struct BackButton: View {
-//    @Environment(\.presentationMode) var presentationMode
-//    
+//struct MarkAllButton: View {
 //    var body: some View {
-//        Button(action: {
-//            presentationMode.wrappedValue.dismiss()
-//        }) {
-//            HStack(spacing: 5) {
-//                Image(systemName: "chevron.left")
-//                    .font(.system(size: 16, weight: .medium))
-//                Text("Back")
-//                    .font(.system(size: 17, weight: .regular))
-//            }
-//            .foregroundColor(.blue)
+//        Button(action: {}) {
+//            Text("Mark all as read")
+//                .font(.system(size: 17, weight: .regular))
+//                .foregroundColor(.blue)
 //        }
 //    }
 //}
-
-struct MarkAllButton: View {
-    var body: some View {
-        Button(action: {}) {
-            Text("Mark all as read")
-                .font(.system(size: 17, weight: .regular))
-                .foregroundColor(.blue)
-        }
-    }
-}
 
 struct NotificationsView_Previews: PreviewProvider {
     static var previews: some View {

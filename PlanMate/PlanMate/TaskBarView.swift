@@ -97,27 +97,40 @@ struct MainHomeView: View {
         TabView {
             HomeView()
                 .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Home")
+                    VStack {
+                        Image(systemName: "house.fill")
+                        Text("Home")
+                    }
                 }
 
-            Text("Calendar")
+            CalendarView()
                 .tabItem {
-                    Image(systemName: "calendar")
-                    Text("Calendar")
+                    VStack {
+                        Image(systemName: "calendar")
+                        Text("Calendar")
+                    }
                 }
 
             CreateActivityView()
                 .tabItem {
-                    Image(systemName: "plus.circle.fill")
-                    Text("Create")
+                    VStack {
+                        Image(systemName: "plus.circle.fill")
+                        Text("Create")
+                    }
                 }
 
             ActivityListView()
                 .tabItem {
-                    Image(systemName: "list.bullet")
-                    Text("Activities")
+                    VStack {
+                        Image(systemName: "list.bullet")
+                        Text("Activities")
+                    }
                 }
         }
+        .accentColor(Color("CustomBlue"))
     }
+}
+
+#Preview {
+    MainHomeView()
 }

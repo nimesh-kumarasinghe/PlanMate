@@ -7,36 +7,6 @@
 
 import SwiftUI
 
-//struct MainHomeView: View {
-//    var body: some View {
-//        TabView {
-//            HomeView()
-//                .tabItem {
-//                    Image(systemName: "house.fill")
-//                    Text("Home")
-//                }
-//            
-//            Text("Calendar")
-//                .tabItem {
-//                    Image(systemName: "calendar")
-//                    Text("Calendar")
-//                }
-//            
-//            CreateActivityView()
-//                .tabItem {
-//                    Image(systemName: "plus.circle.fill")
-//                    Text("Create")
-//                }
-//            
-//            ActivityListView()
-//                .tabItem {
-//                    Image(systemName: "list.bullet")
-//                    Text("Activities")
-//                }
-//        }
-//    }
-//}
-
 struct HomeView: View {
     var body: some View {
         NavigationView {
@@ -53,8 +23,18 @@ struct HomeView: View {
                         }
                         Spacer()
                         HStack(spacing: 15) {
-                            Image(systemName: "bell")
-                            Image(systemName: "person.circle.fill")
+                            // Bell icon navigation link
+                            NavigationLink(destination: NotificationsView()) {
+                                Image(systemName: "bell")
+                                    .foregroundColor(.black)
+                            }
+                            
+                            // Profile icon navigation link
+                            NavigationLink(destination: MyAccountView()) {
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .frame(width: 30, height: 30)
+                            }
                         }
                         .font(.title2)
                     }
@@ -65,25 +45,27 @@ struct HomeView: View {
                         NavigationLink(destination: Text("Create Group")) {
                             HStack {
                                 Text("Create a group")
+                                    .fontWeight(.medium)
                                 Spacer()
                                 Image(systemName: "chevron.right")
                             }
                             .padding()
-                            .background(Color.blue)
+                            .background(Color("CustomBlue"))
                             .foregroundColor(.white)
-                            .cornerRadius(10)
+                            .cornerRadius(50)
                         }
                         
                         NavigationLink(destination: Text("Join Group")) {
                             HStack {
                                 Text("Join a group")
+                                    .fontWeight(.medium)
                                 Spacer()
                                 Image(systemName: "chevron.right")
                             }
                             .padding()
-                            .background(Color.gray)
+                            .background(Color("DarkAsh"))
                             .foregroundColor(.white)
-                            .cornerRadius(10)
+                            .cornerRadius(50)
                         }
                     }
                     .padding(.horizontal)
@@ -104,10 +86,10 @@ struct HomeView: View {
                             GridItem(.flexible()),
                             GridItem(.flexible())
                         ], spacing: 15) {
-                            GroupCard(name: "Office", imageName: "office")
-                            GroupCard(name: "Friends", imageName: "friends")
-                            GroupCard(name: "Cousins", imageName: "cousins")
-                            GroupCard(name: "Trip Friends", imageName: "tripfriends")
+                            GroupCard(name: "Office", imageName: "defaultimg")
+                            GroupCard(name: "Friends", imageName: "defaultimg")
+                            GroupCard(name: "Cousins", imageName: "defaultimg")
+                            GroupCard(name: "Trip Friends", imageName: "defaultimg")
                         }
                     }
                     .padding(.horizontal)
@@ -135,7 +117,7 @@ struct HomeView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationBarHidden(true)
+            //.navigationBarHidden(true)
         }
     }
 }
@@ -151,8 +133,10 @@ struct GroupCard: View {
                     .fill(Color.blue.opacity(0.1))
                     .frame(height: 100)
                     .overlay(
-                        Text("👥")
-                            .font(.system(size: 40))
+                        Image(imageName)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 90)
                     )
                 Text(name)
                     .fontWeight(.medium)
@@ -174,11 +158,11 @@ struct ActivityListCard: View {
                         .fontWeight(.medium)
                     Text("from \(group)")
                         .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .foregroundColor(Color("DarkAsh"))
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
+                    .foregroundColor(Color("DarkAsh"))
             }
             .padding()
             .background(Color.blue.opacity(0.1))

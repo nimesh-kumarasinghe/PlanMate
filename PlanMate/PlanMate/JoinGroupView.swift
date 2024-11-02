@@ -15,7 +15,6 @@ struct JoinGroupView: View {
             VStack(spacing: 20) {
                 Text("Enter group code or scan a\nQR code to join")
                     .font(.system(size: 17))
-                    .multilineTextAlignment(.center)
                     .padding(.top, 40)
                 
                 TextField("Enter group code", text: $groupCode)

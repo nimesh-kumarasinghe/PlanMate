@@ -39,9 +39,13 @@ struct CalendarView: View {
                         
                         Spacer()
                         
-                        Image(systemName: "person.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.blue)
+                        // Profile icon with navigation to AccountView
+                        NavigationLink(destination: MyAccountView()) {
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .frame(width: 35, height: 35)
+                                .foregroundColor(.blue)
+                        }
                     }
                     .padding(.horizontal)
                     
@@ -84,16 +88,6 @@ struct CalendarView: View {
                         }
                     }
                 }
-                
-                // Bottom Tab Bar
-                HStack(spacing: 0) {
-                    TabBarButton(image: "house.fill", text: "Home", isSelected: false)
-                    TabBarButton(image: "calendar", text: "Calendar", isSelected: true)
-                    TabBarButton(image: "plus.circle.fill", text: "Create", isSelected: false)
-                    TabBarButton(image: "list.bullet", text: "Activities", isSelected: false)
-                }
-                .padding(.top, 8)
-                .background(Color(UIColor.systemBackground))
             }
             .sheet(isPresented: $showingMonthPicker) {
                 MonthPickerView(currentMonth: $currentMonth, showingMonthPicker: $showingMonthPicker)
@@ -127,6 +121,7 @@ struct CalendarView: View {
     }
 }
 
+// Day cell view
 struct DayCell: View {
     let date: Date
     let isSelected: Bool
@@ -159,23 +154,7 @@ struct DayCell: View {
     }
 }
 
-struct TabBarButton: View {
-    let image: String
-    let text: String
-    let isSelected: Bool
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: image)
-                .font(.system(size: 22))
-            Text(text)
-                .font(.caption2)
-        }
-        .foregroundColor(isSelected ? .blue : .gray)
-        .frame(maxWidth: .infinity)
-    }
-}
-
+// Other Views for Month Picker and Detail
 struct MonthPickerView: View {
     @Binding var currentMonth: Date
     @Binding var showingMonthPicker: Bool

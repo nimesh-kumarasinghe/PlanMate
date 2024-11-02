@@ -11,7 +11,8 @@ struct CreateGroupView: View {
     @State private var groupName: String = ""
     @State private var description: String = ""
     @State private var isImagePickerPresented = false
-    @State private var groupImage: Image? = Image(systemName: "person.3.fill") // Default icon
+    @State private var groupImage: Image? = Image(systemName: "person.fill")
+    // Default icon
 
     var body: some View {
         NavigationView {
@@ -19,11 +20,13 @@ struct CreateGroupView: View {
                 // Group Image with Edit Icon
                 ZStack(alignment: .bottomTrailing) {
                     groupImage?
-                        .resizable()
-                        .frame(width: 100, height: 100)
+                        .resizable() // Make the image resizable
+                        .aspectRatio(contentMode: .fill) // Maintain aspect ratio
+                        .frame(width: 150, height: 150) // Increased size of the image
                         .clipShape(Circle())
-                        .background(Circle().fill(Color.blue.opacity(0.1)))
-                    
+                        .background(Circle().fill(Color("CustomBlue")))
+                        .foregroundColor(.white)
+
                     // Edit Icon
                     Button(action: {
                         isImagePickerPresented = true
@@ -31,8 +34,8 @@ struct CreateGroupView: View {
                         Image(systemName: "pencil.circle.fill")
                             .foregroundColor(.blue)
                             .background(Circle().fill(Color.white))
-                            .frame(width: 24, height: 24)
-                            .offset(x: 8, y: 8)
+                            .frame(width: 60, height: 30) // Decreased width of the button
+                            .offset(x: 1, y: 1)
                     }
                 }
                 .padding(.top, 50)
@@ -59,12 +62,12 @@ struct CreateGroupView: View {
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                        .padding(.horizontal)
+                        .background(Color("CustomBlue"))
+                        .cornerRadius(50)
+                        .padding(.horizontal, 40)
                 }
                 .padding(.top, 20)
-                
+
                 Spacer()
             }
             .navigationTitle("Create a Group")
