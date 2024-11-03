@@ -7,135 +7,158 @@
 
 import SwiftUI
 
-struct AvailabilityListView: View {
-    // Model for member data
-    struct Member: Identifiable {
+struct AvailabilityView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    struct MemberAvailability: Identifiable {
         let id = UUID()
         let name: String
         let availability: String
         let location: String
-        let dateFrom: String
-        let dateTo: String
+        let startDate: Date
+        let endDate: Date
     }
     
-    // Sample data
-    let members = [
-        Member(name: "Nimesh",
-               availability: "I am free in the next 10 days",
-               location: "Seethawaka Miracle Nature Resort",
-               dateFrom: "10 Oct 2024",
-               dateTo: "20 Oct 2024"),
-        Member(name: "Dilanjana",
-               availability: "I am free in the next two weeks",
-               location: "Seethawaka Miracle Nature Resort",
-               dateFrom: "10 Oct 2024",
-               dateTo: "24 Oct 2024"),
-        Member(name: "Lakshan",
-               availability: "I am free in the next three weeks",
-               location: "Seethawaka Miracle Nature Resort",
-               dateFrom: "10 Oct 2024",
-               dateTo: "31 Oct 2024")
+    let members: [MemberAvailability] = [
+        MemberAvailability(
+            name: "Nimesh",
+            availability: "I am free in the next 10 days",
+            location: "Seethawaka Miracle Nature Resort",
+            startDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 10))!,
+            endDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 20))!
+        ),
+        MemberAvailability(
+            name: "Dilanjana",
+            availability: "I am free in the next two weeks",
+            location: "Seethawaka Miracle Nature Resort",
+            startDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 10))!,
+            endDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 24))!
+        ),
+        MemberAvailability(
+            name: "Lakshan",
+            availability: "I am free in the next three weeks",
+            location: "Seethawaka Miracle Nature Resort",
+            startDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 10))!,
+            endDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 31))!
+        )
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Navigation header
-            HStack {
-                Button(action: {
-                    // Add back action here
-                }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 16) {
+                    // Your availability section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Your availability")
+                            .font(.system(size: 20, weight: .semibold))
+                            .padding(.horizontal)
+                        
+                        ForEach([members[0]], id: \.id) { member in
+                            MemberCard(member: member, isEditable: true)
+                        }
+                    }
+                    Spacer()
+                    
+                    // Submitted members section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Submitted members")
+                            .font(.system(size: 20, weight: .semibold))
+                            .padding(.horizontal)
+                        
+                        ForEach(members.dropFirst(), id: \.id) { member in
+                            MemberCard(member: member, isEditable: false)
+                        }
                     }
                 }
-                .foregroundColor(.blue)
-                
-                Spacer()
-                
-                Text("October day out")
-                    .font(.headline)
-                
-                Spacer()
+                .padding(.vertical)
             }
-            .padding()
-            .background(Color.white)
-            .overlay(
-                Rectangle()
-                    .frame(height: 0.5)
-                    .foregroundColor(Color.gray.opacity(0.3)),
-                alignment: .bottom
-            )
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Your availability")
-                        .font(.headline)
-                        .padding(.horizontal)
-                        .padding(.top)
-                    
-                    // Member cards
-                    ForEach(members) { member in
-                        MemberCard(member: member)
+            .navigationTitle("October day out")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { dismiss() }) {
+                        HStack(spacing: 2) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 17, weight: .regular))
+                            Text("Back")
+                        }
+                        .foregroundColor(.blue)
                     }
                 }
             }
         }
-        .background(Color(.systemGray6))
     }
 }
 
 struct MemberCard: View {
-    let member: AvailabilityListView.Member
+    let member: AvailabilityView.MemberAvailability
+    let isEditable: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header with avatar and name
+        VStack(spacing: 0) {
             HStack {
                 Circle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 40, height: 40)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Text(member.name.prefix(1).uppercased())
+                            .foregroundColor(.gray)
+                    )
                 
                 Text(member.name)
-                    .font(.system(.body, design: .default))
+                    .font(.system(size: 20))
+                    .fontWeight(.semibold)
                 
                 Spacer()
                 
-                Button(action: {
-                    // Add edit action here
-                }) {
+                if isEditable {
                     Image(systemName: "square.and.pencil")
                         .foregroundColor(.blue)
                 }
             }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
             
-            // Availability text
-            Text(member.availability)
-                .foregroundColor(.secondary)
-            
-            // Location
-            HStack {
-                Image(systemName: "mappin.circle.fill")
-                Text(member.location)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Image(systemName: "bubble.left")
+                        .foregroundColor(Color("CustomBlue"))
+                    Text(member.availability)
+                        .font(.system(size: 17))
+                }
+                
+                HStack {
+                    Image(systemName: "mappin.and.ellipse")
+                        .foregroundColor(Color("CustomBlue"))
+                    Text(member.location)
+                        .font(.system(size: 17))
+                }
+                
+                Text("Available From: \(formattedDate(member.startDate)) to: \(formattedDate(member.endDate))")
+                    .font(.system(size: 13))
+                    .foregroundColor(.gray)
             }
-            .foregroundColor(.secondary)
-            
-            // Date range
-            Text("Available From: \(member.dateFrom) to: \(member.dateTo)")
-                .font(.footnote)
-                .foregroundColor(.secondary)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(10)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.gray.opacity(0.1))
+        )
         .padding(.horizontal)
+    }
+    
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMM yyyy"
+        return formatter.string(from: date)
     }
 }
 
-// Preview provider for SwiftUI canvas
+// Preview provider
 struct AvailabilityView_Previews: PreviewProvider {
     static var previews: some View {
-        AvailabilityListView()
+        AvailabilityView()
     }
 }

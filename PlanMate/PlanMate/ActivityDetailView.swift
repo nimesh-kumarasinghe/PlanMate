@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ActivityDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var messageText = ""
     
     let event = EventDetails(
@@ -29,49 +30,45 @@ struct ActivityDetailView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Navigation header
-            HStack {
-                Button(action: {}) {
-                    HStack {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
-                    }
-                    .foregroundColor(.blue)
-                }
-                
-                Spacer()
-                
-                Text("Movie Time")
-                    .font(.headline)
-                
-                Spacer()
-                
-                Button("Edit") {
-                    // Edit action
-                }
-                .foregroundColor(.blue)
-            }
-            .padding()
-            .background(Color(UIColor.systemBackground))
+            // Event details card - Fixed at top
+            EventDetailsView(event: event)
+                .padding(.horizontal)
+                .padding(.vertical, 16)
             
+            // Chat messages - Scrollable
             ScrollView {
-                VStack(spacing: 16) {
-                    // Event details card
-                    EventDetailsView(event: event)
-                        .padding(.horizontal)
-                    
-                    // Chat messages
-                    ChatMessagesView(messages: messages)
-                }
-                .padding(.vertical)
+                ChatMessagesView(messages: messages)
+                    .padding(.vertical)
             }
             
-            // Message input
+            // Message input - Fixed at bottom
             MessageInputView(messageText: $messageText)
         }
+        .navigationTitle("Movie Time")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("Cancel") {
+                    dismiss()
+                }
+            }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Save") {
+                    saveActivity()
+                    dismiss()
+                }
+            }
+        }
+        .background(Color.white)
+    }
+    
+    func saveActivity() {
+        // Implement save functionality
     }
 }
 
+// Rest of the structs remain the same
 struct EventDetails {
     let startTime: String
     let endTime: String
@@ -86,33 +83,50 @@ struct EventDetailsView: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            // Time selection
+            // Time selection with separate dates and larger chevron
             HStack {
-                Text(event.startTime)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                VStack {
+                    Text(event.startTime)
+                        .font(.largeTitle)
+                        .fontWeight(.semibold)
+                    
+                    Text(event.date) // New date under start time
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
                 
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.blue)
+                    .font(.system(size: 40)) // Increase chevron size
+                    .foregroundColor(Color("CustomBlue"))
                 
-                Text(event.endTime)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                VStack {
+                    Text(event.endTime)
+                        .font(.largeTitle)
+                        .fontWeight(.semibold)
+                    
+                    Text(event.date) // New date under end time
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
             }
             
-            Text(event.date)
-                .foregroundColor(.secondary)
+            Divider() // Line to separate sections
             
-            // Event details list
+            // Event details list with separators
             VStack(spacing: 12) {
                 DetailRow(icon: "alarm", text: "Set event reminders", detail: "(\(event.reminder))")
-                DetailRow(icon: "person.2", text: event.attendees)
-                DetailRow(icon: "mappin.and.ellipse", text: event.location)
+                
+                Divider() // Line after each detail
+                
+                DetailRow(icon: "person.2", text: "Cousins") // Updated text example
+                
+                Divider() // Line after each detail
+                
+                DetailRow(icon: "mappin.and.ellipse", text: "One gallery face parts") // Updated text example
             }
         }
         .padding()
-        .background(Color(UIColor.systemGray6))
-        .cornerRadius(10)
+        .background(Color(.white))
     }
 }
 
@@ -124,7 +138,7 @@ struct DetailRow: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.blue)
+                .foregroundColor(Color("CustomBlue"))
                 .frame(width: 24)
             
             Text(text)
@@ -182,7 +196,7 @@ struct ChatBubble: View {
                 
                 Text(message.text)
                     .padding(12)
-                    .background(message.isUser ? Color.blue : Color(UIColor.systemGray5))
+                    .background(message.isUser ? Color("CustomBlue") : Color(UIColor.systemGray5))
                     .foregroundColor(message.isUser ? .white : .primary)
                     .cornerRadius(16)
                 
@@ -211,8 +225,8 @@ struct MessageInputView: View {
                 .cornerRadius(20)
             
             Button(action: {}) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .foregroundColor(.blue)
+                Image(systemName: "arrow.right.circle.fill")
+                    .foregroundColor(Color("CustomBlue"))
                     .font(.title2)
             }
             
@@ -228,5 +242,7 @@ struct MessageInputView: View {
 }
 
 #Preview {
-    ActivityDetailView()
+    NavigationView {
+        ActivityDetailView()
+    }
 }

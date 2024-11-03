@@ -9,66 +9,86 @@ import SwiftUI
 
 struct JoinGroupView: View {
     @State private var groupCode: String = ""
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
+        VStack(spacing: 20) {
+            // Navigation header
+            HStack {
+                Button(action: { dismiss() }) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.blue)
+                        Text("Back")
+                            .foregroundColor(.blue)
+                    }
+                }
+                Spacer()
+            }
+            .padding(.leading)
+            
+            // Main content
+            VStack(spacing: 25) {
                 Text("Enter group code or scan a\nQR code to join")
-                    .font(.system(size: 17))
-                    .padding(.top, 40)
+                    .multilineTextAlignment(.center)
+                    .font(.system(size: 20, weight: .medium))
                 
                 TextField("Enter group code", text: $groupCode)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal, 24)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                    .padding(.horizontal, 20)
                 
                 Button(action: {
-                    // Action for Join button
+                    // Join action
                 }) {
                     Text("Join")
-                        .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
+                        .frame(height: 44)
+                        .background(Color("CustomBlue"))
+                        .cornerRadius(50)
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 60)
                 
                 HStack {
-                    Divider().frame(height: 1).background(Color.gray)
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray.opacity(0.3))
+                    
                     Text("or")
                         .foregroundColor(.gray)
-                        .font(.system(size: 15))
-                    Divider().frame(height: 1).background(Color.gray)
+                        .padding(.horizontal, 8)
+                    
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray.opacity(0.3))
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
                 
                 Button(action: {
-                    // Action for Scan QR Code button
+                    // Scan QR code action
                 }) {
                     HStack {
                         Image(systemName: "qrcode.viewfinder")
                         Text("Scan QR Code")
-                            .font(.system(size: 17, weight: .semibold))
                     }
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
+                    .frame(height: 44)
+                    .background(Color("CustomBlue"))
+                    .cornerRadius(50)
                 }
-                .padding(.horizontal, 24)
-                
-                Spacer()
+                .padding(.horizontal, 20)
             }
-            .navigationTitle("Join a Group")
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(.top, 20)
+            
+            Spacer()
         }
+        .navigationBarHidden(true)
     }
 }
 
-struct JoinGroupView_Previews: PreviewProvider {
-    static var previews: some View {
-        JoinGroupView()
-    }
+#Preview {
+    JoinGroupView()
 }

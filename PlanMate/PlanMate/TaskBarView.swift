@@ -111,7 +111,7 @@ struct MainHomeView: View {
                     }
                 }
 
-            CreateActivityView()
+            //CreateActivityView()
                 .tabItem {
                     VStack {
                         Image(systemName: "plus.circle.fill")

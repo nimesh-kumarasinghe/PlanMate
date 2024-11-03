@@ -32,7 +32,7 @@ struct GroupListView: View {
             List {
                 ForEach(groups) { group in
                     HStack {
-                        Image(systemName: "person.3.fill")
+                        Image("defaultimg")
                             .resizable()
                             .frame(width: 40, height: 40)
                             .foregroundColor(group.memberCount > 6 ? .blue : .green)
@@ -65,6 +65,22 @@ struct GroupListView: View {
                 Text("Are you sure you want to leave \(group.name)?")
             }
             .navigationTitle("Groups")
+            .navigationBarTitleDisplayMode(.inline)
+//            .toolbar {
+//                ToolbarItem(placement: .navigationBarLeading) {
+//                    Button("Cancel") {
+//                        dismiss()
+//                    }
+//                }
+//                
+//                ToolbarItem(placement: .navigationBarTrailing) {
+//                    Button("Save") {
+//                        saveActivity()
+//                        dismiss()
+//                    }
+//                }
+//            }
+            .background(Color.white)
         }
     }
 }
