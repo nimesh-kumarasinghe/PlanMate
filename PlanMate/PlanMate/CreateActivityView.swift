@@ -443,7 +443,6 @@ struct Location: Identifiable {
     let name: String
 }
 
-// Adding Note model to support deletion
 struct Note: Identifiable {
     let id = UUID()
     var content: String
@@ -458,7 +457,7 @@ class ActivityViewModel: ObservableObject {
         Member(name: "Lakshika")
     ]
     @Published var locations: [Location] = []
-    @Published var notes: [Note] = []  // Changed from String to [Note]
+    @Published var notes: [Note] = []
     @Published var urls: [String] = []
 }
 
@@ -531,7 +530,6 @@ struct AddTaskSheet: View {
                     isShowingSheet = false
                 }
             )
-            .background(Color.white)
         }
     }
     
@@ -570,36 +568,6 @@ struct NotesView: View {
                     dismiss()
                 }
             )
-            .background(Color.white)
-        }
-    }
-}
-
-// Location Input View
-struct LocationInputView: View {
-    @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: ActivityViewModel
-    @State private var locationName: String = ""
-    
-    var body: some View {
-        NavigationView {
-            VStack {
-                TextField("Enter location", text: $locationName)
-                    .padding()
-                
-                Button("Add Location") {
-                    if !locationName.isEmpty {
-                        viewModel.locations.append(Location(name: locationName))
-                        dismiss()
-                    }
-                }
-                .padding()
-                
-                Spacer()
-            }
-            .navigationTitle("Add Location")
-            .navigationBarItems(leading: Button("Cancel") { dismiss() })
-            .background(Color.white)
         }
     }
 }
@@ -628,7 +596,6 @@ struct URLInputView: View {
             }
             .navigationTitle("Add URL")
             .navigationBarItems(leading: Button("Cancel") { dismiss() })
-            .background(Color.white)
         }
     }
 }
@@ -644,7 +611,7 @@ struct CreateActivityView: View {
     @State private var selectedReminder = "10 min before"
     @State private var isShowingTaskSheet = false
     @State private var isShowingNotes = false
-    @State private var isShowingLocation = false
+    @State private var isShowingLocationSearch = false
     @State private var isShowingURL = false
     
     let reminderOptions = [
@@ -665,14 +632,13 @@ struct CreateActivityView: View {
                     Toggle("All-day", isOn: $isAllDay)
                     
                     DatePicker("Starts",
-                             selection: $startDate,
-                             displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
+                               selection: $startDate,
+                               displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
                     
                     DatePicker("Ends",
-                             selection: $endDate,
-                             displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
+                               selection: $endDate,
+                               displayedComponents: isAllDay ? .date : [.date, .hourAndMinute])
                 }
-                .listRowBackground(Color.white)
                 
                 Section {
                     NavigationLink("Select Group") {
@@ -684,12 +650,11 @@ struct CreateActivityView: View {
                     } label: {
                         HStack {
                             Image(systemName: "person.2")
-                                .foregroundColor(Color("CustomBlue"))
+                                .foregroundColor(Color.blue)
                             Text("Participants")
                         }
                     }
                 }
-                .listRowBackground(Color.white)
                 
                 Section {
                     Menu {
@@ -701,7 +666,7 @@ struct CreateActivityView: View {
                     } label: {
                         HStack {
                             Image(systemName: "alarm")
-                                .foregroundColor(Color("CustomBlue"))
+                                .foregroundColor(Color.blue)
                             Text("Set event reminders")
                                 .foregroundColor(.black)
                             Spacer()
@@ -712,20 +677,18 @@ struct CreateActivityView: View {
                         }
                     }
                 }
-                .listRowBackground(Color.white)
-
-                // Separate buttons section
+                
                 Section {
-                    Button(action: {
-                        isShowingLocation = true
-                    }) {
+                    NavigationLink(isActive: $isShowingLocationSearch) {
+                       LocationSearchView()
+                    } label: {
                         HStack {
                             Image(systemName: "mappin.and.ellipse")
                             Text("Add Location")
                             Spacer()
                         }
+                        .foregroundColor(Color.blue)
                     }
-                    .foregroundColor(Color("CustomBlue"))
                     
                     Button(action: {
                         isShowingNotes = true
@@ -736,7 +699,7 @@ struct CreateActivityView: View {
                             Spacer()
                         }
                     }
-                    .foregroundColor(Color("CustomBlue"))
+                    .foregroundColor(Color.blue)
                     
                     Button(action: {
                         isShowingURL = true
@@ -747,11 +710,9 @@ struct CreateActivityView: View {
                             Spacer()
                         }
                     }
-                    .foregroundColor(Color("CustomBlue"))
+                    .foregroundColor(Color.blue)
                 }
-                .listRowBackground(Color.white)
-
-                // Added Locations Section
+                
                 if !viewModel.locations.isEmpty {
                     Section(header: Text("Added Locations")) {
                         ForEach(viewModel.locations) { location in
@@ -764,10 +725,8 @@ struct CreateActivityView: View {
                             viewModel.locations.remove(atOffsets: indexSet)
                         }
                     }
-                    .listRowBackground(Color.white)
                 }
                 
-                // Notes Section with delete functionality
                 if !viewModel.notes.isEmpty {
                     Section(header: Text("Notes")) {
                         ForEach(viewModel.notes) { note in
@@ -780,10 +739,8 @@ struct CreateActivityView: View {
                             viewModel.notes.remove(atOffsets: indexSet)
                         }
                     }
-                    .listRowBackground(Color.white)
                 }
                 
-                // URLs Section
                 if !viewModel.urls.isEmpty {
                     Section(header: Text("Added URLs")) {
                         ForEach(viewModel.urls, id: \.self) { url in
@@ -796,10 +753,8 @@ struct CreateActivityView: View {
                             viewModel.urls.remove(atOffsets: indexSet)
                         }
                     }
-                    .listRowBackground(Color.white)
                 }
-
-                // Tasks Section
+                
                 Section(header: Text("Task Assign")) {
                     ForEach(viewModel.tasks) { task in
                         HStack {
@@ -817,10 +772,9 @@ struct CreateActivityView: View {
                             Image(systemName: "plus")
                             Text("Add Task")
                         }
-                        .foregroundColor(Color("CustomBlue"))
+                        .foregroundColor(Color.blue)
                     }
                 }
-                .listRowBackground(Color.white)
             }
             .sheet(isPresented: $isShowingTaskSheet) {
                 AddTaskSheet(viewModel: viewModel, isShowingSheet: $isShowingTaskSheet)
@@ -828,29 +782,25 @@ struct CreateActivityView: View {
             .sheet(isPresented: $isShowingNotes) {
                 NotesView(viewModel: viewModel)
             }
-            .sheet(isPresented: $isShowingLocation) {
-                LocationInputView(viewModel: viewModel)
-            }
             .sheet(isPresented: $isShowingURL) {
                 URLInputView(viewModel: viewModel)
             }
             .navigationTitle("Create an Activity")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button("Cancel") {
-                                    dismiss()
-                                }
-                            }
-                            
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("Save") {
-                                    saveActivity()
-                                    dismiss()
-                                }
-                            }
-                        }
-            .background(Color.white)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        saveActivity()
+                        dismiss()
+                    }
+                }
+            }
         }
     }
     
@@ -859,7 +809,6 @@ struct CreateActivityView: View {
     }
     
     private func saveActivity() {
-        // Implement save functionality
         print("Saving activity with:")
         print("- \(viewModel.tasks.count) tasks")
         print("- \(viewModel.locations.count) locations")

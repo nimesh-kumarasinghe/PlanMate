@@ -15,7 +15,7 @@ struct PlanMateApp: App {
         WindowGroup {
 //            ContentView()
 //                .environment(\.managedObjectContext, persistenceController.container.viewContext)
-            GroupDetailView()
+            LocationSearchView()
         }
     }
 }
