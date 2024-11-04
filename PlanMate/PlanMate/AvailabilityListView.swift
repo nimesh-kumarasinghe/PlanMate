@@ -97,17 +97,11 @@ struct MemberCard: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Circle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 36, height: 36)
-                    .overlay(
-                        Text(member.name.prefix(1).uppercased())
-                            .foregroundColor(.gray)
-                    )
                 
+                Image(systemName: "person.circle.fill")
+                    .foregroundColor(.gray)
                 Text(member.name)
-                    .font(.system(size: 20))
-                    .fontWeight(.semibold)
+                    .font(.system(size: 18, weight: .semibold))
                 
                 Spacer()
                 
@@ -121,22 +115,22 @@ struct MemberCard: View {
             
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Image(systemName: "bubble.left")
+                    Image(systemName: "message.fill")
                         .foregroundColor(Color("CustomBlue"))
                     Text(member.availability)
                         .font(.system(size: 17))
                 }
                 
                 HStack {
-                    Image(systemName: "mappin.and.ellipse")
+                    Image(systemName: "location.fill")
                         .foregroundColor(Color("CustomBlue"))
                     Text(member.location)
                         .font(.system(size: 17))
                 }
                 
                 Text("Available From: \(formattedDate(member.startDate)) to: \(formattedDate(member.endDate))")
-                    .font(.system(size: 13))
-                    .foregroundColor(.gray)
+                    .font(.system(size: 17))
+                    .foregroundColor(.black)
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)

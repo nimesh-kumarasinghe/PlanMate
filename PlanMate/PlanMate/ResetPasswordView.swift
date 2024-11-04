@@ -39,14 +39,20 @@ struct ResetPasswordView: View {
             VStack(spacing: 16) {
                 SecureField("New Password", text: $newPassword)
                     .padding()
-                    .background(Color(UIColor.systemGray6))
                     .cornerRadius(8)
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color(.systemGray3), lineWidth: 2)
+                        )
                     .padding(.horizontal, 40)
                 
                 SecureField("Confirm Password", text: $confirmPassword)
                     .padding()
-                    .background(Color(UIColor.systemGray6))
                     .cornerRadius(8)
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color(.systemGray3), lineWidth: 2)
+                        )
                     .padding(.horizontal, 40)
             }
             Spacer().frame(height: 30)

@@ -27,12 +27,16 @@ struct ProposeActivityView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // Activity Name TextField
+                Spacer().frame(height: 1)
                 TextField("Activity name", text: $activityName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
+                    .padding()
+                    .cornerRadius(10)
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color(.systemGray3), lineWidth: 2)
+                        )
+                    .padding(.horizontal,20)
                 
-                // Location Button
                 Button(action: {
                     // Add location selection logic here
                 }) {
@@ -43,7 +47,7 @@ struct ProposeActivityView: View {
                     }
                     .padding()
                     .background(Color.gray.opacity(0.2))
-                    .cornerRadius(8)
+                    .cornerRadius(50)
                 }
                 .padding(.horizontal)
                 
@@ -103,29 +107,19 @@ struct ProposeActivityView: View {
                 
                 Spacer()
                 
-                // Save Button
                 Button(action: {
-                    // Add save action here
+                    // active save
                 }) {
                     Text("Save")
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
-                        .cornerRadius(8)
+                        .background(Color("CustomBlue"))
+                        .cornerRadius(50)
                 }
-                .padding()
+                .padding(.horizontal, 40)
             }
             .navigationBarTitle("Propose an Activity", displayMode: .inline)
-            .navigationBarItems(leading: Button(action: {
-                // Add back action here
-            }) {
-                HStack {
-                    Image(systemName: "chevron.left")
-                    Text("Back")
-                }
-                .foregroundColor(.blue)
-            })
         }
     }
 }

@@ -25,16 +25,22 @@ struct SignInView: View {
             
             TextField("Email", text: $email)
                 .padding()
-                .background(Color(.systemGray6))
                 .cornerRadius(10)
+                .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(.systemGray3), lineWidth: 2)
+                    )
                 .padding(.horizontal,20)
             
             Spacer().frame(height: 20)
 
             SecureField("Password", text: $password)
                 .padding()
-                .background(Color(.systemGray6))
                 .cornerRadius(10)
+                .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(.systemGray3), lineWidth: 2)
+                    )
                 .padding(.horizontal, 20)
             
             // Forgot Password
@@ -46,7 +52,8 @@ struct SignInView: View {
                     Text("Forgot password?")
                         .foregroundColor(.blue)
                         .font(.footnote)
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, 5)
+                        .padding(.top,1)
                 }
                 .padding(.trailing)
             }

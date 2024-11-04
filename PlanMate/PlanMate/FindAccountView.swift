@@ -37,8 +37,11 @@ struct FindAccountView: View {
             // Verification Code Input
             TextField("Verification Code", text: $email)
                 .padding()
-                .background(Color(.systemGray6))
                 .cornerRadius(8)
+                .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(.systemGray3), lineWidth: 2)
+                    )
                 .padding(.horizontal, 30)
             
             Spacer().frame(height: 40)

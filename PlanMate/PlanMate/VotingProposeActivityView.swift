@@ -73,16 +73,21 @@ struct VotingProposeActivityView: View {
                                 .labelsHidden()
                         }
                     }
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, 10)
                     
                     TextField("Write a comment (Optional)", text: $comment)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.top, 4)
+                        .padding()
+                        .cornerRadius(10)
+                        .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
+                        .padding(.horizontal,10)
                     
                     Text("Select your favorite place")
                         .font(.headline)
                     
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 15) {
                         ForEach(locations, id: \.self) { location in
                             HStack {
                                 Image(systemName: selectedLocation == location ? "checkmark.circle.fill" : "circle")
@@ -96,6 +101,7 @@ struct VotingProposeActivityView: View {
                         }
                     }
                     .padding(.vertical, 8)
+                    .padding(.horizontal,10)
                     
                     Button(action: {
                         // Handle submit action
@@ -103,42 +109,49 @@ struct VotingProposeActivityView: View {
                         Text("Submit")
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(Color("CustomBlue"))
                             .foregroundColor(.white)
-                            .cornerRadius(8)
+                            .cornerRadius(50)
+                            .padding(.horizontal,30)
                     }
                     
                     Text("Submitted members")
                         .font(.headline)
                         .padding(.top)
                     
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 20) {
                         ForEach(submittedMembers) { member in
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack {
+                            VStack(alignment: .leading, spacing: 15) {
+                                HStack(spacing: 10) {
                                     Image(systemName: "person.circle.fill")
                                         .foregroundColor(.gray)
                                     Text(member.name)
-                                        .font(.headline)
+                                        .font(.system(size: 18, weight: .semibold))
                                 }
-                                Text(member.availability)
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
-                                HStack {
-                                    Image(systemName: "mappin.circle.fill")
-                                        .foregroundColor(.gray)
+                                HStack(spacing: 10) {
+                                    Image(systemName: "message.fill")
+                                        .foregroundColor(Color("CustomBlue"))
+                                    Text(member.availability)
+                                        .font(.system(size: 17))
+                                        .foregroundColor(Color("CustomBlue"))
+                                        .fontWeight(.medium)
+                                }
+                                HStack(spacing: 10) {
+                                    Image(systemName: "location.fill")
+                                        .foregroundColor(Color("CustomBlue"))
                                     Text(member.location)
-                                        .font(.subheadline)
+                                        .font(.system(size: 17))
                                 }
                                 Text("Available From: \(member.fromDate.formatted(date: .numeric, time: .omitted)) to: \(member.toDate.formatted(date: .numeric, time: .omitted))")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
+                                    .font(.system(size: 17))
+                                    .foregroundColor(Color(.black))
                             }
                             .padding()
                             .background(Color(.systemGray6))
                             .cornerRadius(8)
                         }
                     }
+
                 }
                 .padding()
             }

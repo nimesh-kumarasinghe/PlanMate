@@ -23,29 +23,42 @@ struct RegisterAccountView: View {
                 VStack(spacing: 16) {
                     TextField("Your Name", text: $name)
                         .padding()
-                        .background(Color(.systemGray6))
                         .cornerRadius(8)
+                        .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
                         .padding(.horizontal, 10)
 
                     TextField("Email", text: $email)
                         .padding()
-                        .background(Color(.systemGray6))
                         .cornerRadius(8)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
+                        .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
                         .padding(.horizontal, 10)
 
                     SecureField("Password", text: $password)
                         .padding()
-                        .background(Color(.systemGray6))
                         .cornerRadius(8)
+                        .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
                         .padding(.horizontal, 10)
 
                     SecureField("Confirm Password", text: $confirmPassword)
                         .padding()
-                        .background(Color(.systemGray6))
                         .cornerRadius(8)
+                        .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
                         .padding(.horizontal, 10)
+                    
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {

@@ -22,12 +22,12 @@ struct MyAccountView: View {
                     VStack(spacing: 8) {
                         ZStack {
                             Circle()
-                                .fill(Color.blue)
-                                .frame(width: 80, height: 80)
+                                .fill(Color("CustomBlue"))
+                                .frame(width: 100, height: 100)
                             
                             Text(profileInitial)
                                 .foregroundColor(.white)
-                                .font(.system(size: 32, weight: .medium))
+                                .font(.system(size: 48, weight: .medium))
                         }
                         
                         Text(userName)
@@ -42,15 +42,16 @@ struct MyAccountView: View {
                     // Linked Accounts Section
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Linked Accounts")
-                            .font(.system(size: 16))
-                            .foregroundColor(.gray)
+                            .font(.system(size: 17))
+                            .foregroundColor(.black)
                             .padding(.leading, 16)
                             .padding(.bottom, 8)
+                            .fontWeight(.bold)
                         
                         VStack(spacing: 0) {
-                            LinkButton(title: "Connect with Apple", icon: "apple.logo")
+                            LinkButton(title: "Connect with Apple", icon: "apple")
                             Divider().padding(.leading, 16)
-                            LinkButton(title: "Connect with Google", icon: "g.circle.fill")
+                            LinkButton(title: "Connect with Google", icon: "google")
                         }
                         .background(Color(.systemBackground))
                         .cornerRadius(10)
@@ -59,10 +60,11 @@ struct MyAccountView: View {
                     // Settings Section
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Linked Accounts")
-                            .font(.system(size: 16))
-                            .foregroundColor(.gray)
+                            .font(.system(size: 17))
+                            .foregroundColor(.black)
                             .padding(.leading, 16)
                             .padding(.bottom, 8)
+                            .fontWeight(.bold)
                         
                         VStack(spacing: 0) {
                             LinkButton(title: "Help Center or FAQ")
@@ -86,16 +88,16 @@ struct MyAccountView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color.blue)
-                            .cornerRadius(8)
+                            .background(Color("CustomBlue"))
+                            .cornerRadius(50)
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 40)
                     
                     // Delete Account Section
                     VStack(spacing: 16) {
                         Text("Deleting your account will permanently remove all your data, including groups and activity history.")
                             .font(.system(size: 14))
-                            .foregroundColor(.gray)
+                            .foregroundColor(.black)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 32)
                         
@@ -108,14 +110,13 @@ struct MyAccountView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
                                 .background(Color.red)
-                                .cornerRadius(8)
+                                .cornerRadius(50)
                         }
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 40)
                     }
                 }
                 .padding(.vertical, 16)
             }
-            .navigationBarItems(leading: BackButton())
             .navigationBarTitle("My Account", displayMode: .inline)
         }
         .alert(isPresented: $showingDeleteAlert) {
@@ -141,21 +142,6 @@ struct MyAccountView: View {
     }
 }
 
-struct BackButton: View {
-    @Environment(\.presentationMode) var presentationMode
-    
-    var body: some View {
-        Button(action: {
-            presentationMode.wrappedValue.dismiss()
-        }) {
-            HStack {
-                Image(systemName: "chevron.left")
-                Text("Back")
-            }
-        }
-    }
-}
-
 struct LinkButton: View {
     let title: String
     var icon: String?
@@ -164,8 +150,10 @@ struct LinkButton: View {
         NavigationLink(destination: EmptyView()) {
             HStack {
                 if let icon = icon {
-                    Image(systemName: icon)
-                        .foregroundColor(.blue)
+                    Image(icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 20, height: 20)
                 }
                 Text(title)
                     .foregroundColor(.primary)

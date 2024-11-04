@@ -35,8 +35,11 @@ struct JoinGroupView: View {
                 
                 TextField("Enter group code", text: $groupCode)
                     .padding()
-                    .background(Color(.systemGray6))
                     .cornerRadius(8)
+                    .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color(.systemGray3), lineWidth: 2)
+                        )
                     .padding(.horizontal, 20)
                 
                 Button(action: {

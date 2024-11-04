@@ -1,13 +1,13 @@
 //
-//  CreateGroupView.swift
+//  EditGroupView.swift
 //  PlanMate
 //
-//  Created by COBSCCOMPY4231P-005 on 2024-10-28.
+//  Created by COBSCCOMPY4231P-005 on 2024-11-04.
 //
 
 import SwiftUI
 
-struct CreateGroupView: View {
+struct EditGroupView: View {
     @State private var groupName: String = ""
     @State private var description: String = ""
     @State private var isImagePickerPresented = false
@@ -64,7 +64,7 @@ struct CreateGroupView: View {
                 Button(action: {
                     // Add create action here
                 }) {
-                    Text("Create")
+                    Text("Save")
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -76,7 +76,7 @@ struct CreateGroupView: View {
 
                 Spacer()
             }
-            .navigationTitle("Create a Group")
+            .navigationTitle("Edit Group")
             .navigationBarTitleDisplayMode(.inline)
         }
         .sheet(isPresented: $isImagePickerPresented) {
@@ -85,8 +85,9 @@ struct CreateGroupView: View {
     }
 }
 
-struct CreateGroupView_Previews: PreviewProvider {
+struct EditGroupView_Previews: PreviewProvider {
     static var previews: some View {
-        CreateGroupView()
+        EditGroupView()
     }
 }
+
