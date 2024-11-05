@@ -1,5 +1,5 @@
 //
-//  TaskBarView.swift
+//  MainHomeView.swift
 //  PlanMate
 //
 //  Created by COBSCCOMPY4231P-005 on 2024-10-28.

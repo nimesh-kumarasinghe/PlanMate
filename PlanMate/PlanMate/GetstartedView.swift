@@ -52,7 +52,7 @@ struct GetstartedView: View {
                 Spacer().frame(height: 0)
                 
                 Button(action: {
-                    // add action
+                    
                 }) {
                     Text("Create an Account")
                         .frame(maxWidth: .infinity)

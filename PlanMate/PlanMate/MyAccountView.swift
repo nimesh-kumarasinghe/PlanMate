@@ -6,13 +6,19 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseAuth
 
 struct MyAccountView: View {
     @State private var showingDeleteAlert = false
     @State private var showingLogOutAlert = false
+    @State private var navigateToSignIn: Bool = false
     let profileInitial: String = "N"
     let userName: String = "Nimesh Kumarasinghe"
     let userBirthDate: String = "03 June 1999"
+    
+    /// User log status
+    @AppStorage("log_status") private var logStatus: Bool =  false
     
     var body: some View {
         NavigationView {
@@ -130,15 +136,28 @@ struct MyAccountView: View {
             )
         }
         .alert(isPresented: $showingLogOutAlert) {
-            Alert(
-                title: Text("LogOut"),
-                message: Text("Are you sure you want to logout from your account?"),
-                primaryButton: .destructive(Text("Logout")) {
-                    // Handle delete account
-                },
-                secondaryButton: .cancel()
-            )
-        }
+                    Alert(
+                        title: Text("LogOut"),
+                        message: Text("Are you sure you want to logout from your account?"),
+                        primaryButton: .destructive(Text("Logout")) {
+                            // Logout logic
+                            let firebaseAuth = Auth.auth()
+                            do {
+                                try firebaseAuth.signOut()
+                                logStatus = false
+                                navigateToSignIn = true // Trigger navigation to SignInView
+                            } catch let signOutError as NSError {
+                                print("Error signing out: %@", signOutError)
+                            }
+                        },
+                        secondaryButton: .cancel()
+                    )
+                }
+                .navigationDestination(isPresented: $navigateToSignIn) {
+                    SignInView() 
+                        .navigationBarBackButtonHidden(true)// Navigate to SignInView when logging out
+                }
+                
     }
 }
 
