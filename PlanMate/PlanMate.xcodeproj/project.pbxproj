@@ -30,6 +30,7 @@
 		9EE7D73F2CDA152A00F7602D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9EE7D73E2CDA152A00F7602D /* GoogleService-Info.plist */; };
 		9EE7D7422CDA15B800F7602D /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 9EE7D7412CDA15B800F7602D /* GoogleSignIn */; };
 		9EE7D7442CDA15B800F7602D /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 9EE7D7432CDA15B800F7602D /* GoogleSignInSwift */; };
+		9EE7D7462CDA544B00F7602D /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9EE7D7452CDA544B00F7602D /* FirebaseFirestore */; };
 		9EE971D52CCF53F000108C12 /* EmailVerificationCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */; };
 		9EE971D72CCF582500108C12 /* FindAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D62CCF582500108C12 /* FindAccountView.swift */; };
 		9EE971D92CCF59C400108C12 /* ResetPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */; };
@@ -118,6 +119,7 @@
 				9EE7D73A2CD9E04F00F7602D /* FirebaseDatabase in Frameworks */,
 				9EE7D7382CD9E04F00F7602D /* FirebaseAuth in Frameworks */,
 				9EE7D7422CDA15B800F7602D /* GoogleSignIn in Frameworks */,
+				9EE7D7462CDA544B00F7602D /* FirebaseFirestore in Frameworks */,
 				9EE7D7442CDA15B800F7602D /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -247,6 +249,7 @@
 				9EE7D7392CD9E04F00F7602D /* FirebaseDatabase */,
 				9EE7D7412CDA15B800F7602D /* GoogleSignIn */,
 				9EE7D7432CDA15B800F7602D /* GoogleSignInSwift */,
+				9EE7D7452CDA544B00F7602D /* FirebaseFirestore */,
 			);
 			productName = PlanMate;
 			productReference = 9EE4F0EB2CCE1199009D0F71 /* PlanMate.app */;
@@ -766,6 +769,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9EE7D7402CDA15B800F7602D /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
+		};
+		9EE7D7452CDA544B00F7602D /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
 

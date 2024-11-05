@@ -22,13 +22,14 @@ struct SignInView: View {
     @State private var nonce: String?
     @State private var navigateToHome: Bool = false
     @AppStorage("log_status") private var logStatus: Bool = false
+    @State private var showResetPassword: Bool = false
     
     var body: some View {
         NavigationStack {
             VStack {
                 Spacer().frame(height: 30)
                 
-                Image("PlanMate") // logo
+                Image("PlanMate")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 160, height: 160)
@@ -36,6 +37,8 @@ struct SignInView: View {
                 Spacer().frame(height: 30)
                 
                 TextField("Email", text: $email)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.emailAddress)
                     .padding()
                     .cornerRadius(10)
                     .overlay(
@@ -59,7 +62,7 @@ struct SignInView: View {
                 HStack {
                     Spacer()
                     Button(action: {
-                        // Action for forgot password
+                        showResetPassword = true
                     }) {
                         Text("Forgot password?")
                             .foregroundColor(.blue)
@@ -73,7 +76,7 @@ struct SignInView: View {
                 
                 // Sign In Button
                 Button(action: {
-                    // Action for sign-in button
+                    handleEmailPasswordSignIn()
                 }) {
                     Text("Sign In")
                         .foregroundColor(.white)
@@ -104,7 +107,7 @@ struct SignInView: View {
                         showError(error.localizedDescription)
                     }
                 }
-                .frame(height: 57)
+                .frame(height: 55)
                 .cornerRadius(50)
                 .padding(.horizontal, 30)
                 .padding(.bottom, 10)
@@ -138,9 +141,7 @@ struct SignInView: View {
                     Text("If you don't have an account,")
                         .foregroundColor(.black)
                     
-                    Button(action: {
-                        // Action for Sign up
-                    }) {
+                    NavigationLink(destination: RegisterAccountView()) {
                         Text("sign up")
                             .foregroundColor(Color("CustomBlue"))
                             .fontWeight(.bold)
@@ -149,6 +150,15 @@ struct SignInView: View {
                 .padding(.bottom, 20)
             }
             .alert(errorMessage, isPresented: $showAlert) { }
+            .alert("Reset Password", isPresented: $showResetPassword) {
+                TextField("Enter your email", text: $email)
+                Button("Cancel", role: .cancel) { }
+                Button("Reset") {
+                    handlePasswordReset()
+                }
+            } message: {
+                Text("Enter your email to receive a password reset link")
+            }
             .overlay {
                 if isLoading {
                     LoadingScreen()
@@ -161,7 +171,46 @@ struct SignInView: View {
         }
     }
     
-    // MARK: - Google Sign In
+    // Email/Password Sign In
+    private func handleEmailPasswordSignIn() {
+        guard !email.isEmpty, !password.isEmpty else {
+            showError("Please fill in all fields")
+            return
+        }
+        
+        isLoading = true
+        Auth.auth().signIn(withEmail: email, password: password) { result, error in
+            if let error = error {
+                showError(error.localizedDescription)
+                return
+            }
+            
+            logStatus = true
+            isLoading = false
+            navigateToHome = true
+        }
+    }
+    
+    // Password Reset
+    private func handlePasswordReset() {
+        guard !email.isEmpty else {
+            showError("Please enter your email")
+            return
+        }
+        
+        isLoading = true
+        Auth.auth().sendPasswordReset(withEmail: email) { error in
+            if let error = error {
+                showError(error.localizedDescription)
+                return
+            }
+            
+            showError("Password reset email sent successfully")
+            isLoading = false
+        }
+    }
+    
+    // Google Sign In
     func handleGoogleSignIn() {
         isLoading = true
         
@@ -170,7 +219,6 @@ struct SignInView: View {
             return
         }
         
-        // Create Google Sign In configuration object.
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
         
@@ -180,7 +228,6 @@ struct SignInView: View {
             return
         }
         
-        // Start the sign in flow!
         GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { result, error in
             if let error = error {
                 showError(error.localizedDescription)
@@ -194,16 +241,14 @@ struct SignInView: View {
             }
             
             let credential = GoogleAuthProvider.credential(withIDToken: idToken,
-                                                           accessToken: user.accessToken.tokenString)
+                                                         accessToken: user.accessToken.tokenString)
             
-            // Firebase sign in
             Auth.auth().signIn(with: credential) { result, error in
                 if let error = error {
                     showError(error.localizedDescription)
                     return
                 }
                 
-                // Sign in successful
                 logStatus = true
                 isLoading = false
                 navigateToHome = true
@@ -226,14 +271,12 @@ struct SignInView: View {
         }
     }
     
-    // Presenting errors
     func showError(_ message: String) {
         errorMessage = message
         showAlert.toggle()
         isLoading = false
     }
     
-    // Login with firebase for Apple Sign In
     func loginWithFirebase(_ authorization: ASAuthorization) {
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
             isLoading = true
@@ -251,8 +294,8 @@ struct SignInView: View {
             }
             
             let credential = OAuthProvider.appleCredential(withIDToken: idTokenString,
-                                                           rawNonce: nonce,
-                                                           fullName: appleIDCredential.fullName)
+                                                         rawNonce: nonce,
+                                                         fullName: appleIDCredential.fullName)
             
             Auth.auth().signIn(with: credential) { (authResult, error) in
                 if let error = error {
