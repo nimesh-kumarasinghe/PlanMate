@@ -35,7 +35,7 @@ struct FindAccountView: View {
             Spacer().frame(height: 60)
             
             // Verification Code Input
-            TextField("Verification Code", text: $email)
+            TextField("Email address", text: $email)
                 .padding()
                 .cornerRadius(8)
                 .overlay(
@@ -50,7 +50,7 @@ struct FindAccountView: View {
             Button(action: {
                 // Handle verify button action here
             }) {
-                Text("Verify")
+                Text("Continue")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

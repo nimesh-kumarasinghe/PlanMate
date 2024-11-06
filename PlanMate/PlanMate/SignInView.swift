@@ -146,6 +146,7 @@ struct SignInView: View {
                             .foregroundColor(Color("CustomBlue"))
                             .fontWeight(.bold)
                     }
+                    .navigationBarBackButtonHidden(true)
                 }
                 .padding(.bottom, 20)
             }

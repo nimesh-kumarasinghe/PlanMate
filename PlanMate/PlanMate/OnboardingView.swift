@@ -13,19 +13,19 @@ struct OnboardingView: View {
     private let totalPages = 3
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 
                 HStack {
                     Spacer()
                     Button("Skip") {
-                        navigateToGetStarted = true // Trigger navigation
+                        navigateToGetStarted = true
                     }
                     .padding()
                     .foregroundColor(.gray)
                 }
                 
-                // Swipeable content for image and text
+                // Swipeable content image and text
                 TabView(selection: $currentPage) {
                     ForEach(1...totalPages, id: \.self) { page in
                         OnboardingScreenContent(page: page)
@@ -63,7 +63,7 @@ struct OnboardingView: View {
                     
                     if currentPage == totalPages {
                         Button(action: {
-                            navigateToGetStarted = true // Trigger navigation
+                            navigateToGetStarted = true 
                         }) {
                             HStack {
                                 Text("Get Started")
@@ -98,9 +98,9 @@ struct OnboardingView: View {
                     }
                 }
                 .padding(.bottom, 20)
-                
-                // Navigate to GetStartedView
-                NavigationLink(destination: GetstartedView(), isActive: $navigateToGetStarted) {
+                .navigationDestination(isPresented: $navigateToGetStarted){
+                    GetstartedView()
+                        .navigationBarBackButtonHidden(true)
                 }
             }
         }
@@ -171,9 +171,9 @@ struct OnboardingPageView: View {
     }
 }
 
-// Preview
 struct OnboardingView_Previews: PreviewProvider {
     static var previews: some View {
         OnboardingView()
     }
 }
+
