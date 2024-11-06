@@ -12,6 +12,7 @@ import CryptoKit
 import FirebaseAuth
 import FirebaseCore
 import GoogleSignIn
+import FirebaseFirestore
 
 struct SignInView: View {
     @State private var email = ""
@@ -151,15 +152,15 @@ struct SignInView: View {
                 .padding(.bottom, 20)
             }
             .alert(errorMessage, isPresented: $showAlert) { }
-            .alert("Reset Password", isPresented: $showResetPassword) {
-                TextField("Enter your email", text: $email)
-                Button("Cancel", role: .cancel) { }
-                Button("Reset") {
-                    handlePasswordReset()
-                }
-            } message: {
-                Text("Enter your email to receive a password reset link")
-            }
+//            .alert("Reset Password", isPresented: $showResetPassword) {
+//                TextField("Enter your email", text: $email)
+//                Button("Cancel", role: .cancel) { }
+//                Button("Reset") {
+//                    handlePasswordReset()
+//                }
+//            } message: {
+//                Text("Enter your email to receive a password reset link")
+//            }
             .overlay {
                 if isLoading {
                     LoadingScreen()
@@ -169,10 +170,21 @@ struct SignInView: View {
                 MainHomeView()
                     .navigationBarBackButtonHidden(true)
             }
+            .navigationDestination(isPresented: $showResetPassword) {
+                FindAccountView()
+                    .navigationBarBackButtonHidden(false)
+                    .navigationBarHidden(false)
+            }
         }
     }
     
-    // Email/Password Sign In
+    func showError(_ message: String) {
+        errorMessage = message
+        showAlert.toggle()
+        isLoading = false
+    }
+    
+    // Firebase Authentication with Email/Password
     private func handleEmailPasswordSignIn() {
         guard !email.isEmpty, !password.isEmpty else {
             showError("Please fill in all fields")
@@ -180,14 +192,19 @@ struct SignInView: View {
         }
         
         isLoading = true
+        
+        // Firebase Auth sign-in with email and password
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
+            isLoading = false
             if let error = error {
-                showError(error.localizedDescription)
+                // Display error message
+                showError("Invalid email or password. Please try again.")
+                print("Sign-in error: \(error.localizedDescription)")
                 return
             }
             
+            // If sign-in successful, update login status and navigate to home
             logStatus = true
-            isLoading = false
             navigateToHome = true
         }
     }
@@ -201,13 +218,13 @@ struct SignInView: View {
         
         isLoading = true
         Auth.auth().sendPasswordReset(withEmail: email) { error in
+            isLoading = false
             if let error = error {
                 showError(error.localizedDescription)
                 return
             }
             
             showError("Password reset email sent successfully")
-            isLoading = false
         }
     }
     
@@ -270,12 +287,6 @@ struct SignInView: View {
                         .fill(Color(.systemBackground))
                 )
         }
-    }
-    
-    func showError(_ message: String) {
-        errorMessage = message
-        showAlert.toggle()
-        isLoading = false
     }
     
     func loginWithFirebase(_ authorization: ASAuthorization) {

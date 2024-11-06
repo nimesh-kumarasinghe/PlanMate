@@ -6,9 +6,13 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct FindAccountView: View {
     @State private var email = ""
+    @State private var errorMessage: String = ""
+    @State private var isLoading: Bool = false
+    @State private var showAlert: Bool = false
     
     var body: some View {
         VStack {
@@ -48,7 +52,7 @@ struct FindAccountView: View {
             
             // Verify Button
             Button(action: {
-                // Handle verify button action here
+                handlePasswordReset()
             }) {
                 Text("Continue")
                     .font(.system(size: 18, weight: .bold))
@@ -63,7 +67,52 @@ struct FindAccountView: View {
             
             Spacer()
         }
+        .overlay {
+            if isLoading {
+                LoadingScreen()
+            }
+        }
         .navigationBarHidden(true)
+    }
+    
+    func showError(_ message: String) {
+        errorMessage = message
+        showAlert.toggle()
+        isLoading = false
+    }
+    
+    // Password Reset
+    private func handlePasswordReset() {
+        guard !email.isEmpty else {
+            showError("Please enter your email")
+            return
+        }
+        
+        isLoading = true
+        Auth.auth().sendPasswordReset(withEmail: email) { error in
+            isLoading = false
+            if let error = error {
+                showError(error.localizedDescription)
+                return
+            }
+            
+            showError("Password reset email sent successfully")
+        }
+    }
+    
+    @ViewBuilder
+    func LoadingScreen() -> some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+            
+            ProgressView()
+                .frame(width: 45, height: 45)
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color(.systemBackground))
+                )
+        }
     }
 }
 

@@ -25,6 +25,7 @@ struct RegisterAccountView: View {
     @State private var navigateToSignIn = false
     @State private var navigateToHome = false
     @State private var nonce = ""
+    @AppStorage("log_status") private var logStatus: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -342,6 +343,7 @@ struct RegisterAccountView: View {
                     } else {
                         showSuccess(message: "Continue with Google successfully!")
                         navigateToHome = true  // Navigate to home page after Google Sign-In success
+                        logStatus =  true
                     }
                 }
             }
@@ -410,6 +412,7 @@ struct RegisterAccountView: View {
                     } else {
                         showSuccess(message: "Successfully signed in with Apple!")
                         navigateToHome = true
+                        logStatus = true
                     }
                 }
             }
