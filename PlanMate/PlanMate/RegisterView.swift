@@ -4,12 +4,13 @@
 //
 //  Created by COBSCCOMPY4231P-005 on 2024-10-27.
 //
-
 import SwiftUI
 import Firebase
 import FirebaseFirestore
 import FirebaseAuth
 import CryptoKit
+import GoogleSignIn
+import AuthenticationServices
 
 struct RegisterAccountView: View {
     @State private var name = ""
@@ -22,65 +23,67 @@ struct RegisterAccountView: View {
     @State private var alertMessage = ""
     @State private var isSuccess = false
     @State private var navigateToSignIn = false
+    @State private var navigateToHome = false
+    @State private var nonce = ""
     
     var body: some View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 20) {
                     VStack(spacing: 16) {
-                        Spacer().frame(height: 20)
-                        TextField("Your Name", text: $name)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(.systemGray3), lineWidth: 2)
-                            )
-                            .padding(.horizontal, 10)
-                        
-                        TextField("Email", text: $email)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(.systemGray3), lineWidth: 2)
-                            )
-                            .padding(.horizontal, 10)
-                        
-                        SecureField("Password", text: $password)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(.systemGray3), lineWidth: 2)
-                            )
-                            .padding(.horizontal, 10)
-                        
-                        SecureField("Confirm Password", text: $confirmPassword)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(.systemGray3), lineWidth: 2)
-                            )
-                            .padding(.horizontal, 10)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("• Password must be at least 8 characters long")
-                        Text("• Two or more types used out of letters, numbers, and symbols")
-                            .fixedSize(horizontal: false, vertical: true)
-                        Text("• Matching password")
-                    }
-                    .font(.footnote)
-                    .foregroundColor(.gray)
-                    .padding(.horizontal, 30)
+                             Spacer().frame(height: 20)
+                             TextField("Your Name", text: $name)
+                                 .padding()
+                                 .background(Color(.systemGray6))
+                                 .cornerRadius(8)
+                                 .overlay(
+                                     RoundedRectangle(cornerRadius: 8)
+                                         .stroke(Color(.systemGray3), lineWidth: 2)
+                                 )
+                                 .padding(.horizontal, 10)
+                             
+                             TextField("Email", text: $email)
+                                 .padding()
+                                 .background(Color(.systemGray6))
+                                 .cornerRadius(8)
+                                 .keyboardType(.emailAddress)
+                                 .autocapitalization(.none)
+                                 .overlay(
+                                     RoundedRectangle(cornerRadius: 8)
+                                         .stroke(Color(.systemGray3), lineWidth: 2)
+                                 )
+                                 .padding(.horizontal, 10)
+                             
+                             SecureField("Password", text: $password)
+                                 .padding()
+                                 .background(Color(.systemGray6))
+                                 .cornerRadius(8)
+                                 .overlay(
+                                     RoundedRectangle(cornerRadius: 8)
+                                         .stroke(Color(.systemGray3), lineWidth: 2)
+                                 )
+                                 .padding(.horizontal, 10)
+                             
+                             SecureField("Confirm Password", text: $confirmPassword)
+                                 .padding()
+                                 .background(Color(.systemGray6))
+                                 .cornerRadius(8)
+                                 .overlay(
+                                     RoundedRectangle(cornerRadius: 8)
+                                         .stroke(Color(.systemGray3), lineWidth: 2)
+                                 )
+                                 .padding(.horizontal, 10)
+                         }
+                         
+                         VStack(alignment: .leading, spacing: 4) {
+                             Text("• Password must be at least 8 characters long")
+                             Text("• Two or more types used out of letters, numbers, and symbols")
+                                 .fixedSize(horizontal: false, vertical: true)
+                             Text("• Matching password")
+                         }
+                         .font(.footnote)
+                         .foregroundColor(.gray)
+                         .padding(.horizontal, 30)
                     
                     Button(action: {
                         registerAccount()
@@ -98,32 +101,40 @@ struct RegisterAccountView: View {
                     
                     Text("or")
                         .foregroundColor(.gray)
-                        .padding(.top, 8)
+                        .padding(.top, 5)
                     
-                    Button(action: {
-                        // Handle sign up with Apple
-                    }) {
-                        HStack {
-                            Image(systemName: "applelogo")
-                            Text("Sign up with Apple")
+                    
+                    
+                    // Apple Sign In Button
+                    SignInWithAppleButton(.continue){ request in
+                            let nonce = randomNonceString()
+                            self.nonce = nonce
+                            request.requestedScopes = [.fullName, .email]
+                            request.nonce = sha256(nonce)
                         }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.black)
+                        onCompletion: { result in
+                            switch result {
+                            case .success(let authResults):
+                                loginWithApple(authResults)
+                            case .failure(let error):
+                                showError("Apple Sign In Failed", message: error.localizedDescription)
+                            }
+                        }
+
+                        .frame(height: 55)
                         .cornerRadius(50)
                         .padding(.horizontal, 30)
-                    }
+                        .padding(.bottom, 5)
                     
+                    // Google Sign In Button
                     Button(action: {
-                        // Handle sign up with Google
+                        signUpWithGoogle()
                     }) {
                         HStack {
                             Image("google")
                                 .resizable()
                                 .frame(width: 20, height: 20)
-                            Text("Sign up with Google")
+                            Text("Continue with Google")
                         }
                         .font(.headline)
                         .foregroundColor(.black)
@@ -136,9 +147,7 @@ struct RegisterAccountView: View {
                         )
                         .padding(.horizontal, 30)
                     }
-                    
-                    Spacer()
-                    
+                                        
                     HStack {
                         Text("If you already have an account,")
                             .foregroundColor(.black)
@@ -160,16 +169,19 @@ struct RegisterAccountView: View {
                         message: Text(alertMessage),
                         dismissButton: .default(Text("OK")) {
                             if isSuccess {
-                                navigateToSignIn = true
+                                    navigateToSignIn = true
                             }
                         }
                     )
                 }
-                .navigationDestination(isPresented: $navigateToSignIn){
+                .navigationDestination(isPresented: $navigateToSignIn) {
                     SignInView()
                 }
+                .navigationDestination(isPresented: $navigateToHome) {
+                    MainHomeView()
+                }
 
-                // show loading
+                // Show loading indicator
                 if isLoading {
                     LoadingScreen()
                 }
@@ -207,7 +219,6 @@ struct RegisterAccountView: View {
         let complexityCount = [hasLetter, hasNumber, hasSymbol].filter { $0 }.count
         return complexityCount >= 2
     }
-
     
     func registerAccount() {
         // Input validation
@@ -231,6 +242,9 @@ struct RegisterAccountView: View {
             return
         }
         
+        // Get the device ID
+        let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "unknown_device_id"
+        
         isLoading = true
         
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
@@ -251,7 +265,8 @@ struct RegisterAccountView: View {
             let data: [String: Any] = [
                 "name": name,
                 "email": email,
-                "password": hashedPassword
+                "password": hashedPassword,
+                "uid": deviceID
             ]
             
             Firestore.firestore().collection("users").document(uid).setData(data) { error in
@@ -266,6 +281,170 @@ struct RegisterAccountView: View {
         }
     }
     
+    func signUpWithGoogle() {
+        isLoading = true
+        
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            self.showError("Google Sign In configuration error", message:"Google Sign In configuration error")
+            return
+        }
+        
+        // Configure Google Sign-In with the client ID
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
+        
+        // Get the root view controller for presenting the sign-in screen
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            showError("Cannot find root view controller", message:"Cannot find root view controller")
+            return
+        }
+        
+        // Perform Google Sign-In
+        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { result, error in
+            self.isLoading = false
+            
+            if let error = error {
+                self.showError("Google Sign-In Error", message: error.localizedDescription)
+                return
+            }
+            
+            guard let user = result?.user,
+                  let idToken = user.idToken?.tokenString else {
+                self.showError("Google Sign-In Error", message: "Cannot get user data from Google.")
+                return
+            }
+            
+            // Create Firebase credentials with Google ID token
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+            
+            // Sign in to Firebase with Google credentials
+            Auth.auth().signIn(with: credential) { authResult, error in
+                if let error = error {
+                    self.showError("Firebase Error", message: error.localizedDescription)
+                    return
+                }
+                
+                guard let user = authResult?.user else {
+                    self.showError("Error", message: "Could not retrieve user data.")
+                    return
+                }
+                
+                // Store user data in Firestore
+                let data: [String: Any] = [
+                    "name": user.displayName ?? "",
+                    "email": user.email ?? "",
+                    "uid": user.uid
+                ]
+                Firestore.firestore().collection("users").document(user.uid).setData(data) { error in
+                    if let error = error {
+                        self.showError("Database Error", message: error.localizedDescription)
+                    } else {
+                        showSuccess(message: "Continue with Google successfully!")
+                        navigateToHome = true  // Navigate to home page after Google Sign-In success
+                    }
+                }
+            }
+        }
+    }
+    
+    // Continue with apple
+    func loginWithApple(_ authorization: ASAuthorization) {
+        if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            isLoading = true
+            
+            // Retrieve the Apple ID token
+            guard let appleIDToken = appleIDCredential.identityToken else {
+                showError("Error", message: "Cannot process your request.")
+                return
+            }
+            
+            // Convert the token to a string format
+            guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+                showError("Error", message: "Cannot process your request.")
+                return
+            }
+            
+            // Use the new method to create OAuth credentials for Apple Sign-In
+            let credential = OAuthProvider.credential(
+                providerID: AuthProviderID.apple,
+                idToken: idTokenString,
+                rawNonce: nonce,
+                accessToken: nil // Optional accessToken parameter; set to `nil` for Apple
+            )
+            
+            // Sign in to Firebase using the credential
+            Auth.auth().signIn(with: credential) { authResult, error in
+                if let error = error {
+                    showError("Authentication Error", message: error.localizedDescription)
+                    isLoading = false
+                    return
+                }
+                
+                guard let user = authResult?.user else {
+                    showError("Error", message: "Could not retrieve user data.")
+                    isLoading = false
+                    return
+                }
+                
+                // Get the user's name from Apple ID credential
+                var userName = user.displayName ?? ""
+                if let fullName = appleIDCredential.fullName {
+                    userName = "\(fullName.givenName ?? "") \(fullName.familyName ?? "")"
+                }
+                
+                // Prepare user data for Firestore
+                let userData: [String: Any] = [
+                    "name": userName,
+                    "email": user.email ?? "",
+                    "uid": user.uid,
+                    "signInProvider": "apple"
+                ]
+                
+                // Store user data in Firestore
+                Firestore.firestore().collection("users").document(user.uid).setData(userData) { error in
+                    isLoading = false
+                    
+                    if let error = error {
+                        showError("Database Error", message: error.localizedDescription)
+                    } else {
+                        showSuccess(message: "Successfully signed in with Apple!")
+                        navigateToHome = true
+                    }
+                }
+            }
+        }
+    }
+
+    
+    private func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        if errorCode != errSecSuccess {
+            fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+        }
+        
+        let charset: [Character] =
+            Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        
+        let nonce = randomBytes.map { byte in
+            charset[Int(byte) % charset.count]
+        }
+        
+        return String(nonce)
+    }
+    
+    private func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        let hashString = hashedData.compactMap {
+            String(format: "%02x", $0)
+        }.joined()
+        
+        return hashString
+    }
+
     @ViewBuilder
     func LoadingScreen() -> some View {
         ZStack {

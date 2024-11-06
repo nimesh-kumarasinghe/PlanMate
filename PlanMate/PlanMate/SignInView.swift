@@ -94,7 +94,7 @@ struct SignInView: View {
                     .padding(.vertical, 5)
                 
                 // Sign In with Apple
-                SignInWithAppleButton(.signIn) { request in
+                SignInWithAppleButton(.continue) { request in
                     let nonce = randomNonceString()
                     self.nonce = nonce
                     request.requestedScopes = [.email, .fullName]
@@ -120,7 +120,7 @@ struct SignInView: View {
                         Image("google")
                             .resizable()
                             .frame(width: 20, height: 20)
-                        Text("Sign up with Google")
+                        Text("Continue with Google")
                     }
                     .font(.headline)
                     .foregroundColor(.black)

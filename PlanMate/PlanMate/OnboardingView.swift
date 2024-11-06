@@ -102,6 +102,7 @@ struct OnboardingView: View {
                     GetstartedView()
                         .navigationBarBackButtonHidden(true)
                 }
+                .navigationBarBackButtonHidden(true)
             }
         }
     }
