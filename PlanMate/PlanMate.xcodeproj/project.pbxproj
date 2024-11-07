@@ -48,6 +48,8 @@
 		9EE971F12CCF916900108C12 /* VotingProposeActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */; };
 		9EE971F32CCF930500108C12 /* AvailabilityListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F22CCF930500108C12 /* AvailabilityListView.swift */; };
 		9EE971F52CCF945600108C12 /* MyAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F42CCF945600108C12 /* MyAccountView.swift */; };
+		9EED9E492CDCB9D6003543E7 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9EED9E482CDCB9D6003543E7 /* FirebaseCore */; };
+		9EED9E4B2CDCB9D6003543E7 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9EED9E4A2CDCB9D6003543E7 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -120,7 +122,9 @@
 				9EE7D7382CD9E04F00F7602D /* FirebaseAuth in Frameworks */,
 				9EE7D7422CDA15B800F7602D /* GoogleSignIn in Frameworks */,
 				9EE7D7462CDA544B00F7602D /* FirebaseFirestore in Frameworks */,
+				9EED9E492CDCB9D6003543E7 /* FirebaseCore in Frameworks */,
 				9EE7D7442CDA15B800F7602D /* GoogleSignInSwift in Frameworks */,
+				9EED9E4B2CDCB9D6003543E7 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,6 +254,8 @@
 				9EE7D7412CDA15B800F7602D /* GoogleSignIn */,
 				9EE7D7432CDA15B800F7602D /* GoogleSignInSwift */,
 				9EE7D7452CDA544B00F7602D /* FirebaseFirestore */,
+				9EED9E482CDCB9D6003543E7 /* FirebaseCore */,
+				9EED9E4A2CDCB9D6003543E7 /* FirebaseFirestore */,
 			);
 			productName = PlanMate;
 			productReference = 9EE4F0EB2CCE1199009D0F71 /* PlanMate.app */;
@@ -771,6 +777,14 @@
 			productName = GoogleSignInSwift;
 		};
 		9EE7D7452CDA544B00F7602D /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseFirestore;
+		};
+		9EED9E482CDCB9D6003543E7 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCore;
+		};
+		9EED9E4A2CDCB9D6003543E7 /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FirebaseFirestore;
 		};

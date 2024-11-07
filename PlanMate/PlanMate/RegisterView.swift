@@ -268,7 +268,7 @@ struct RegisterAccountView: View {
         }
         
         // Get the device ID
-        let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "unknown_device_id"
+        //let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "unknown_device_id"
         
         isLoading = true
         
@@ -291,7 +291,7 @@ struct RegisterAccountView: View {
                 "name": name,
                 "email": email,
                 //"password": hashedPassword,
-                "uid": deviceID
+                "uid": uid
             ]
             
             Firestore.firestore().collection("users").document(uid).setData(data) { error in

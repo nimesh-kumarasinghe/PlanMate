@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @AppStorage("username") private var username: String = ""
+    @AppStorage("user_name") private var userName: String = ""
     @AppStorage("userid") private var userid: String = ""
     
     var body: some View {
@@ -21,7 +21,7 @@ struct HomeView: View {
                             Text("Hello!")
                                 .font(.title)
                                 .fontWeight(.bold)
-                            Text("\(username)")
+                            Text("\(userName)")
                                 .font(.title2)
                         }
                         Spacer()
