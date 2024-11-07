@@ -11,6 +11,7 @@ import FirebaseAuth
 import CryptoKit
 import GoogleSignIn
 import AuthenticationServices
+import FirebaseCore
 
 struct RegisterAccountView: View {
     @State private var name = ""
@@ -25,6 +26,7 @@ struct RegisterAccountView: View {
     @State private var navigateToSignIn = false
     @State private var navigateToHome = false
     @State private var nonce = ""
+    @State private var googleSignInSuccess = false
     @AppStorage("log_status") private var logStatus: Bool = false
     
     var body: some View {
@@ -169,9 +171,8 @@ struct RegisterAccountView: View {
                         title: Text(alertTitle),
                         message: Text(alertMessage),
                         dismissButton: .default(Text("OK")) {
-                            if isSuccess {
-                                    navigateToSignIn = true
-                            }
+                            handleAlertDismiss()
+ 
                         }
                     )
                 }
@@ -180,12 +181,15 @@ struct RegisterAccountView: View {
                 }
                 .navigationDestination(isPresented: $navigateToHome) {
                     MainHomeView()
+                        .navigationBarBackButtonHidden(true)
+                        .navigationBarHidden(true)
                 }
 
                 // Show loading indicator
                 if isLoading {
                     LoadingScreen()
                 }
+                    
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -203,13 +207,31 @@ struct RegisterAccountView: View {
         alertMessage = message
         isSuccess = true
         showAlert = true
+        googleSignInSuccess = false
     }
     
-    func hashPassword(_ password: String) -> String {
-        let data = Data(password.utf8)
-        let hashed = SHA256.hash(data: data)
-        return hashed.compactMap { String(format: "%02x", $0) }.joined()
+    func showSuccessGoogle(message: String){
+        alertTitle = "Success"
+        alertMessage = message
+        googleSignInSuccess = true
+        showAlert = true
+        isSuccess = false
     }
+    
+    func handleAlertDismiss() {
+           if googleSignInSuccess {
+               navigateToHome = true
+               logStatus = true
+           } else if isSuccess {
+               navigateToSignIn = true
+           }
+       }
+    
+//    func hashPassword(_ password: String) -> String {
+//        let data = Data(password.utf8)
+//        let hashed = SHA256.hash(data: data)
+//        return hashed.compactMap { String(format: "%02x", $0) }.joined()
+//    }
     
     func isPasswordComplex(_ password: String) -> Bool {
         let hasLetter = password.range(of: "[A-Za-z]", options: .regularExpression) != nil
@@ -261,12 +283,12 @@ struct RegisterAccountView: View {
                 return
             }
             
-            let hashedPassword = hashPassword(password)
+            //let hashedPassword = hashPassword(password)
             
             let data: [String: Any] = [
                 "name": name,
                 "email": email,
-                "password": hashedPassword,
+                //"password": hashedPassword,
                 "uid": deviceID
             ]
             
@@ -341,9 +363,7 @@ struct RegisterAccountView: View {
                     if let error = error {
                         self.showError("Database Error", message: error.localizedDescription)
                     } else {
-                        showSuccess(message: "Continue with Google successfully!")
-                        navigateToHome = true  // Navigate to home page after Google Sign-In success
-                        logStatus =  true
+                        showSuccessGoogle(message: "Continue with Google successfully!")
                     }
                 }
             }

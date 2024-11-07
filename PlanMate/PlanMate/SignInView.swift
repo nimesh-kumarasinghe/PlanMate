@@ -267,9 +267,26 @@ struct SignInView: View {
                     return
                 }
                 
+                guard let user = result?.user else {
+                    self.showError("Could not retrieve user data.")
+                    return
+                }
+                
                 logStatus = true
                 isLoading = false
                 navigateToHome = true
+                
+                // Store user data in Firestore
+                let data: [String: Any] = [
+                    "name": user.displayName ?? "",
+                    "email": user.email ?? "",
+                    "uid": user.uid
+                ]
+                Firestore.firestore().collection("users").document(user.uid).setData(data) { error in
+                    if let error = error {
+                        self.showError("Database Error")
+                    }
+                }
             }
         }
     }
