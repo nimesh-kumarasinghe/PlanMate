@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct HomeView: View {
+    @AppStorage("username") private var username: String = ""
+    @AppStorage("userid") private var userid: String = ""
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -18,7 +21,7 @@ struct HomeView: View {
                             Text("Hello!")
                                 .font(.title)
                                 .fontWeight(.bold)
-                            Text("Nimesh Kumarasinghe")
+                            Text("\(username)")
                                 .font(.title2)
                         }
                         Spacer()

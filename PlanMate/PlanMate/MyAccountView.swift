@@ -14,8 +14,9 @@ struct MyAccountView: View {
     @State private var showingLogOutAlert = false
     @State private var navigateToSignIn: Bool = false
     let profileInitial: String = "N"
-    let userName: String = "Nimesh Kumarasinghe"
     let userBirthDate: String = "03 June 1999"
+    
+    @AppStorage("user_name") private var userName: String = ""
     
     /// User log status
     @AppStorage("log_status") private var logStatus: Bool =  false
@@ -36,7 +37,7 @@ struct MyAccountView: View {
                                 .font(.system(size: 48, weight: .medium))
                         }
                         
-                        Text(userName)
+                        Text("\(userName)")
                             .font(.system(size: 20, weight: .semibold))
                         
                         Text(userBirthDate)

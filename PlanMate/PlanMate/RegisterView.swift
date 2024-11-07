@@ -28,6 +28,8 @@ struct RegisterAccountView: View {
     @State private var nonce = ""
     @State private var googleSignInSuccess = false
     @AppStorage("log_status") private var logStatus: Bool = false
+    @AppStorage("user_name") private var userName: String = ""
+    @AppStorage("userid") private var userid: String = ""
     
     var body: some View {
         NavigationStack {
@@ -359,6 +361,18 @@ struct RegisterAccountView: View {
                     "email": user.email ?? "",
                     "uid": user.uid
                 ]
+                
+                // Store username in @AppStorage
+                userName = user.displayName ?? ""
+                userid = user.uid
+                                
+                // Store user ID securely in Keychain
+//                do {
+//                    try keychain.set(user.uid, key: "userID")
+//                } catch {
+//                    self.showError("Keychain Error", message: "Failed to store user ID.")
+//                }
+                
                 Firestore.firestore().collection("users").document(user.uid).setData(data) { error in
                     if let error = error {
                         self.showError("Database Error", message: error.localizedDescription)
