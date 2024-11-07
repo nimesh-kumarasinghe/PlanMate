@@ -16,13 +16,15 @@ struct ContentView: View {
     //        animation: .default)
     //    private var items: FetchedResults<Item>
     
-    @AppStorage("log_status") private var logStatus: Bool =  false
+    @AppStorage("log_status") private var logStatus: Bool = false
     
     var body: some View {
         
-        if logStatus{
-            MyAccountView()
-        }else{
+        if logStatus {
+            // If user is logged in, navigate to the Home View
+            MainHomeView()
+        } else {
+            // If user is not logged in, show the Sign In view
             SignInView()
         }
         //        NavigationView {

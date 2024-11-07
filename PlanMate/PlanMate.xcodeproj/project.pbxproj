@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1DB5672CD6183C008639AB /* NotificationsView.swift */; };
+		9E91F2882CDCE81E003CA0C1 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */; };
 		9EAC123F2CD89CB2002A84A0 /* EditGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */; };
 		9EAC12412CD8AB9A002A84A0 /* LocationSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */; };
 		9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */; };
@@ -71,6 +72,7 @@
 
 /* Begin PBXFileReference section */
 		9E1DB5672CD6183C008639AB /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
+		9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditGroupView.swift; sourceTree = "<group>"; };
 		9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchView.swift; sourceTree = "<group>"; };
 		9EAC12422CD8BFA3002A84A0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -177,6 +179,7 @@
 				9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */,
 				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
 				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
+				9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */,
 				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
 				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
 				9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */,
@@ -394,6 +397,7 @@
 				9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */,
 				9EE4F1242CCE2634009D0F71 /* RegisterView.swift in Sources */,
 				9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */,
+				9E91F2882CDCE81E003CA0C1 /* KeychainHelper.swift in Sources */,
 				9EE7D73D2CDA0CB800F7602D /* AppDelegate.swift in Sources */,
 				9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */,
 				9EE971DD2CCF60B300108C12 /* MainHomeView.swift in Sources */,

@@ -12,15 +12,14 @@ import FirebaseAuth
 struct MyAccountView: View {
     @State private var showingDeleteAlert = false
     @State private var showingLogOutAlert = false
-    @State private var navigateToSignIn: Bool = false
-    let profileInitial: String = "N"
-    let userBirthDate: String = "03 June 1999"
+    @State private var isLoggedOut = false
     
     @AppStorage("user_name") private var userName: String = ""
     @AppStorage("userid") private var userid: String = ""
+    @AppStorage("log_status") private var logStatus: Bool = false // This is used to track login status
     
-    /// User log status
-    @AppStorage("log_status") private var logStatus: Bool =  false
+    let profileInitial: String = "N"
+    let userBirthDate: String = "03 June 1999"
     
     var body: some View {
         NavigationView {
@@ -67,7 +66,7 @@ struct MyAccountView: View {
                     
                     // Settings Section
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("Linked Accounts")
+                        Text("Settings")
                             .font(.system(size: 17))
                             .foregroundColor(.black)
                             .padding(.leading, 16)
@@ -138,30 +137,38 @@ struct MyAccountView: View {
             )
         }
         .alert(isPresented: $showingLogOutAlert) {
-                    Alert(
-                        title: Text("LogOut"),
-                        message: Text("Are you sure you want to logout from your account?"),
-                        primaryButton: .destructive(Text("Logout")) {
-                            // Logout logic
-                            let firebaseAuth = Auth.auth()
-                            do {
-                                try firebaseAuth.signOut()
-                                logStatus = false
-                                navigateToSignIn = true
-                                userName = ""
-                                userid = ""
-                            } catch let signOutError as NSError {
-                                print("Error signing out: %@", signOutError)
-                            }
-                        },
-                        secondaryButton: .cancel()
-                    )
-                }
-                .navigationDestination(isPresented: $navigateToSignIn) {
-                    SignInView() 
-                        .navigationBarBackButtonHidden(true)// Navigate to SignInView when logging out
-                }
-                
+            Alert(
+                title: Text("LogOut"),
+                message: Text("Are you sure you want to logout from your account?"),
+                primaryButton: .destructive(Text("Logout")) {
+                    logOut()
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .navigationDestination(isPresented: $isLoggedOut) {
+            SignInView()
+                .navigationBarBackButtonHidden(true) // Navigate to SignInView when logging out
+        }
+    }
+    
+    // LogOut Function
+    func logOut() {
+        do {
+            // Sign out from Firebase
+            try Auth.auth().signOut()
+            
+            // Clear user session data
+            KeychainHelper.shared.delete(forKey: "uid")
+            userName = ""
+            userid = ""
+            
+            // Mark user as logged out and trigger navigation
+            logStatus = false // Set log_status to false
+            self.isLoggedOut = true // Trigger navigation to SignInView
+        } catch let signOutError as NSError {
+            print("Error signing out: %@", signOutError)
+        }
     }
 }
 

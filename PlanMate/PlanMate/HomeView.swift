@@ -58,7 +58,7 @@ struct HomeView: View {
                             .cornerRadius(50)
                         }
                         
-                        NavigationLink(destination: Text("Join Group")) {
+                        NavigationLink(destination: JoinGroupView()) {
                             HStack {
                                 Text("Join a group")
                                     .fontWeight(.medium)

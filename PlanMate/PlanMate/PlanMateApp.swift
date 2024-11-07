@@ -24,9 +24,9 @@ struct PlanMateApp: App {
             //RegisterAccountView()
             //MainHomeView()
             //SplashScreenView()
-            //ContentView()
+            ContentView()
             //CreateGroupView()
-            SignInView()    
+            //SignInView()
         }
     }
 }

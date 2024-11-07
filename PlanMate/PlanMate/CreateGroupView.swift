@@ -88,7 +88,7 @@ struct CreateGroupView: View {
                 .navigationTitle("Create a Group")
                 .navigationBarTitleDisplayMode(.inline)
                 .alert(isPresented: $isAlertPresented) {
-                    Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                    Alert(title: Text("Required"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
                 }
                 .sheet(isPresented: $isImagePickerPresented) {
                     // Implement image picker here
@@ -124,7 +124,8 @@ struct CreateGroupView: View {
             "groupName": groupName,
             "description": description,
             "groupCode": groupCode,
-            "createdBy": userid
+            "createdBy": userid,  // The user who created the group
+            "members": [userid]    // Add the current user as a member
         ]
 
         // Add the group data to Firestore
@@ -135,11 +136,27 @@ struct CreateGroupView: View {
                 alertMessage = "Error creating group: \(error.localizedDescription)"
                 isAlertPresented = true
             } else {
-                // Show the QR code popup if creation is successful
-                isQRCodePopupPresented = true
+                // Update the user's document in the 'users' collection to include the new group
+                let userDocRef = db.collection("users").document(userid)
+                userDocRef.updateData([
+                    "groups": FieldValue.arrayUnion([groupCode])  // Add the groupCode to the user's groups array
+                ]) { error in
+                    if let error = error {
+                        alertMessage = "Error updating user: \(error.localizedDescription)"
+                        isAlertPresented = true
+                    } else {
+                        // Clear text fields and state variables after successful creation
+                        groupName = ""
+                        description = ""
+                        
+                        // Show the QR code popup if creation is successful
+                        isQRCodePopupPresented = true
+                    }
+                }
             }
         }
     }
+
 }
 
 struct QRCodePopupView: View {
@@ -159,7 +176,7 @@ struct QRCodePopupView: View {
                     Text(groupCode)
                         .font(.system(size: 24, weight: .bold))
                         .padding()
-                        .background(Color.gray.opacity(0.2))
+                        .background(Color.gray.opacity(0.1))
                         .cornerRadius(10)
                     
                     Button(action: {
@@ -167,7 +184,7 @@ struct QRCodePopupView: View {
                         isCopied = true
                     }) {
                         Image(systemName: isCopied ? "checkmark.circle" : "doc.on.doc")
-                            .font(.system(size: 24))
+                            .font(.system(size: 22))
                             .foregroundColor(isCopied ? .green : .blue)
                     }
                     .padding(.leading, 8)
@@ -265,7 +282,7 @@ func LoadingScreen() -> some View {
             .frame(width: 50, height: 50)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(Color("CustomBlue"))
+                    .fill(Color(.systemBackground))
                     .shadow(radius: 10)
             )
     }
