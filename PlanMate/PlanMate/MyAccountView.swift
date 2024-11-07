@@ -17,6 +17,7 @@ struct MyAccountView: View {
     let userBirthDate: String = "03 June 1999"
     
     @AppStorage("user_name") private var userName: String = ""
+    @AppStorage("userid") private var userid: String = ""
     
     /// User log status
     @AppStorage("log_status") private var logStatus: Bool =  false
@@ -146,7 +147,9 @@ struct MyAccountView: View {
                             do {
                                 try firebaseAuth.signOut()
                                 logStatus = false
-                                navigateToSignIn = true // Trigger navigation to SignInView
+                                navigateToSignIn = true
+                                userName = ""
+                                userid = ""
                             } catch let signOutError as NSError {
                                 print("Error signing out: %@", signOutError)
                             }

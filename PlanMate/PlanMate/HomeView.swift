@@ -45,7 +45,7 @@ struct HomeView: View {
                     
                     // Action Buttons
                     VStack(spacing: 10) {
-                        NavigationLink(destination: Text("Create Group")) {
+                        NavigationLink(destination: CreateGroupView()) {
                             HStack {
                                 Text("Create a group")
                                     .fontWeight(.medium)

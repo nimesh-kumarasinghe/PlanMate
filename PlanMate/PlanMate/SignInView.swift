@@ -22,8 +22,11 @@ struct SignInView: View {
     @State private var isLoading: Bool = false
     @State private var nonce: String?
     @State private var navigateToHome: Bool = false
-    @AppStorage("log_status") private var logStatus: Bool = false
     @State private var showResetPassword: Bool = false
+    
+    @AppStorage("user_name") private var userName: String = ""
+    @AppStorage("userid") private var userid: String = ""
+    @AppStorage("log_status") private var logStatus: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -103,7 +106,7 @@ struct SignInView: View {
                 } onCompletion: { result in
                     switch result {
                     case .success(let authorization):
-                        loginWithFirebase(authorization)
+                        loginWithApple(authorization)
                     case .failure(let error):
                         showError(error.localizedDescription)
                     }
@@ -185,29 +188,56 @@ struct SignInView: View {
     }
     
     // Firebase Authentication with Email/Password
-    private func handleEmailPasswordSignIn() {
+    func handleEmailPasswordSignIn() {
         guard !email.isEmpty, !password.isEmpty else {
             showError("Please fill in all fields")
             return
         }
-        
+
         isLoading = true
-        
+
         // Firebase Auth sign-in with email and password
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
-            isLoading = false
+            self.isLoading = false
             if let error = error {
                 // Display error message
-                showError("Invalid email or password. Please try again.")
+                self.showError("Invalid email or password. Please try again.")
                 print("Sign-in error: \(error.localizedDescription)")
                 return
             }
-            
+
+            guard let user = result?.user else {
+                self.showError("Could not retrieve user data.")
+                return
+            }
+
+            // Set the userName and userid in @AppStorage
+            self.userName = user.displayName ?? "User" // Fallback to "User" if displayName is nil
+            self.userid = user.uid
+
+            // Fetch user's name from Firestore
+            let db = Firestore.firestore()
+            db.collection("users").document(user.uid).getDocument { document, error in
+                if let error = error {
+                    self.showError("Failed to fetch user data from Firestore: \(error.localizedDescription)")
+                    return
+                }
+
+                if let document = document, document.exists {
+                    let name = document.data()?["name"] as? String ?? "Unknown"
+                    self.userName = name // Update userName with the fetched name
+                } else {
+                    self.showError("User data not found in Firestore")
+                }
+            }
+
             // If sign-in successful, update login status and navigate to home
-            logStatus = true
-            navigateToHome = true
+            self.logStatus = true
+            self.navigateToHome = true
         }
     }
+
+
     
     // Password Reset
     private func handlePasswordReset() {
@@ -276,6 +306,10 @@ struct SignInView: View {
                 isLoading = false
                 navigateToHome = true
                 
+                // Store username in @AppStorage
+                userName = user.displayName ?? ""
+                userid = user.uid
+                
                 // Store user data in Firestore
                 let data: [String: Any] = [
                     "name": user.displayName ?? "",
@@ -306,7 +340,7 @@ struct SignInView: View {
         }
     }
     
-    func loginWithFirebase(_ authorization: ASAuthorization) {
+    func loginWithApple(_ authorization: ASAuthorization) {
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
             isLoading = true
             guard let nonce else {

@@ -21,10 +21,12 @@ struct PlanMateApp: App {
         WindowGroup {
 //            ContentView()
 //                .environment(\.managedObjectContext, persistenceController.container.viewContext)
-            RegisterAccountView()
+            //RegisterAccountView()
             //MainHomeView()
             //SplashScreenView()
             //ContentView()
+            //CreateGroupView()
+            SignInView()    
         }
     }
 }
