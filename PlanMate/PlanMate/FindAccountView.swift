@@ -13,6 +13,9 @@ struct FindAccountView: View {
     @State private var errorMessage: String = ""
     @State private var isLoading: Bool = false
     @State private var showAlert: Bool = false
+    @State private var alertTitle: String = ""
+    @State private var alertMessage: String = ""
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         VStack {
@@ -73,10 +76,21 @@ struct FindAccountView: View {
             }
         }
         .navigationBarHidden(true)
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(alertTitle),
+                message: Text(alertMessage),
+                dismissButton: .default(Text("OK")) {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            )
+        }
     }
     
     func showError(_ message: String) {
         errorMessage = message
+        alertTitle = "Reset Password"
+        alertMessage = message
         showAlert.toggle()
         isLoading = false
     }
@@ -96,7 +110,7 @@ struct FindAccountView: View {
                 return
             }
             
-            showError("Password reset email sent successfully")
+            showError("If the email is registered, you will receive a password reset link shortly.")
         }
     }
     

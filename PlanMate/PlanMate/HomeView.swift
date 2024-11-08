@@ -81,7 +81,7 @@ struct HomeView: View {
                                 .fontWeight(.bold)
                             Spacer()
                             NavigationLink("view all") {
-                                Text("All Groups")
+                                GroupListView()
                             }
                         }
                         
@@ -105,7 +105,7 @@ struct HomeView: View {
                                 .fontWeight(.bold)
                             Spacer()
                             NavigationLink("view all") {
-                                Text("All Activities")
+                                ProposeActivityList()
                             }
                         }
                         
