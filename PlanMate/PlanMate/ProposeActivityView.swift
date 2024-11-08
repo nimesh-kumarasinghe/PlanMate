@@ -15,6 +15,7 @@ struct GroupMember: Identifiable, Hashable {
 struct ProposeActivityView: View {
     @State private var activityName: String = ""
     @State private var selectedMembers: Set<GroupMember> = []
+    @State private var showLocationSearch = false
     
     let groupMembers = [
         GroupMember(name: "Dilanjana"),
@@ -23,9 +24,11 @@ struct ProposeActivityView: View {
         GroupMember(name: "Nisal"),
         GroupMember(name: "Lakshika")
     ]
+    let activityId: String
+    @State private var proposeActvityId = ""
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 20) {
                 Spacer().frame(height: 1)
                 TextField("Activity name", text: $activityName)
@@ -38,7 +41,7 @@ struct ProposeActivityView: View {
                     .padding(.horizontal,20)
                 
                 Button(action: {
-                    // Add location selection logic here
+                    showLocationSearch = true
                 }) {
                     HStack {
                         Text("Select Locations")
@@ -50,6 +53,10 @@ struct ProposeActivityView: View {
                     .cornerRadius(50)
                 }
                 .padding(.horizontal)
+                .navigationDestination(isPresented: $showLocationSearch) {
+                    LocationSearchView()
+                        //.navigationBarBackButtonHidden(true)
+                }
                 
                 // Group Members Section
                 VStack(alignment: .leading, spacing: 8) {
@@ -125,5 +132,5 @@ struct ProposeActivityView: View {
 }
 
 #Preview {
-    ProposeActivityView()
+    ProposeActivityView(activityId: "")
 }

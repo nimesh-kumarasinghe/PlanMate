@@ -26,10 +26,16 @@ struct GroupDetailView: View {
         Members(name: "Lakshika")
     ]
     
+    
+    
+    @State private var proposeActvityId = ""
+    @State private var groupCodeId: String = ""
+    
     enum DeleteType {
         case activity
         case member
     }
+    let groupCode: String
     
     var body: some View {
         ScrollView {
@@ -38,7 +44,7 @@ struct GroupDetailView: View {
                 GroupCalendarView(selectedDate: $selectedDate)
                     .padding(.horizontal)
                 
-                NavigationLink(destination: ProposeActivityView()) {
+                NavigationLink(destination: ProposeActivityView(activityId: proposeActvityId)) {
                     HStack {
                         Text("Propose an Activity")
                             .foregroundColor(.white)
@@ -323,7 +329,7 @@ struct Members: Identifiable {
 struct GroupDetailView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            GroupDetailView()
+            GroupDetailView(groupCode: "")
         }
     }
 }

@@ -29,6 +29,7 @@ struct ProposeActivityList: View {
                 .onDelete(perform: deleteActivity)
             }
             .navigationBarTitle("Proposed Activities")
+            .navigationBarTitleDisplayMode(.inline)
             .background(Color(white: 0.95))
         }
         .background(Color.white)
