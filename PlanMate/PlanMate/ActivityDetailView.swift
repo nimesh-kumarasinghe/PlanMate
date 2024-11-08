@@ -6,130 +6,117 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct ActivityDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var messageText = ""
+    @State private var activity: Activity?
     
-    let event = EventDetails(
-        startTime: "10:00",
-        endTime: "14:00",
-        date: "Sun, 20 Oct 2024",
-        reminder: "10 min before",
-        attendees: "Cousins",
-        location: "One Galle Face PVR"
-    )
+    // The selected activity ID passed from ActivityListView
+    let activityId: String
     
-    let messages: [ChatMessage] = [
-        ChatMessage(text: "Hello", isUser: true, time: ""),
-        ChatMessage(text: "I'm at Galle Face! Just reached.", isUser: true, time: ""),
-        ChatMessage(text: "Where are you all?", isUser: true, time: "09:25"),
-        ChatMessage(text: "Oh, you're there already?", sender: "Kasun", isUser: false, time: ""),
-        ChatMessage(text: "I'm on my way, should be there in 10 minutes.", sender: "Kasun", isUser: false, time: "09:30")
-    ]
-    
+    private let db = Firestore.firestore()
+
     var body: some View {
         VStack(spacing: 0) {
-            // Event details card - Fixed at top
-            EventDetailsView(event: event)
-                .padding(.horizontal)
-                .padding(.vertical, 16)
-            
-            // Chat messages - Scrollable
-            ScrollView {
-                ChatMessagesView(messages: messages)
-                    .padding(.vertical)
+            if let activity = activity {
+                // Event details card - Fixed at top
+                EventDetailsView(event: activity)
+                    .padding(.horizontal)
+                    .padding(.vertical, 16)
+                
+                // Chat messages - Scrollable
+                ScrollView {
+                    ChatMessagesView(messages: sampleMessages) // Replace with real data if needed
+                        .padding(.vertical)
+                }
+                
+                // Message input - Fixed at bottom
+                MessageInputView(messageText: $messageText)
+            } else {
+                // Show a loading spinner while fetching data
+                ProgressView("Loading...")
+                    .progressViewStyle(CircularProgressViewStyle())
             }
-            
-            // Message input - Fixed at bottom
-            MessageInputView(messageText: $messageText)
         }
-        .navigationTitle("Movie Time")
+        .navigationTitle(activity?.title ?? "Activity Detail")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
-                    dismiss()
-                }
-            }
+
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Save") {
-                    saveActivity()
-                    dismiss()
-                }
+                NavigationLink(destination: CreateActivityView()) {
+                            Text("Edit")
+                        }
             }
         }
         .background(Color.white)
+        .onAppear {
+            fetchActivityDetails()
+        }
     }
     
-    func saveActivity() {
-        // Implement save functionality
+    // Function to fetch activity details from Firestore
+    private func fetchActivityDetails() {
+        db.collection("activities")
+            .document(activityId)
+            .getDocument { document, error in
+                if let error = error {
+                    print("Error fetching activity: \(error)")
+                } else if let document = document, document.exists {
+                    let data = document.data()
+                    if let activity = Activity(id: document.documentID, data: data ?? [:]) {
+                        self.activity = activity
+                    }
+                }
+            }
     }
 }
 
-// Rest of the structs remain the same
-struct EventDetails {
-    let startTime: String
-    let endTime: String
-    let date: String
-    let reminder: String
-    let attendees: String
-    let location: String
-}
-
+// EventDetailsView updated to work with an Activity model
 struct EventDetailsView: View {
-    let event: EventDetails
+    let event: Activity
     
     var body: some View {
         VStack(spacing: 16) {
-            // Time selection with separate dates and larger chevron
             HStack {
                 VStack {
-                    Text(event.startTime)
-                        .font(.largeTitle)
-                        .fontWeight(.semibold)
-                    
-                    Text(event.date) // New date under start time
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    Text(event.startDate.formatted(date: .abbreviated, time: .shortened))
+                        .font(.title3)
+                        .fontWeight(.medium)
                 }
                 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 40)) // Increase chevron size
+                    .font(.system(size: 35))
                     .foregroundColor(Color("CustomBlue"))
                 
                 VStack {
-                    Text(event.endTime)
-                        .font(.largeTitle)
-                        .fontWeight(.semibold)
-                    
-                    Text(event.date) // New date under end time
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    Text(event.endDate.formatted(date: .abbreviated, time: .shortened))
+                        .font(.title3)
+                        .fontWeight(.medium)
                 }
             }
             
-            Divider() // Line to separate sections
+            Divider()
             
-            // Event details list with separators
             VStack(spacing: 12) {
-                DetailRow(icon: "alarm", text: "Set event reminders", detail: "(\(event.reminder))")
+                DetailRow(icon: "alarm", text: "Event reminder: \(event.reminder)")
                 
-                Divider() // Line after each detail
+                Divider()
                 
-                DetailRow(icon: "person.2", text: "Cousins") // Updated text example
+                DetailRow(icon: "person.2", text: "Group: \(event.groupName)")
                 
-                Divider() // Line after each detail
+                Divider()
                 
-                DetailRow(icon: "mappin.and.ellipse", text: "One gallery face parts") // Updated text example
+                DetailRow(icon: "mappin.and.ellipse", text: event.location)
             }
         }
         .padding()
-        .background(Color(.white))
     }
 }
 
+// Row with icon and text (used in event details view)
 struct DetailRow: View {
     let icon: String
     let text: String
@@ -150,6 +137,15 @@ struct DetailRow: View {
         }
     }
 }
+
+// Sample chat messages for demonstration purposes
+let sampleMessages: [ChatMessage] = [
+    ChatMessage(text: "Hello", isUser: true, time: ""),
+    ChatMessage(text: "I'm at Galle Face! Just reached.", isUser: true, time: ""),
+    ChatMessage(text: "Where are you all?", isUser: true, time: "09:25"),
+    ChatMessage(text: "Oh, you're there already?", sender: "Kasun", isUser: false, time: ""),
+    ChatMessage(text: "I'm on my way, should be there in 10 minutes.", sender: "Kasun", isUser: false, time: "09:30")
+]
 
 struct ChatMessage {
     let text: String
@@ -241,8 +237,10 @@ struct MessageInputView: View {
     }
 }
 
-#Preview {
-    NavigationView {
-        ActivityDetailView()
+struct ActivityDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            ActivityDetailView(activityId: "ActivityId")
+        }
     }
 }

@@ -38,7 +38,7 @@ struct TeamGroup: Identifiable {
     let members: [String] // UIDs of members
 }
 
-struct TeamMember: Identifiable {
+struct TeamMember: Identifiable, Hashable {
     let id: String // UID from Firebase
     let name: String
     var isSelected: Bool = false
@@ -98,8 +98,8 @@ struct AddTaskSheet: View {
                     Text("Add")
                         .foregroundColor(.white)
                         .frame(width: 200, height: 44)
-                        .background(Color.blue)
-                        .cornerRadius(8)
+                        .background(Color("CustomBlue"))
+                        .cornerRadius(50)
                 }
                 
                 if !viewModel.tasks.isEmpty {
@@ -107,7 +107,7 @@ struct AddTaskSheet: View {
                         ForEach(viewModel.tasks) { task in
                             HStack {
                                 Text(task.person.name)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(Color("CustomeBlue"))
                                 Text(task.assignment)
                             }
                         }
@@ -277,7 +277,7 @@ struct CreateActivityView: View {
                     } label: {
                         HStack {
                             Image(systemName: "person.2")
-                                .foregroundColor(Color.blue)
+                                .foregroundColor(Color("CustomBlue"))
                             Text("Participants")
                             Spacer()
                             Text("\(selectedMembersCount) selected")
@@ -296,7 +296,7 @@ struct CreateActivityView: View {
                     } label: {
                         HStack {
                             Image(systemName: "alarm")
-                                .foregroundColor(Color.blue)
+                                .foregroundColor(Color("CustomBlue"))
                             Text("Set event reminders")
                                 .foregroundColor(.black)
                             Spacer()
@@ -315,9 +315,10 @@ struct CreateActivityView: View {
                     HStack {
                         Image(systemName: "mappin.and.ellipse")
                         Text("Add Location")
+                            .foregroundColor(.black)
                         Spacer()
                     }
-                    .foregroundColor(Color.blue)
+                    .foregroundColor(Color("CustomBlue"))
                 }
                     
                     Button(action: {
@@ -326,10 +327,11 @@ struct CreateActivityView: View {
                         HStack {
                             Image(systemName: "note.text")
                             Text("Add Notes")
+                                .foregroundColor(.black)
                             Spacer()
                         }
                     }
-                    .foregroundColor(Color.blue)
+                    .foregroundColor(Color("CustomBlue"))
                     
                     Button(action: {
                         isShowingURL = true
@@ -337,10 +339,11 @@ struct CreateActivityView: View {
                         HStack {
                             Image(systemName: "link")
                             Text("Add URL")
+                                .foregroundColor(.black)
                             Spacer()
                         }
                     }
-                    .foregroundColor(Color.blue)
+                    .foregroundColor(Color("CustomBlue"))
                 }
                 
                 if !viewModel.locations.isEmpty {
@@ -395,7 +398,7 @@ struct CreateActivityView: View {
                     ForEach(viewModel.tasks) { task in
                         HStack {
                             Text(task.person.name)
-                                .foregroundColor(.blue)
+                                .foregroundColor(Color("CustomBlue"))
                             Text(task.assignment)
                         }
                     }
@@ -410,7 +413,7 @@ struct CreateActivityView: View {
                             Image(systemName: "plus")
                             Text("Add Task")
                         }
-                        .foregroundColor(selectedGroupMembers.isEmpty ? .gray : .blue)
+                        .foregroundColor(selectedGroupMembers.isEmpty ? .gray : Color("CustomBlue"))
                     }
                     .disabled(selectedGroupMembers.isEmpty)
                 }
@@ -643,15 +646,41 @@ extension String {
 struct ParticipantsSelectionView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var members: [TeamMember]
+    @State private var selectAll: Bool = false
+    @State private var selectedMembers: Set<TeamMember> = []  // Track selected members
     
     var body: some View {
         NavigationView {
-            List {
-                ForEach($members) { $member in
-                    HStack {
-                        Text(member.name)
-                        Spacer()
-                        Toggle("", isOn: $member.isSelected)
+            VStack {
+                Toggle("Select All", isOn: $selectAll)
+                    .padding()
+                    .onChange(of: selectAll) { newValue in
+                        // Update selected members based on "Select All" status
+                        if newValue {
+                            selectedMembers = Set(members)
+                        } else {
+                            selectedMembers.removeAll()
+                        }
+                    }
+                
+                List {
+                    ForEach(members) { member in
+                        HStack {
+                            Text(member.name)
+                            Spacer()
+                            Image(systemName: selectedMembers.contains(member) ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(selectedMembers.contains(member) ? .blue : .gray)
+                                .onTapGesture {
+                                    // Toggle member selection
+                                    if selectedMembers.contains(member) {
+                                        selectedMembers.remove(member)
+                                    } else {
+                                        selectedMembers.insert(member)
+                                    }
+                                    // Update "Select All" toggle based on selection status
+                                    selectAll = selectedMembers.count == members.count
+                                }
+                        }
                     }
                 }
             }
@@ -661,12 +690,17 @@ struct ParticipantsSelectionView: View {
                     dismiss()
                 },
                 trailing: Button("Done") {
+                    // Update the members binding with selected status before dismissing
+                    for index in members.indices {
+                        members[index].isSelected = selectedMembers.contains(members[index])
+                    }
                     dismiss()
                 }
             )
         }
     }
 }
+
 
 #Preview {
     CreateActivityView()
