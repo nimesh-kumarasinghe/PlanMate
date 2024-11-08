@@ -11,7 +11,7 @@ import FirebaseFirestore
 // Models
 struct Task: Identifiable {
     let id = UUID()
-    var person: String
+    var person: TeamMember
     var assignment: String
 }
 
@@ -47,12 +47,7 @@ struct TeamMember: Identifiable {
 // View Models
 class ActivityViewModel: ObservableObject {
     @Published var tasks: [Task] = []
-    @Published var members: [Member] = [
-        Member(name: "Dilanjana"),
-        Member(name: "Lakshan"),
-        Member(name: "Lakshika")
-    ]
-    @Published var locations: [Location] = []
+    @Published var locations: [LocationData] = []
     @Published var notes: [Note] = []
     @Published var urls: [String] = []
 }
@@ -62,8 +57,9 @@ struct AddTaskSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: ActivityViewModel
     @State private var taskText: String = ""
-    @State private var selectedMember: Member?
+    @State private var selectedMember: TeamMember?
     @Binding var isShowingSheet: Bool
+    let availableMembers: [TeamMember]  // New property to receive group members
     
     var body: some View {
         NavigationView {
@@ -76,7 +72,7 @@ struct AddTaskSheet: View {
                     .padding(.horizontal)
                 
                 Menu {
-                    ForEach(viewModel.members) { member in
+                    ForEach(availableMembers) { member in
                         Button(member.name) {
                             selectedMember = member
                         }
@@ -95,7 +91,7 @@ struct AddTaskSheet: View {
                 
                 Button(action: {
                     if let member = selectedMember, !taskText.isEmpty {
-                        viewModel.tasks.append(Task(person: member.name, assignment: taskText))
+                        viewModel.tasks.append(Task(person: member, assignment: taskText))
                         isShowingSheet = false
                     }
                 }) {
@@ -110,7 +106,7 @@ struct AddTaskSheet: View {
                     List {
                         ForEach(viewModel.tasks) { task in
                             HStack {
-                                Text(task.person)
+                                Text(task.person.name)
                                     .foregroundColor(.blue)
                                 Text(task.assignment)
                             }
@@ -209,13 +205,19 @@ struct CreateActivityView: View {
     @State private var isShowingNotes = false
     @State private var isShowingLocationSearch = false
     @State private var isShowingURL = false
+    @State private var isLoading: Bool = false
+    
+    // Alret Status
+    @State private var showAlert = false
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
     
     // New states for groups and members
-        @State private var groups: [TeamGroup] = []
-        @State private var selectedGroup: TeamGroup?
-        @State private var groupMembers: [TeamMember] = []
-        @State private var isShowingGroupMenu = false
-        @State private var isShowingMembersSheet = false
+    @State private var groups: [TeamGroup] = []
+    @State private var selectedGroup: TeamGroup?
+    @State private var groupMembers: [TeamMember] = []
+    @State private var isShowingGroupMenu = false
+    @State private var isShowingMembersSheet = false
     
     let reminderOptions = [
         "5 min before",
@@ -226,8 +228,12 @@ struct CreateActivityView: View {
     ]
     
     var selectedMembersCount: Int {
-            groupMembers.filter { $0.isSelected }.count
-        }
+        groupMembers.filter { $0.isSelected }.count
+    }
+    var selectedGroupMembers: [TeamMember] {
+        // Only return members that are selected
+        return groupMembers.filter { $0.isSelected }
+    }
     
     var body: some View {
         NavigationView {
@@ -301,18 +307,18 @@ struct CreateActivityView: View {
                         }
                     }
                 }
-                
                 Section {
-                    NavigationLink(isActive: $isShowingLocationSearch) {
-                       LocationSearchView()
-                    } label: {
-                        HStack {
-                            Image(systemName: "mappin.and.ellipse")
-                            Text("Add Location")
-                            Spacer()
-                        }
-                        .foregroundColor(Color.blue)
+                    Button{
+                        isShowingLocationSearch = true
                     }
+                label: {
+                    HStack {
+                        Image(systemName: "mappin.and.ellipse")
+                        Text("Add Location")
+                        Spacer()
+                    }
+                    .foregroundColor(Color.blue)
+                }
                     
                     Button(action: {
                         isShowingNotes = true
@@ -340,10 +346,16 @@ struct CreateActivityView: View {
                 if !viewModel.locations.isEmpty {
                     Section(header: Text("Added Locations")) {
                         ForEach(viewModel.locations) { location in
-                            HStack {
-                                Image(systemName: "mappin.and.ellipse")
-                                Text(location.name)
+                            VStack(alignment: .leading){
+                                HStack {
+                                    Image(systemName: "mappin.and.ellipse")
+                                    Text(location.name)
+                                }
+                                Text(location.address)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
                             }
+                            
                         }
                         .onDelete { indexSet in
                             viewModel.locations.remove(atOffsets: indexSet)
@@ -382,7 +394,7 @@ struct CreateActivityView: View {
                 Section(header: Text("Task Assign")) {
                     ForEach(viewModel.tasks) { task in
                         HStack {
-                            Text(task.person)
+                            Text(task.person.name)
                                 .foregroundColor(.blue)
                             Text(task.assignment)
                         }
@@ -390,21 +402,28 @@ struct CreateActivityView: View {
                     .onDelete(perform: deleteTask)
                     
                     Button(action: {
-                        isShowingTaskSheet = true
+                        if !selectedGroupMembers.isEmpty{
+                            isShowingTaskSheet = true
+                        }
                     }) {
                         HStack {
                             Image(systemName: "plus")
                             Text("Add Task")
                         }
-                        .foregroundColor(Color.blue)
+                        .foregroundColor(selectedGroupMembers.isEmpty ? .gray : .blue)
                     }
+                    .disabled(selectedGroupMembers.isEmpty)
                 }
             }
             .sheet(isPresented: $isShowingMembersSheet) {
                 ParticipantsSelectionView(members: $groupMembers)
             }
             .sheet(isPresented: $isShowingTaskSheet) {
-                AddTaskSheet(viewModel: viewModel, isShowingSheet: $isShowingTaskSheet)
+                AddTaskSheet(
+                    viewModel: viewModel,
+                    isShowingSheet: $isShowingTaskSheet,
+                    availableMembers: selectedGroupMembers
+                )
             }
             .sheet(isPresented: $isShowingNotes) {
                 NotesView(viewModel: viewModel)
@@ -412,14 +431,19 @@ struct CreateActivityView: View {
             .sheet(isPresented: $isShowingURL) {
                 URLInputView(viewModel: viewModel)
             }
+            .sheet(isPresented: $isShowingLocationSearch) {
+                LocationSearchView { location in
+                    viewModel.locations.append(location)
+                }
+            }
             .navigationTitle("Create an Activity")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
+//                ToolbarItem(placement: .navigationBarLeading) {
+//                    Button("Cancel") {
+//                        dismiss()
+//                    }
+//                }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
@@ -428,9 +452,34 @@ struct CreateActivityView: View {
                     }
                 }
             }
+            .alert(alertTitle, isPresented: $showAlert){
+                Button("Ok", role: .cancel){}
+            }message :{
+                Text(alertMessage)
+            }
             .onAppear {
                 loadGroups()
             }
+            .overlay {
+                if isLoading {
+                    LoadingScreen()
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func LoadingScreen() -> some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+            
+            ProgressView()
+                .frame(width: 45, height: 45)
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color(.systemBackground))
+                )
         }
     }
     
@@ -455,48 +504,139 @@ struct CreateActivityView: View {
     }
     
     private func loadGroupMembers(groupCode: String) {
-            guard let selectedGroup = selectedGroup else { return }
+        guard let selectedGroup = selectedGroup else { return }
+        
+        let db = Firestore.firestore()
+        let batch = db.batch()
+        var tempMembers: [TeamMember] = []
+        
+        let dispatchGroup = DispatchGroup()
+        
+        for uid in selectedGroup.members {
+            dispatchGroup.enter()
             
-            let db = Firestore.firestore()
-            let batch = db.batch()
-            var tempMembers: [TeamMember] = []
-            
-            let dispatchGroup = DispatchGroup()
-            
-            for uid in selectedGroup.members {
-                dispatchGroup.enter()
+            db.collection("users").document(uid).getDocument { snapshot, error in
+                defer { dispatchGroup.leave() }
                 
-                db.collection("users").document(uid).getDocument { snapshot, error in
-                    defer { dispatchGroup.leave() }
-                    
-                    if let error = error {
-                        print("Error loading member: \(error.localizedDescription)")
-                        return
-                    }
-                    
-                    if let data = snapshot?.data(),
-                       let name = data["name"] as? String {
-                        let member = TeamMember(id: uid, name: name)
-                        tempMembers.append(member)
-                    }
+                if let error = error {
+                    print("Error loading member: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let data = snapshot?.data(),
+                   let name = data["name"] as? String {
+                    let member = TeamMember(id: uid, name: name)
+                    tempMembers.append(member)
                 }
             }
-            
-            dispatchGroup.notify(queue: .main) {
-                self.groupMembers = tempMembers
-            }
         }
+        
+        dispatchGroup.notify(queue: .main) {
+            self.groupMembers = tempMembers
+        }
+    }
     
     private func deleteTask(at offsets: IndexSet) {
         viewModel.tasks.remove(atOffsets: offsets)
     }
     
     private func saveActivity() {
-        print("Saving activity with:")
-        print("- \(viewModel.tasks.count) tasks")
-        print("- \(viewModel.locations.count) locations")
-        print("- \(viewModel.notes.count) notes")
-        print("- \(viewModel.urls.count) URLs")
+        guard !title.trim().isEmpty else {
+            alertTitle = "Invalid Input"
+            alertMessage = "Please enter a title for the activity"
+            showAlert = true
+            return
+        }
+        isLoading = true
+        let db = Firestore.firestore()
+        let activityRef = db.collection("activities").document()
+        
+        // Get selected member IDs
+        let selectedMemberIds = groupMembers.filter { $0.isSelected }.map { $0.id }
+        
+        // Format tasks for Firestore
+        let assignedTasks = viewModel.tasks.map { [
+            "memberId": $0.person.id,
+            "memberName": $0.person.name,
+            "assignment": $0.assignment
+        ] }
+        
+        // Format locations for Firestore
+        let locations = viewModel.locations.map { [
+            "name": $0.name,
+            "address": $0.address
+        ] }
+        
+        // Create activity data
+        let activityData: [String: Any] = [
+            "title": title,
+            "isAllDay": isAllDay,
+            "startDate": Timestamp(date: startDate),
+            "endDate": Timestamp(date: endDate),
+            "reminder": selectedReminder,
+            "groupId": selectedGroup?.id ?? "",
+            "groupName": selectedGroup?.name ?? "",
+            "participants": selectedMemberIds,
+            "tasks": assignedTasks,
+            "locations": locations,
+            "notes": viewModel.notes.map { $0.content },
+            "urls": viewModel.urls,
+            "createdAt": Timestamp(date: Date()),
+            "updatedAt": Timestamp(date: Date())
+        ]
+        
+        // Save to Firestore
+        activityRef.setData(activityData) { error in
+            if let error = error {
+                alertTitle = "Error"
+                alertMessage = "Failed to save activity: \(error.localizedDescription)"
+                showAlert = true
+            } else {
+                alertTitle = "Success"
+                alertMessage = "Successfully activity created!"
+                showAlert = true
+                isLoading = false
+                
+                // Clear all fields after saving
+                            title = ""
+                            isAllDay = false
+                            startDate = Date()
+                            endDate = Date()
+                            selectedReminder = ""
+                            viewModel.tasks.removeAll()
+                            viewModel.locations.removeAll()
+                            viewModel.notes.removeAll()
+                            viewModel.urls.removeAll()
+                for index in groupMembers.indices {
+                    groupMembers[index].isSelected = false
+                }
+                
+                dismiss()
+            }
+        }
+    }
+    
+    
+    //        let selectedMemberIds = groupMembers.filter { $0.isSelected }.map { $0.id }
+    //        let assignedTasks = viewModel.tasks.map { [
+    //            "memberId": $0.person.id,
+    //            "memberName": $0.person.name,
+    //            "assignment": $0.assignment
+    //        ] }
+    //        
+    //        print("Saving activity with:")
+    //        print("- \(viewModel.tasks.count) tasks")
+    //        print("- \(viewModel.locations.count) locations")
+    //        print("- \(viewModel.notes.count) notes")
+    //        print("- \(viewModel.urls.count) URLs")
+    //        print("- Selected members: \(selectedMemberIds)")
+    //        print("- Assigned tasks: \(assignedTasks)")
+}
+
+// Extension to trim whitespace
+extension String {
+    func trim() -> String {
+        return self.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 

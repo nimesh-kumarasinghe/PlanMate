@@ -14,7 +14,15 @@ struct LocationData: Identifiable {
     let address: String
     let coordinate: CLLocationCoordinate2D
     let category: String
+    
+    // Add Equatable conformance
+    static func == (lhs: LocationData, rhs: LocationData) -> Bool {
+        lhs.id == rhs.id
+    }
 }
+
+// Create a completion handler closure type
+typealias LocationSelectionHandler = (LocationData) -> Void
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
@@ -48,11 +56,13 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 
 struct LocationSearchView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var locationManager = LocationManager()
     @State private var searchText = ""
     @State private var searchResults: [LocationData] = []
     @State private var selectedLocation: LocationData?
     @State private var showingLocationDetail = false
+    let onLocationSelected: LocationSelectionHandler
     
     var body: some View {
         NavigationView {
@@ -94,9 +104,15 @@ struct LocationSearchView: View {
             }
             .sheet(isPresented: $showingLocationDetail) {
                 if let location = selectedLocation {
-                    LocationDetailView(location: location)
+                    LocationDetailView(location: location, onSelect:{
+                        selectedLocation in onLocationSelected(selectedLocation)
+                        dismiss()
+                    })
                 }
             }
+            .navigationBarItems(leading: Button("Cancel"){
+                dismiss()
+            })
             .navigationBarHidden(true)
         }
     }
@@ -187,6 +203,7 @@ struct LocationRowView: View {
 
 struct LocationDetailView: View {
     let location: LocationData
+    let onSelect: (LocationData) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var selectedLocationInfo: String? = nil
     
@@ -250,7 +267,8 @@ struct LocationDetailView: View {
                 
                 Button(action: {
                     // Select location
-                    selectedLocationInfo = "Name: \(location.name)\nAddress: \(location.address)"
+//                    selectedLocationInfo = "Name: \(location.name)\nAddress: \(location.address)"
+                    onSelect(location)
                 }) {
                     Text("Select")
                         .frame(maxWidth: .infinity)
@@ -286,6 +304,9 @@ struct LocationDetailView: View {
 // Preview Provider
 struct LocationSearchView_Previews: PreviewProvider {
     static var previews: some View {
-        LocationSearchView()
+        LocationSearchView(onLocationSelected: { location in
+            // Placeholder action for preview
+            print("Selected location: \(location.name)")
+        })
     }
 }

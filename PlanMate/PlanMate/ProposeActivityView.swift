@@ -54,7 +54,7 @@ struct ProposeActivityView: View {
                 }
                 .padding(.horizontal)
                 .navigationDestination(isPresented: $showLocationSearch) {
-                    LocationSearchView()
+                    //LocationSearchView()
                         //.navigationBarBackButtonHidden(true)
                 }
                 
