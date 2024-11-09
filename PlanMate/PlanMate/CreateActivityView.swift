@@ -306,6 +306,8 @@ struct CreateActivityView: View {
     @State private var isShowingLocationSearch = false
     @State private var isShowingURL = false
     @State private var isLoading: Bool = false
+    @State private var showDeleteConfirmation = false
+    @State private var navigateToActivityList = false
     
     // Alret Status
     @State private var showAlert = false
@@ -518,6 +520,21 @@ struct CreateActivityView: View {
                     }
                     .disabled(selectedGroupMembers.isEmpty)
                 }
+                
+                if isEditMode {
+                    Section {
+                        Button(action: {
+                            showDeleteConfirmation = true
+                        }) {
+                            HStack {
+                                Spacer()
+                                Text("Delete Activity")
+                                    .foregroundColor(.red)
+                                Spacer()
+                            }
+                        }
+                    }
+                }
             }
             .sheet(isPresented: $isShowingMembersSheet) {
                 ParticipantsSelectionView(members: $groupMembers)
@@ -550,10 +567,21 @@ struct CreateActivityView: View {
                     }
                 }
             }
+            .navigationDestination(isPresented: $navigateToActivityList) {
+                MainHomeView()
+            }
             .alert(alertTitle, isPresented: $showAlert){
                 Button("Ok", role: .cancel){}
             }message :{
                 Text(alertMessage)
+            }
+            .alert("Delete Activity", isPresented: $showDeleteConfirmation) {
+                            Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
+                    deleteActivity()
+                }
+            } message: {
+                Text("Are you sure you want to delete this activity? This action cannot be undone.")
             }
             .alert(alertTitle, isPresented: $showAlert) {
                 Button("OK", role: .cancel) {}
@@ -593,6 +621,53 @@ struct CreateActivityView: View {
                     RoundedRectangle(cornerRadius: 5)
                         .fill(Color(.systemBackground))
                 )
+        }
+    }
+    
+    private func deleteActivity() {
+        guard let activityId = editActivityId else { return }
+        isLoading = true
+        
+        let db = Firestore.firestore()
+        
+        // Get current user ID
+        guard let currentUserId = Auth.auth().currentUser?.uid else {
+            isLoading = false
+            alertTitle = "Error"
+            alertMessage = "User not logged in"
+            showAlert = true
+            return
+        }
+        
+        let batch = db.batch()
+    
+        let activityRef = db.collection("activities").document(activityId)
+        
+        let userRef = db.collection("users").document(currentUserId)
+        
+        batch.deleteDocument(activityRef)
+        
+        // Remove the activity ID from the users collection
+        batch.updateData([
+            "activities": FieldValue.arrayRemove([activityId])
+        ], forDocument: userRef)
+        
+        batch.commit { error in
+            DispatchQueue.main.async {
+                isLoading = false
+                
+                if let error = error {
+                    alertTitle = "Error"
+                    alertMessage = "Failed to delete activity: \(error.localizedDescription)"
+                    showAlert = true
+                } else {
+                    alertTitle = "Success"
+                    alertMessage = "Activity deleted successfully"
+                    showAlert = true
+                    navigateToActivityList = true
+                    dismiss()
+                }
+            }
         }
     }
    
@@ -800,109 +875,137 @@ struct CreateActivityView: View {
     }
         
         // Modify saveActivity function to handle both create and update
-        private func saveActivity() {
-            guard !title.trim().isEmpty else {
-                alertTitle = "Invalid Input"
-                alertMessage = "Please enter a title for the activity"
-                showAlert = true
+    private func saveActivity() {
+        guard !title.trim().isEmpty else {
+            alertTitle = "Invalid Input"
+            alertMessage = "Please enter a title for the activity"
+            showAlert = true
+            return
+        }
+        
+        isLoading = true
+        let db = Firestore.firestore()
+        
+        // Determine if we're creating or updating
+        let activityRef: DocumentReference
+        var activityId: String
+        if let editId = editActivityId {
+            activityRef = db.collection("activities").document(editId)
+            activityId = editId // If editing, use the existing activity ID
+        } else {
+            activityRef = db.collection("activities").document()
+            activityId = activityRef.documentID // If creating, get the new activity ID
+        }
+        
+        // Create activity data (same as before)
+        var activityData: [String: Any] = [
+            "title": title,
+            "isAllDay": isAllDay,
+            "startDate": Timestamp(date: startDate),
+            "endDate": Timestamp(date: endDate),
+            "reminder": selectedReminder,
+            "groupId": selectedGroup?.id ?? "",
+            "groupName": selectedGroup?.name ?? "",
+            "participants": groupMembers.filter { $0.isSelected }.map { $0.id },
+            "tasks": viewModel.tasks.map { [
+                "memberId": $0.person.id,
+                "memberName": $0.person.name,
+                "assignment": $0.assignment
+            ] },
+            "locations": viewModel.locations.map { location in [
+                "name": location.name,
+                "address": location.address,
+                "latitude": location.coordinate.latitude,
+                "longitude": location.coordinate.longitude,
+                "category": location.category
+            ] },
+            "notes": viewModel.notes.map { $0.content },
+            "urls": viewModel.urls,
+            "updatedAt": Timestamp(date: Date())
+        ]
+        
+        let saveOperation: (Error?) -> Void = { error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.alertTitle = "Error"
+                    self.alertMessage = "Failed to save activity: \(error.localizedDescription)"
+                    self.showAlert = true
+                }
                 return
             }
             
-            isLoading = true
-            let db = Firestore.firestore()
-            
-            // Determine if we're creating or updating
-            let activityRef: DocumentReference
-            if let editId = editActivityId {
-                activityRef = db.collection("activities").document(editId)
-            } else {
-                activityRef = db.collection("activities").document()
-            }
-            
-            // Create activity data (same as before)
-            var activityData: [String: Any] = [
-                "title": title,
-                "isAllDay": isAllDay,
-                "startDate": Timestamp(date: startDate),
-                "endDate": Timestamp(date: endDate),
-                "reminder": selectedReminder,
-                "groupId": selectedGroup?.id ?? "",
-                "groupName": selectedGroup?.name ?? "",
-                "participants": groupMembers.filter { $0.isSelected }.map { $0.id },
-                "tasks": viewModel.tasks.map { [
-                    "memberId": $0.person.id,
-                    "memberName": $0.person.name,
-                    "assignment": $0.assignment
-                ] },
-                "locations": viewModel.locations.map { location in [
-                    "name": location.name,
-                    "address": location.address,
-                    "latitude": location.coordinate.latitude,
-                    "longitude": location.coordinate.longitude,
-                    "catgeory": location.category
-                ] },
-                "notes": viewModel.notes.map { $0.content },
-                "urls": viewModel.urls,
-                "updatedAt": Timestamp(date: Date())
-            ]
-                    let saveOperation: (Error?) -> Void = { error in
-                        if let error = error {
-                            DispatchQueue.main.async {
-                                self.isLoading = false
-                                self.alertTitle = "Error"
-                                self.alertMessage = "Failed to save activity: \(error.localizedDescription)"
-                                self.showAlert = true
-                            }
-                            return
+            // After saving activity, update the user's document with the activity ID
+            if let currentUserId = Auth.auth().currentUser?.uid {
+                let userRef = db.collection("users").document(currentUserId)
+                userRef.updateData([
+                    "activities": FieldValue.arrayUnion([activityId])
+                ]) { error in
+                    if let error = error {
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.alertTitle = "Error"
+                            self.alertMessage = "Failed to update user activities: \(error.localizedDescription)"
+                            self.showAlert = true
                         }
-                        
-                        // After successful Firestore save, save to calendar
-                        EventKitManager.shared.requestAccess { granted in
-                            if granted {
-                                EventKitManager.shared.saveToCalendar(
-                                    title: self.title,
-                                    startDate: self.startDate,
-                                    endDate: self.endDate,
-                                    isAllDay: self.isAllDay,
-                                    location: self.viewModel.locations.first,
-                                    notes: self.viewModel.notes,
-                                    urls: self.viewModel.urls,
-                                    reminder: self.selectedReminder
-                                ) { success, error in
-                                    DispatchQueue.main.async {
-                                        self.isLoading = false
-                                        if success {
-                                            self.alertTitle = "Success"
-                                            self.alertMessage = "Activity saved to Firestore and Calendar!"
-                                            self.clearFields()
-                                            self.dismiss()
-                                        } else {
-                                            self.alertTitle = "Partial Success"
-                                            self.alertMessage = "Saved to Firestore but failed to save to Calendar: \(error?.localizedDescription ?? "Unknown error")"
-                                        }
-                                        self.showAlert = true
-                                    }
-                                }
-                            } else {
+                        return
+                    }
+                    
+                    // After successful Firestore save and user update, save to calendar
+                    EventKitManager.shared.requestAccess { granted in
+                        if granted {
+                            EventKitManager.shared.saveToCalendar(
+                                title: self.title,
+                                startDate: self.startDate,
+                                endDate: self.endDate,
+                                isAllDay: self.isAllDay,
+                                location: self.viewModel.locations.first,
+                                notes: self.viewModel.notes,
+                                urls: self.viewModel.urls,
+                                reminder: self.selectedReminder
+                            ) { success, error in
                                 DispatchQueue.main.async {
                                     self.isLoading = false
-                                    self.alertTitle = "Calendar Access Denied"
-                                    self.alertMessage = "Please enable calendar access in Settings to save events to your calendar."
+                                    if success {
+                                        self.alertTitle = "Success"
+                                        self.alertMessage = "Activity saved to Firestore and Calendar!"
+                                        self.clearFields()
+                                        self.dismiss()
+                                    } else {
+                                        self.alertTitle = "Partial Success"
+                                        self.alertMessage = "Saved to Firestore but failed to save to Calendar: \(error?.localizedDescription ?? "Unknown error")"
+                                    }
                                     self.showAlert = true
                                 }
                             }
+                        } else {
+                            DispatchQueue.main.async {
+                                self.isLoading = false
+                                self.alertTitle = "Calendar Access Denied"
+                                self.alertMessage = "Please enable calendar access in Settings to save events to your calendar."
+                                self.showAlert = true
+                            }
                         }
                     }
-                    
-                    // Execute the Firestore operation
-                    if editActivityId != nil {
-                        activityRef.updateData(activityData, completion: saveOperation)
-                    } else {
-                        activityRef.setData(activityData, completion: saveOperation)
-                    }
-            
-
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.alertTitle = "Error"
+                    self.alertMessage = "User not logged in."
+                    self.showAlert = true
+                }
+            }
         }
+        
+        // Execute the Firestore operation
+        if editActivityId != nil {
+            activityRef.updateData(activityData, completion: saveOperation)
+        } else {
+            activityRef.setData(activityData, completion: saveOperation)
+        }
+    }
+
     
     private func clearFields() {
         title = ""
