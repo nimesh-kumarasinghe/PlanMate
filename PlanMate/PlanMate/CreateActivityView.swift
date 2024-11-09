@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseFirestore
 import MapKit
+import FirebaseAuth
 
 // Models
 struct Task: Identifiable {
@@ -223,6 +224,7 @@ struct CreateActivityView: View {
     @State private var groupMembers: [TeamMember] = []
     @State private var isShowingGroupMenu = false
     @State private var isShowingMembersSheet = false
+    @State private var userGroups: [String] = []
     
     let reminderOptions = [
         "5 min before",
@@ -493,6 +495,66 @@ struct CreateActivityView: View {
                 )
         }
     }
+    
+    ///***************************
+   
+    private func loadUserGroups() {
+            guard let currentUser = Auth.auth().currentUser else {
+                print("No user logged in")
+                return
+            }
+            
+            let db = Firestore.firestore()
+            db.collection("users").document(currentUser.uid).getDocument { snapshot, error in
+                if let error = error {
+                    print("Error fetching user data: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let data = snapshot?.data(),
+                   let userGroups = data["groups"] as? [String] {
+                    self.userGroups = userGroups
+                    loadGroupsForUser(groupCodes: userGroups)
+                }
+            }
+        }
+        
+        private func loadGroupsForUser(groupCodes: [String]) {
+            let db = Firestore.firestore()
+            
+            // Create a query that only gets groups with matching group codes
+            let groupsRef = db.collection("groups")
+            
+            // If there are no group codes, don't proceed with the query
+            guard !groupCodes.isEmpty else {
+                self.groups = []
+                return
+            }
+            
+            groupsRef.whereField("groupCode", in: groupCodes).getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error loading groups: \(error.localizedDescription)")
+                    return
+                }
+                
+                self.groups = snapshot?.documents.compactMap { document -> TeamGroup? in
+                    let data = document.data()
+                    return TeamGroup(
+                        id: document.documentID,
+                        name: data["groupName"] as? String ?? "",
+                        groupCode: data["groupCode"] as? String ?? "",
+                        members: data["members"] as? [String] ?? []
+                    )
+                } ?? []
+            }
+        }
+        
+        // Replace the existing loadGroups() function with this:
+        private func loadGroups() {
+            loadUserGroups()
+        }
+    
+    ///**************************
     
     // Add function to load activity data for editing
         private func loadActivityData() {
@@ -769,25 +831,25 @@ struct CreateActivityView: View {
             }
         }
     
-    private func loadGroups() {
-        let db = Firestore.firestore()
-        db.collection("groups").getDocuments { snapshot, error in
-            if let error = error {
-                print("Error loading groups: \(error.localizedDescription)")
-                return
-            }
-            
-            self.groups = snapshot?.documents.compactMap { document -> TeamGroup? in
-                let data = document.data()
-                return TeamGroup(
-                    id: document.documentID,
-                    name: data["groupName"] as? String ?? "",
-                    groupCode: data["groupCode"] as? String ?? "",
-                    members: data["members"] as? [String] ?? []
-                )
-            } ?? []
-        }
-    }
+//    private func loadGroups() {
+//        let db = Firestore.firestore()
+//        db.collection("groups").getDocuments { snapshot, error in
+//            if let error = error {
+//                print("Error loading groups: \(error.localizedDescription)")
+//                return
+//            }
+//            
+//            self.groups = snapshot?.documents.compactMap { document -> TeamGroup? in
+//                let data = document.data()
+//                return TeamGroup(
+//                    id: document.documentID,
+//                    name: data["groupName"] as? String ?? "",
+//                    groupCode: data["groupCode"] as? String ?? "",
+//                    members: data["members"] as? [String] ?? []
+//                )
+//            } ?? []
+//        }
+//    }
     
     private func loadGroupMembers(groupCode: String) {
         guard let selectedGroup = selectedGroup else { return }
