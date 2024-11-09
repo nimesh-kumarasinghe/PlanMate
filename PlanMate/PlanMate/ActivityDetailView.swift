@@ -46,7 +46,7 @@ struct ActivityDetailView: View {
 
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink(destination: CreateActivityView()) {
+                NavigationLink(destination: CreateActivityView(isEditMode: true, editActivityId: activityId)) {
                             Text("Edit")
                         }
             }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseFirestore
+import MapKit
 
 // Models
 struct Task: Identifiable {
@@ -196,6 +197,10 @@ struct URLInputView: View {
 struct CreateActivityView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = ActivityViewModel()
+    
+    var isEditMode: Bool = false
+    var editActivityId: String?
+    
     @State private var title: String = ""
     @State private var isAllDay: Bool = true
     @State private var startDate = Date()
@@ -439,7 +444,7 @@ struct CreateActivityView: View {
                     viewModel.locations.append(location)
                 }
             }
-            .navigationTitle("Create an Activity")
+            .navigationTitle(isEditMode ? "Edit Activity" : "Create an Activity")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 //                ToolbarItem(placement: .navigationBarLeading) {
@@ -461,6 +466,9 @@ struct CreateActivityView: View {
                 Text(alertMessage)
             }
             .onAppear {
+                if isEditMode{
+                    loadActivityData()
+                }
                 loadGroups()
             }
             .overlay {
@@ -485,6 +493,281 @@ struct CreateActivityView: View {
                 )
         }
     }
+    
+    // Add function to load activity data for editing
+        private func loadActivityData() {
+            guard let activityId = editActivityId else { return }
+            isLoading = true
+            
+            let db = Firestore.firestore()
+            db.collection("activities").document(activityId).getDocument { document, error in
+                if let error = error {
+                    print("Error fetching activity: \(error)")
+                    isLoading = false
+                    return
+                }
+                
+                if let document = document, document.exists, let data = document.data() {
+                    // Populate form fields with existing data
+                    title = data["title"] as? String ?? ""
+                    isAllDay = data["isAllDay"] as? Bool ?? true
+                    if let startTimestamp = data["startDate"] as? Timestamp {
+                        startDate = startTimestamp.dateValue()
+                    }
+                    if let endTimestamp = data["endDate"] as? Timestamp {
+                        endDate = endTimestamp.dateValue()
+                    }
+                    selectedReminder = data["reminder"] as? String ?? "10 min before"
+                    
+                    // Load group
+                    let groupId = data["groupId"] as? String ?? ""
+                    if !groupId.isEmpty {
+                        loadGroup(groupId: groupId) {
+                            // After loading group members, update selected participants
+                            if let participants = data["participants"] as? [String] {
+                                DispatchQueue.main.async {
+                                    // Update selection status for each member
+                                    for index in self.groupMembers.indices {
+                                        self.groupMembers[index].isSelected = participants.contains(self.groupMembers[index].id)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Load tasks
+                    DispatchQueue.main.async{
+                        if let tasks = data["tasks"] as? [[String: Any]] {
+                            viewModel.tasks = tasks.compactMap { taskData in
+                                guard let memberId = taskData["memberId"] as? String,
+                                      let memberName = taskData["memberName"] as? String,
+                                      let assignment = taskData["assignment"] as? String else {
+                                    return nil
+                                }
+                                return Task(person: TeamMember(id: memberId, name: memberName), assignment: assignment)
+                            }
+                        }
+                        
+                        // Load notes
+                        if let notes = data["notes"] as? [String] {
+                            viewModel.notes = notes.map { Note(content: $0) }
+                        }
+                        
+                        // Load URLs
+                        viewModel.urls = data["urls"] as? [String] ?? []
+                    }
+                    
+                    
+                    
+                    
+                    // Load locations
+//                    if let locations = data["locations"] as? [[String: String]] {
+//                        viewModel.locations = locations.compactMap { locationData in
+//                            if let latitudeString = locationData["latitude"],
+//                               let longitudeString = locationData["longitude"],
+//                               let latitude = Double(latitudeString),
+//                               let longitude = Double(longitudeString) {
+//                                return LocationData(
+//                                    name: locationData["name"] ?? "",
+//                                    address: locationData["address"] ?? "",
+//                                    coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+//                                    category: locationData["category"] ?? ""
+//                                )
+//                            }
+//                            return nil
+//                        }
+//                    }
+                    
+                    // Parse the JSON data
+                    if let locations = data["locations"] as? [[String: Any]] {
+                        DispatchQueue.main.async{
+                            self.viewModel.locations = locations.compactMap { locationData in
+                                // Extract coordinate data
+                                guard let latitude = locationData["latitude"] as? Double,
+                                      let longitude = locationData["longitude"] as? Double else {
+                                    return nil
+                                }
+                                
+                                let coordinate = CLLocationCoordinate2D(
+                                    latitude: latitude,
+                                    longitude: longitude
+                                )
+                                
+                                return LocationData(
+                                    name: locationData["name"] as? String ?? "",
+                                    address: locationData["address"] as? String ?? "",
+                                    coordinate: coordinate,
+                                    category: locationData["category"] as? String ?? "default"
+                                )
+                            }
+                        }
+                    }
+
+                    
+                    
+                    
+//                    // Load participants
+//                    if let participants = data["participants"] as? [String] {
+//                        
+//                        loadParticipants(participantIds: participants)
+//                    }
+                }
+                DispatchQueue.main.async{
+                    self.isLoading = false
+                }
+                
+            }
+        }
+    
+    private func loadGroup(groupId: String, completion: @escaping () -> Void = {}) {
+        let db = Firestore.firestore()
+        db.collection("groups").document(groupId).getDocument { document, error in
+            if let document = document, document.exists,
+               let data = document.data() {
+                DispatchQueue.main.async {
+                    self.selectedGroup = TeamGroup(
+                        id: document.documentID,
+                        name: data["groupName"] as? String ?? "",
+                        groupCode: data["groupCode"] as? String ?? "",
+                        members: data["members"] as? [String] ?? []
+                    )
+                    
+                    // Load group members with completion handler
+                    self.loadGroupMembers(groupCode: data["groupCode"] as? String ?? "", completion: completion)
+                }
+            }
+        }
+    }
+    
+//    private func loadParticipants(participantIds: [String]) {
+//        for index in groupMembers.indices {
+//            groupMembers[index].isSelected = participantIds.contains(groupMembers[index].id)
+//        }
+//    }
+    
+    private func loadGroupMembers(groupCode: String, completion: @escaping () -> Void = {}) {
+        guard let selectedGroup = selectedGroup else { return }
+        
+        let db = Firestore.firestore()
+        let dispatchGroup = DispatchGroup()
+        var tempMembers: [TeamMember] = []
+        
+        for uid in selectedGroup.members {
+            dispatchGroup.enter()
+            
+            db.collection("users").document(uid).getDocument { snapshot, error in
+                defer { dispatchGroup.leave() }
+                
+                if let error = error {
+                    print("Error loading member: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let data = snapshot?.data(),
+                   let name = data["name"] as? String {
+                    let member = TeamMember(id: uid, name: name)
+                    tempMembers.append(member)
+                }
+            }
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            self.groupMembers = tempMembers
+            completion() // Call completion handler after members are loaded
+        }
+    }
+        
+        // Modify saveActivity function to handle both create and update
+        private func saveActivity() {
+            guard !title.trim().isEmpty else {
+                alertTitle = "Invalid Input"
+                alertMessage = "Please enter a title for the activity"
+                showAlert = true
+                return
+            }
+            
+            isLoading = true
+            let db = Firestore.firestore()
+            
+            // Determine if we're creating or updating
+            let activityRef: DocumentReference
+            if let editId = editActivityId {
+                activityRef = db.collection("activities").document(editId)
+            } else {
+                activityRef = db.collection("activities").document()
+            }
+            
+            // Create activity data (same as before)
+            var activityData: [String: Any] = [
+                "title": title,
+                "isAllDay": isAllDay,
+                "startDate": Timestamp(date: startDate),
+                "endDate": Timestamp(date: endDate),
+                "reminder": selectedReminder,
+                "groupId": selectedGroup?.id ?? "",
+                "groupName": selectedGroup?.name ?? "",
+                "participants": groupMembers.filter { $0.isSelected }.map { $0.id },
+                "tasks": viewModel.tasks.map { [
+                    "memberId": $0.person.id,
+                    "memberName": $0.person.name,
+                    "assignment": $0.assignment
+                ] },
+                "locations": viewModel.locations.map { location in [
+                    "name": location.name,
+                    "address": location.address,
+                    "latitude": location.coordinate.latitude,
+                    "longitude": location.coordinate.longitude,
+                    "catgeory": location.category
+                ] },
+                "notes": viewModel.notes.map { $0.content },
+                "urls": viewModel.urls,
+                "updatedAt": Timestamp(date: Date())
+            ]
+            
+            // If creating new, add createdAt
+            if editActivityId == nil {
+                activityData["createdAt"] = Timestamp(date: Date())
+            }
+            
+            // Save to Firestore
+            if editActivityId != nil {
+                activityRef.updateData(activityData) { error in
+                    handleSaveCompletion(error)
+                }
+            } else {
+                activityRef.setData(activityData) { error in
+                    handleSaveCompletion(error)
+                }
+            }
+        }
+        
+        private func handleSaveCompletion(_ error: Error?) {
+            if let error = error {
+                alertTitle = "Error"
+                alertMessage = "Failed to save activity: \(error.localizedDescription)"
+                showAlert = true
+            } else {
+                alertTitle = "Success"
+                alertMessage = isEditMode ? "Successfully updated activity!" : "Successfully created activity!"
+                showAlert = true
+                isLoading = false
+                dismiss()
+                
+                // Clear all fields after saving
+                title = ""
+                isAllDay = false
+                startDate = Date()
+                endDate = Date()
+                selectedReminder = ""
+                viewModel.tasks.removeAll()
+                viewModel.locations.removeAll()
+                viewModel.notes.removeAll()
+                viewModel.urls.removeAll()
+                for index in groupMembers.indices {
+                    groupMembers[index].isSelected = false
+                }
+            }
+        }
     
     private func loadGroups() {
         let db = Firestore.firestore()
@@ -543,97 +826,81 @@ struct CreateActivityView: View {
         viewModel.tasks.remove(atOffsets: offsets)
     }
     
-    private func saveActivity() {
-        guard !title.trim().isEmpty else {
-            alertTitle = "Invalid Input"
-            alertMessage = "Please enter a title for the activity"
-            showAlert = true
-            return
-        }
-        isLoading = true
-        let db = Firestore.firestore()
-        let activityRef = db.collection("activities").document()
-        
-        // Get selected member IDs
-        let selectedMemberIds = groupMembers.filter { $0.isSelected }.map { $0.id }
-        
-        // Format tasks for Firestore
-        let assignedTasks = viewModel.tasks.map { [
-            "memberId": $0.person.id,
-            "memberName": $0.person.name,
-            "assignment": $0.assignment
-        ] }
-        
-        // Format locations for Firestore
-        let locations = viewModel.locations.map { [
-            "name": $0.name,
-            "address": $0.address
-        ] }
-        
-        // Create activity data
-        let activityData: [String: Any] = [
-            "title": title,
-            "isAllDay": isAllDay,
-            "startDate": Timestamp(date: startDate),
-            "endDate": Timestamp(date: endDate),
-            "reminder": selectedReminder,
-            "groupId": selectedGroup?.id ?? "",
-            "groupName": selectedGroup?.name ?? "",
-            "participants": selectedMemberIds,
-            "tasks": assignedTasks,
-            "locations": locations,
-            "notes": viewModel.notes.map { $0.content },
-            "urls": viewModel.urls,
-            "createdAt": Timestamp(date: Date()),
-            "updatedAt": Timestamp(date: Date())
-        ]
-        
-        // Save to Firestore
-        activityRef.setData(activityData) { error in
-            if let error = error {
-                alertTitle = "Error"
-                alertMessage = "Failed to save activity: \(error.localizedDescription)"
-                showAlert = true
-            } else {
-                alertTitle = "Success"
-                alertMessage = "Successfully activity created!"
-                showAlert = true
-                isLoading = false
-                
-                // Clear all fields after saving
-                            title = ""
-                            isAllDay = false
-                            startDate = Date()
-                            endDate = Date()
-                            selectedReminder = ""
-                            viewModel.tasks.removeAll()
-                            viewModel.locations.removeAll()
-                            viewModel.notes.removeAll()
-                            viewModel.urls.removeAll()
-                for index in groupMembers.indices {
-                    groupMembers[index].isSelected = false
-                }
-                
-                dismiss()
-            }
-        }
-    }
-    
-    
-    //        let selectedMemberIds = groupMembers.filter { $0.isSelected }.map { $0.id }
-    //        let assignedTasks = viewModel.tasks.map { [
-    //            "memberId": $0.person.id,
-    //            "memberName": $0.person.name,
-    //            "assignment": $0.assignment
-    //        ] }
-    //        
-    //        print("Saving activity with:")
-    //        print("- \(viewModel.tasks.count) tasks")
-    //        print("- \(viewModel.locations.count) locations")
-    //        print("- \(viewModel.notes.count) notes")
-    //        print("- \(viewModel.urls.count) URLs")
-    //        print("- Selected members: \(selectedMemberIds)")
-    //        print("- Assigned tasks: \(assignedTasks)")
+//    private func saveActivity() {
+//        guard !title.trim().isEmpty else {
+//            alertTitle = "Invalid Input"
+//            alertMessage = "Please enter a title for the activity"
+//            showAlert = true
+//            return
+//        }
+//        isLoading = true
+//        let db = Firestore.firestore()
+//        let activityRef = db.collection("activities").document()
+//        
+//        // Get selected member IDs
+//        let selectedMemberIds = groupMembers.filter { $0.isSelected }.map { $0.id }
+//        
+//        // Format tasks for Firestore
+//        let assignedTasks = viewModel.tasks.map { [
+//            "memberId": $0.person.id,
+//            "memberName": $0.person.name,
+//            "assignment": $0.assignment
+//        ] }
+//        
+//        // Format locations for Firestore
+//        let locations = viewModel.locations.map { [
+//            "name": $0.name,
+//            "address": $0.address
+//        ] }
+//        
+//        // Create activity data
+//        let activityData: [String: Any] = [
+//            "title": title,
+//            "isAllDay": isAllDay,
+//            "startDate": Timestamp(date: startDate),
+//            "endDate": Timestamp(date: endDate),
+//            "reminder": selectedReminder,
+//            "groupId": selectedGroup?.id ?? "",
+//            "groupName": selectedGroup?.name ?? "",
+//            "participants": selectedMemberIds,
+//            "tasks": assignedTasks,
+//            "locations": locations,
+//            "notes": viewModel.notes.map { $0.content },
+//            "urls": viewModel.urls,
+//            "createdAt": Timestamp(date: Date()),
+//            "updatedAt": Timestamp(date: Date())
+//        ]
+//        
+//        // Save to Firestore
+//        activityRef.setData(activityData) { error in
+//            if let error = error {
+//                alertTitle = "Error"
+//                alertMessage = "Failed to save activity: \(error.localizedDescription)"
+//                showAlert = true
+//            } else {
+//                alertTitle = "Success"
+//                alertMessage = "Successfully activity created!"
+//                showAlert = true
+//                isLoading = false
+//                
+//                // Clear all fields after saving
+//                            title = ""
+//                            isAllDay = false
+//                            startDate = Date()
+//                            endDate = Date()
+//                            selectedReminder = ""
+//                            viewModel.tasks.removeAll()
+//                            viewModel.locations.removeAll()
+//                            viewModel.notes.removeAll()
+//                            viewModel.urls.removeAll()
+//                for index in groupMembers.indices {
+//                    groupMembers[index].isSelected = false
+//                }
+//                
+//                dismiss()
+//            }
+//        }
+//    }
 }
 
 // Extension to trim whitespace
