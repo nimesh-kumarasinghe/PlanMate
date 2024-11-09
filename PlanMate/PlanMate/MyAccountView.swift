@@ -44,22 +44,22 @@ struct MyAccountView: View {
                     .padding(.top, 20)
                     
                     // Linked Accounts Section
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("Linked Accounts")
-                            .font(.system(size: 17))
-                            .foregroundColor(.black)
-                            .padding(.leading, 16)
-                            .padding(.bottom, 8)
-                            .fontWeight(.bold)
-                        
-                        VStack(spacing: 0) {
-                            LinkButton(title: "Connect with Apple", icon: "apple")
-                            Divider().padding(.leading, 16)
-                            LinkButton(title: "Connect with Google", icon: "google")
-                        }
-                        .background(Color(.systemBackground))
-                        .cornerRadius(10)
-                    }
+//                    VStack(alignment: .leading, spacing: 0) {
+//                        Text("Linked Accounts")
+//                            .font(.system(size: 17))
+//                            .foregroundColor(.black)
+//                            .padding(.leading, 16)
+//                            .padding(.bottom, 8)
+//                            .fontWeight(.bold)
+//                        
+//                        VStack(spacing: 0) {
+//                            LinkButton(title: "Connect with Apple", icon: "apple")
+//                            Divider().padding(.leading, 16)
+//                            LinkButton(title: "Connect with Google", icon: "google")
+//                        }
+//                        .background(Color(.systemBackground))
+//                        .cornerRadius(10)
+//                    }
                     
                     // Settings Section
                     VStack(alignment: .leading, spacing: 0) {
