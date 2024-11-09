@@ -351,6 +351,7 @@ struct HomeView: View {
                                     Spacer()
                                     NavigationLink("view all") {
                                         GroupListView()
+                                            .navigationTitle("My Groups")
                                     }
                                 }
                                 
@@ -374,6 +375,7 @@ struct HomeView: View {
                                     Spacer()
                                     NavigationLink("view all") {
                                         ProposeActivityList()
+                                            .navigationTitle("Proposed Activities")
                                     }
                                 }
                                 

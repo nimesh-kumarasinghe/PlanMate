@@ -9,16 +9,16 @@ import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
 
-// Model for User with unique name
-struct FirebaseUser: Codable {
+// Model for User
+struct User: Codable {
     let email: String
     let name: String
     let groups: [String]
     let uid: String
 }
 
-// Model for Group with unique name
-struct FirebaseGroup: Identifiable {
+// Model for Group
+struct UserGroup: Identifiable {
     let id: String
     let groupName: String
     let groupCode: String
@@ -33,7 +33,7 @@ struct FirebaseGroup: Identifiable {
 
 // ViewModel to handle Firebase operations
 class FirebaseGroupViewModel: ObservableObject {
-    @Published var groups: [FirebaseGroup] = []
+    @Published var groups: [UserGroup] = []
     private var db = Firestore.firestore()
     
     func fetchUserGroups() {
@@ -71,7 +71,7 @@ class FirebaseGroupViewModel: ObservableObject {
                     for document in documents {
                         let data = document.data()
                         
-                        let group = FirebaseGroup(
+                        let group = UserGroup(
                             id: document.documentID,
                             groupName: data["groupName"] as? String ?? "",
                             groupCode: data["groupCode"] as? String ?? "",
@@ -88,7 +88,7 @@ class FirebaseGroupViewModel: ObservableObject {
         }
     }
     
-    func leaveGroup(group: FirebaseGroup) {
+    func leaveGroup(group: UserGroup) {
         guard let currentUser = Auth.auth().currentUser else { return }
         
         let userRef = db.collection("users").document(currentUser.uid)
@@ -112,7 +112,7 @@ class FirebaseGroupViewModel: ObservableObject {
 struct GroupListView: View {
     @StateObject private var viewModel = FirebaseGroupViewModel()
     @State private var showAlert = false
-    @State private var groupToLeave: FirebaseGroup?
+    @State private var groupToLeave: UserGroup?
     
     var body: some View {
         NavigationView {
@@ -149,7 +149,6 @@ struct GroupListView: View {
             } message: { group in
                 Text("Are you sure you want to leave \(group.groupName)?")
             }
-            .navigationTitle("Groups")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color.white)
         }
