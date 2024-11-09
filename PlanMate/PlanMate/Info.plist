@@ -14,5 +14,7 @@
 		</dict>
 		<dict/>
 	</array>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>This app needs full access to your calendar to add and manage activity events</string>
 </dict>
 </plist>

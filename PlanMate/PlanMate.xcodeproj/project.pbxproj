@@ -581,6 +581,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PlanMate/Info.plist;
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to your calendar to add activities as events";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show nearby places.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs access to save QR codes to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -613,6 +614,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PlanMate/Info.plist;
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to your calendar to add activities as events";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show nearby places.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs access to save QR codes to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

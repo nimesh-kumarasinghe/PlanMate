@@ -9,6 +9,98 @@ import SwiftUI
 import FirebaseFirestore
 import MapKit
 import FirebaseAuth
+import EventKit
+
+// Add EventKit permission handler
+class EventKitManager {
+    static let shared = EventKitManager()
+    private let eventStore = EKEventStore()
+    
+    func requestAccess(completion: @escaping (Bool) -> Void) {
+        if #available(iOS 17.0, *) {
+            eventStore.requestFullAccessToEvents { granted, error in
+                DispatchQueue.main.async {
+                    completion(granted)
+                }
+            }
+        } else {
+            eventStore.requestAccess(to: .event) { granted, error in
+                DispatchQueue.main.async {
+                    completion(granted)
+                }
+            }
+        }
+    }
+    
+    func saveToCalendar(
+        title: String,
+        startDate: Date,
+        endDate: Date,
+        isAllDay: Bool,
+        location: LocationData?,
+        notes: [Note],
+        urls: [String],
+        reminder: String,
+        completion: @escaping (Bool, Error?) -> Void
+    ) {
+        let event = EKEvent(eventStore: eventStore)
+        event.title = title
+        event.startDate = startDate
+        event.endDate = endDate
+        event.isAllDay = isAllDay
+        
+        // Set location if available
+        if let location = location {
+            event.location = "\(location.name): \(location.address)"
+        }
+        
+        // Combine notes into a single string
+        if !notes.isEmpty {
+            event.notes = notes.map { $0.content }.joined(separator: "\n\n")
+        }
+        
+        // Add URLs to notes
+        if !urls.isEmpty {
+            let urlString = "\n\nURLs:\n" + urls.joined(separator: "\n")
+            event.notes = (event.notes ?? "") + urlString
+        }
+        
+        // Set calendar
+        event.calendar = eventStore.defaultCalendarForNewEvents
+        
+        // Add reminder alarm
+        if let alarm = createAlarm(from: reminder) {
+            event.addAlarm(alarm)
+        }
+        
+        do {
+            try eventStore.save(event, span: .thisEvent)
+            completion(true, nil)
+        } catch {
+            completion(false, error)
+        }
+    }
+    
+    private func createAlarm(from reminder: String) -> EKAlarm? {
+        let components = reminder.components(separatedBy: " ")
+        guard components.count >= 2,
+              let timeValue = Int(components[0]) else {
+            return nil
+        }
+        
+        var offset: TimeInterval = 0
+        switch components[1] {
+        case "min":
+            offset = TimeInterval(-timeValue * 60)
+        case "hour":
+            offset = TimeInterval(-timeValue * 60 * 60)
+        default:
+            return nil
+        }
+        
+        return EKAlarm(relativeOffset: offset)
+    }
+}
 
 // Models
 struct Task: Identifiable {
@@ -198,6 +290,8 @@ struct URLInputView: View {
 struct CreateActivityView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = ActivityViewModel()
+    @State private var showCalendarPermissionAlert = false
+    @State private var calendarError: String?
     
     var isEditMode: Bool = false
     var editActivityId: String?
@@ -449,12 +543,6 @@ struct CreateActivityView: View {
             .navigationTitle(isEditMode ? "Edit Activity" : "Create an Activity")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-//                ToolbarItem(placement: .navigationBarLeading) {
-//                    Button("Cancel") {
-//                        dismiss()
-//                    }
-//                }
-                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         saveActivity()
@@ -467,11 +555,23 @@ struct CreateActivityView: View {
             }message :{
                 Text(alertMessage)
             }
+            .alert(alertTitle, isPresented: $showAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(alertMessage)
+            }
             .onAppear {
                 if isEditMode{
                     loadActivityData()
                 }
                 loadGroups()
+                
+                // Request calendar access when view appears
+                EventKitManager.shared.requestAccess { granted in
+                    if !granted {
+                        showCalendarPermissionAlert = true
+                    }
+                }
             }
             .overlay {
                 if isLoading {
@@ -495,8 +595,6 @@ struct CreateActivityView: View {
                 )
         }
     }
-    
-    ///***************************
    
     private func loadUserGroups() {
             guard let currentUser = Auth.auth().currentUser else {
@@ -553,8 +651,6 @@ struct CreateActivityView: View {
         private func loadGroups() {
             loadUserGroups()
         }
-    
-    ///**************************
     
     // Add function to load activity data for editing
         private func loadActivityData() {
@@ -619,27 +715,6 @@ struct CreateActivityView: View {
                         viewModel.urls = data["urls"] as? [String] ?? []
                     }
                     
-                    
-                    
-                    
-                    // Load locations
-//                    if let locations = data["locations"] as? [[String: String]] {
-//                        viewModel.locations = locations.compactMap { locationData in
-//                            if let latitudeString = locationData["latitude"],
-//                               let longitudeString = locationData["longitude"],
-//                               let latitude = Double(latitudeString),
-//                               let longitude = Double(longitudeString) {
-//                                return LocationData(
-//                                    name: locationData["name"] ?? "",
-//                                    address: locationData["address"] ?? "",
-//                                    coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
-//                                    category: locationData["category"] ?? ""
-//                                )
-//                            }
-//                            return nil
-//                        }
-//                    }
-                    
                     // Parse the JSON data
                     if let locations = data["locations"] as? [[String: Any]] {
                         DispatchQueue.main.async{
@@ -664,15 +739,6 @@ struct CreateActivityView: View {
                             }
                         }
                     }
-
-                    
-                    
-                    
-//                    // Load participants
-//                    if let participants = data["participants"] as? [String] {
-//                        
-//                        loadParticipants(participantIds: participants)
-//                    }
                 }
                 DispatchQueue.main.async{
                     self.isLoading = false
@@ -700,12 +766,6 @@ struct CreateActivityView: View {
             }
         }
     }
-    
-//    private func loadParticipants(participantIds: [String]) {
-//        for index in groupMembers.indices {
-//            groupMembers[index].isSelected = participantIds.contains(groupMembers[index].id)
-//        }
-//    }
     
     private func loadGroupMembers(groupCode: String, completion: @escaping () -> Void = {}) {
         guard let selectedGroup = selectedGroup else { return }
@@ -785,23 +845,79 @@ struct CreateActivityView: View {
                 "urls": viewModel.urls,
                 "updatedAt": Timestamp(date: Date())
             ]
+                    let saveOperation: (Error?) -> Void = { error in
+                        if let error = error {
+                            DispatchQueue.main.async {
+                                self.isLoading = false
+                                self.alertTitle = "Error"
+                                self.alertMessage = "Failed to save activity: \(error.localizedDescription)"
+                                self.showAlert = true
+                            }
+                            return
+                        }
+                        
+                        // After successful Firestore save, save to calendar
+                        EventKitManager.shared.requestAccess { granted in
+                            if granted {
+                                EventKitManager.shared.saveToCalendar(
+                                    title: self.title,
+                                    startDate: self.startDate,
+                                    endDate: self.endDate,
+                                    isAllDay: self.isAllDay,
+                                    location: self.viewModel.locations.first,
+                                    notes: self.viewModel.notes,
+                                    urls: self.viewModel.urls,
+                                    reminder: self.selectedReminder
+                                ) { success, error in
+                                    DispatchQueue.main.async {
+                                        self.isLoading = false
+                                        if success {
+                                            self.alertTitle = "Success"
+                                            self.alertMessage = "Activity saved to Firestore and Calendar!"
+                                            self.clearFields()
+                                            self.dismiss()
+                                        } else {
+                                            self.alertTitle = "Partial Success"
+                                            self.alertMessage = "Saved to Firestore but failed to save to Calendar: \(error?.localizedDescription ?? "Unknown error")"
+                                        }
+                                        self.showAlert = true
+                                    }
+                                }
+                            } else {
+                                DispatchQueue.main.async {
+                                    self.isLoading = false
+                                    self.alertTitle = "Calendar Access Denied"
+                                    self.alertMessage = "Please enable calendar access in Settings to save events to your calendar."
+                                    self.showAlert = true
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Execute the Firestore operation
+                    if editActivityId != nil {
+                        activityRef.updateData(activityData, completion: saveOperation)
+                    } else {
+                        activityRef.setData(activityData, completion: saveOperation)
+                    }
             
-            // If creating new, add createdAt
-            if editActivityId == nil {
-                activityData["createdAt"] = Timestamp(date: Date())
-            }
-            
-            // Save to Firestore
-            if editActivityId != nil {
-                activityRef.updateData(activityData) { error in
-                    handleSaveCompletion(error)
-                }
-            } else {
-                activityRef.setData(activityData) { error in
-                    handleSaveCompletion(error)
-                }
-            }
+
         }
+    
+    private func clearFields() {
+        title = ""
+        isAllDay = false
+        startDate = Date()
+        endDate = Date()
+        selectedReminder = ""
+        viewModel.tasks.removeAll()
+        viewModel.locations.removeAll()
+        viewModel.notes.removeAll()
+        viewModel.urls.removeAll()
+        for index in groupMembers.indices {
+            groupMembers[index].isSelected = false
+        }
+    }
         
         private func handleSaveCompletion(_ error: Error?) {
             if let error = error {
@@ -830,27 +946,7 @@ struct CreateActivityView: View {
                 }
             }
         }
-    
-//    private func loadGroups() {
-//        let db = Firestore.firestore()
-//        db.collection("groups").getDocuments { snapshot, error in
-//            if let error = error {
-//                print("Error loading groups: \(error.localizedDescription)")
-//                return
-//            }
-//            
-//            self.groups = snapshot?.documents.compactMap { document -> TeamGroup? in
-//                let data = document.data()
-//                return TeamGroup(
-//                    id: document.documentID,
-//                    name: data["groupName"] as? String ?? "",
-//                    groupCode: data["groupCode"] as? String ?? "",
-//                    members: data["members"] as? [String] ?? []
-//                )
-//            } ?? []
-//        }
-//    }
-    
+        
     private func loadGroupMembers(groupCode: String) {
         guard let selectedGroup = selectedGroup else { return }
         
@@ -887,82 +983,6 @@ struct CreateActivityView: View {
     private func deleteTask(at offsets: IndexSet) {
         viewModel.tasks.remove(atOffsets: offsets)
     }
-    
-//    private func saveActivity() {
-//        guard !title.trim().isEmpty else {
-//            alertTitle = "Invalid Input"
-//            alertMessage = "Please enter a title for the activity"
-//            showAlert = true
-//            return
-//        }
-//        isLoading = true
-//        let db = Firestore.firestore()
-//        let activityRef = db.collection("activities").document()
-//        
-//        // Get selected member IDs
-//        let selectedMemberIds = groupMembers.filter { $0.isSelected }.map { $0.id }
-//        
-//        // Format tasks for Firestore
-//        let assignedTasks = viewModel.tasks.map { [
-//            "memberId": $0.person.id,
-//            "memberName": $0.person.name,
-//            "assignment": $0.assignment
-//        ] }
-//        
-//        // Format locations for Firestore
-//        let locations = viewModel.locations.map { [
-//            "name": $0.name,
-//            "address": $0.address
-//        ] }
-//        
-//        // Create activity data
-//        let activityData: [String: Any] = [
-//            "title": title,
-//            "isAllDay": isAllDay,
-//            "startDate": Timestamp(date: startDate),
-//            "endDate": Timestamp(date: endDate),
-//            "reminder": selectedReminder,
-//            "groupId": selectedGroup?.id ?? "",
-//            "groupName": selectedGroup?.name ?? "",
-//            "participants": selectedMemberIds,
-//            "tasks": assignedTasks,
-//            "locations": locations,
-//            "notes": viewModel.notes.map { $0.content },
-//            "urls": viewModel.urls,
-//            "createdAt": Timestamp(date: Date()),
-//            "updatedAt": Timestamp(date: Date())
-//        ]
-//        
-//        // Save to Firestore
-//        activityRef.setData(activityData) { error in
-//            if let error = error {
-//                alertTitle = "Error"
-//                alertMessage = "Failed to save activity: \(error.localizedDescription)"
-//                showAlert = true
-//            } else {
-//                alertTitle = "Success"
-//                alertMessage = "Successfully activity created!"
-//                showAlert = true
-//                isLoading = false
-//                
-//                // Clear all fields after saving
-//                            title = ""
-//                            isAllDay = false
-//                            startDate = Date()
-//                            endDate = Date()
-//                            selectedReminder = ""
-//                            viewModel.tasks.removeAll()
-//                            viewModel.locations.removeAll()
-//                            viewModel.notes.removeAll()
-//                            viewModel.urls.removeAll()
-//                for index in groupMembers.indices {
-//                    groupMembers[index].isSelected = false
-//                }
-//                
-//                dismiss()
-//            }
-//        }
-//    }
 }
 
 // Extension to trim whitespace
