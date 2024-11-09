@@ -13,7 +13,7 @@ struct CreateGroupView: View {
     @State private var groupName: String = ""
     @State private var description: String = ""
     @State private var isImagePickerPresented = false
-    @State private var groupImage: Image? = Image(systemName: "person.fill")
+    @State private var groupImage: Image? = Image("defaultimg")
     @State private var isAlertPresented = false
     @State private var alertMessage = ""
     @State private var isQRCodePopupPresented = false
@@ -37,15 +37,15 @@ struct CreateGroupView: View {
                             .foregroundColor(.white)
 
                         // Edit Icon
-                        Button(action: {
-                            isImagePickerPresented = true
-                        }) {
-                            Image(systemName: "pencil.circle.fill")
-                                .foregroundColor(.blue)
-                                .background(Circle().fill(Color.white))
-                                .frame(width: 60, height: 30)
-                                .offset(x: 1, y: 1)
-                        }
+//                        Button(action: {
+//                            isImagePickerPresented = true
+//                        }) {
+//                            Image(systemName: "pencil.circle.fill")
+//                                .foregroundColor(.blue)
+//                                .background(Circle().fill(Color.white))
+//                                .frame(width: 60, height: 30)
+//                                .offset(x: 1, y: 1)
+//                        }
                     }
                     .padding(.top, 50)
 

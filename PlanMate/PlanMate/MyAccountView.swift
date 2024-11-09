@@ -19,7 +19,6 @@ struct MyAccountView: View {
     @AppStorage("log_status") private var logStatus: Bool = false // This is used to track login status
     
     let profileInitial: String = "N"
-    let userBirthDate: String = "03 June 1999"
     
     var body: some View {
         NavigationView {
@@ -32,17 +31,15 @@ struct MyAccountView: View {
                                 .fill(Color("CustomBlue"))
                                 .frame(width: 100, height: 100)
                             
-                            Text(profileInitial)
+                            Image(systemName: "person.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 60, height: 60)
                                 .foregroundColor(.white)
-                                .font(.system(size: 48, weight: .medium))
                         }
                         
                         Text("\(userName)")
                             .font(.system(size: 20, weight: .semibold))
-                        
-                        Text(userBirthDate)
-                            .font(.system(size: 16))
-                            .foregroundColor(.gray)
                     }
                     .padding(.top, 20)
                     
