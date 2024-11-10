@@ -6,163 +6,262 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseFirestore
+
+class GroupDetailViewModel: ObservableObject {
+    @Published var groupName: String = ""
+    @Published var groupMembers: [String] = []
+    @Published var memberNames: [String: String] = [:]
+    @Published var proposeActivities: [HomeProposeActivityModel] = []
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String?
+    
+    private var db = Firestore.firestore()
+    private var listeners: [ListenerRegistration] = []
+    
+    func fetchGroupDetails(groupCode: String) {
+        isLoading = true
+        
+        let listener = db.collection("groups")
+            .whereField("groupCode", isEqualTo: groupCode)
+            .limit(to: 1)
+            .addSnapshotListener { [weak self] querySnapshot, error in
+                guard let self = self else { return }
+                
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                    self.isLoading = false
+                    return
+                }
+                
+                guard let document = querySnapshot?.documents.first,
+                      let data = document.data() as? [String: Any] else {
+                    self.errorMessage = "Group not found"
+                    self.isLoading = false
+                    return
+                }
+                
+                self.groupName = data["groupName"] as? String ?? ""
+                self.groupMembers = data["members"] as? [String] ?? []
+                
+                // Fetch member names
+                self.fetchMemberNames(memberIds: self.groupMembers)
+                
+                // Fetch propose activities
+                if let activityIds = data["proposeActivities"] as? [String] {
+                    self.fetchProposeActivities(activityIds: activityIds)
+                }
+                
+                self.isLoading = false
+            }
+        
+        listeners.append(listener)
+    }
+    
+    private func fetchMemberNames(memberIds: [String]) {
+        for memberId in memberIds {
+            let listener = db.collection("users").document(memberId)
+                .addSnapshotListener { [weak self] documentSnapshot, error in
+                    guard let self = self else { return }
+                    
+                    if let error = error {
+                        print("Error fetching member name: \(error.localizedDescription)")
+                        return
+                    }
+                    
+                    guard let document = documentSnapshot, document.exists,
+                          let data = document.data(),
+                          let name = data["name"] as? String else {
+                        return
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.memberNames[memberId] = name
+                    }
+                }
+            
+            listeners.append(listener)
+        }
+    }
+    
+    private func fetchProposeActivities(activityIds: [String]) {
+        for activityId in activityIds {
+            let cleanActivityId = activityId.trimmingCharacters(in: .whitespaces)
+            
+            let listener = db.collection("proposeActivities")
+                .document(cleanActivityId)
+                .addSnapshotListener { [weak self] documentSnapshot, error in
+                    guard let self = self else { return }
+                    
+                    if let error = error {
+                        print("Error fetching activity: \(error.localizedDescription)")
+                        return
+                    }
+                    
+                    guard let document = documentSnapshot,
+                          document.exists,
+                          let data = document.data() else {
+                        return
+                    }
+                    
+                    let activity = HomeProposeActivityModel(
+                        id: document.documentID,
+                        groupId: data["groupId"] as? String ?? "",
+                        groupName: data["groupName"] as? String ?? "",
+                        title: data["title"] as? String ?? ""
+                    )
+                    
+                    DispatchQueue.main.async {
+                        if !self.proposeActivities.contains(where: { $0.id == activity.id }) {
+                            self.proposeActivities.append(activity)
+                        }
+                    }
+                }
+            
+            listeners.append(listener)
+        }
+    }
+    
+    deinit {
+        listeners.forEach { $0.remove() }
+    }
+}
+
+// Action Buttons Component
+struct GroupActionButtons: View {
+    let proposeActivityAction: () -> Void
+    let showJoinCodeAction: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 10) {
+            // Propose Activity Button
+            Button(action: proposeActivityAction) {
+                HStack {
+                    Text("Propose an Activity")
+                        .foregroundColor(.white)
+                        .fontWeight(.medium)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.white)
+                }
+                .padding()
+                .background(Color("CustomBlue"))
+                .cornerRadius(50)
+            }
+            
+            // Join Code Button
+            Button(action: showJoinCodeAction) {
+                HStack {
+                    Text("Get Join Code or QR")
+                        .foregroundColor(.white)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.white)
+                }
+                .padding()
+                .background(Color("DarkAsh"))
+                .cornerRadius(50)
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+// Proposed Activities Section
+struct ProposedActivitiesSection: View {
+    let activities: [HomeProposeActivityModel]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Proposed Activities")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            ForEach(activities) { activity in
+                NavigationLink(destination: VotingProposeActivityView()) {
+                    ActivityListCard(title: activity.title, group: activity.groupName)
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+// Group Members Section
+struct GroupMembersSection: View {
+    let members: [String]
+    let memberNames: [String: String]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Group Members (\(members.count))")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            ForEach(members, id: \.self) { memberId in
+                MemberRow(
+                    member: Members(name: memberNames[memberId] ?? "Unknown")
+                )
+            }
+        }
+        .padding(.horizontal)
+    }
+}
 
 struct GroupDetailView: View {
+    @StateObject private var viewModel = GroupDetailViewModel()
     @State private var selectedDate = Date()
     @State private var showingJoinCodeSheet = false
-    @State private var showingDeleteAlert = false
-    @State private var itemToDelete: String?
-    @State private var deleteType: DeleteType?
-    @State private var proposedActivities = [
-        GroupActivity(title: "October day out", from: "Ofiice"),
-        GroupActivity(title: "Next hiking trip", from: "Office"),
-        GroupActivity(title: "November party", from: "Office")
-    ]
-    @State private var groupMembers = [
-        Members(name: "Dilanjana"),
-        Members(name: "Lakshan"),
-        Members(name: "Haritha"),
-        Members(name: "Nisal"),
-        Members(name: "Lakshika")
-    ]
     
-    
-    
-    @State private var proposeActvityId = ""
-    @State private var groupCodeId: String = ""
-    
-    enum DeleteType {
-        case activity
-        case member
-    }
     let groupCode: String
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                // Calendar Section
-                GroupCalendarView(selectedDate: $selectedDate)
-                    .padding(.horizontal)
-                
-                NavigationLink(destination: ProposeActivityView(activityId: proposeActvityId)) {
-                    HStack {
-                        Text("Propose an Activity")
-                            .foregroundColor(.white)
-                            .fontWeight(.medium)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.white)
-                    }
-                    .padding()
-                    .background(Color("CustomBlue"))
-                    .cornerRadius(50)
-                }
-                .padding(.horizontal)
-                
-                // Join Code Button
-                Button(action: {
-                    showingJoinCodeSheet = true
-                }) {
-                    HStack {
-                        Text("Get Join Code or QR")
-                            .foregroundColor(.white)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.white)
-                    }
-                    .padding()
-                    .background(Color("DarkAsh"))
-                    .cornerRadius(50)
-                }
-                .padding(.horizontal)
-                
-                // Proposed Activities Section
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Proposed Activities")
-                        .font(.headline)
+            if viewModel.isLoading {
+                ProgressView("Loading...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                VStack(spacing: 20) {
+                    // Calendar Section
+                    GroupCalendarView(selectedDate: $selectedDate)
                         .padding(.horizontal)
                     
-                    List {
-                        ForEach(proposedActivities) { activity in
-                            NavigationLink(destination: VotingProposeActivityView()) {
-                                ActivityRow(activity: activity)
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    itemToDelete = activity.title
-                                    deleteType = .activity
-                                    showingDeleteAlert = true
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
-                            .listRowInsets(EdgeInsets())
-                            .background(Color(.systemBackground))
+                    // Action Buttons
+                    GroupActionButtons(
+                        proposeActivityAction: {
+                            // Handle propose activity navigation
+                        },
+                        showJoinCodeAction: {
+                            showingJoinCodeSheet = true
                         }
-                    }
-                    .listStyle(PlainListStyle())
-                    .frame(height: CGFloat(proposedActivities.count * 70))
-                }
-                
-                // Group Members Section
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Group Members (\(groupMembers.count))")
-                        .font(.headline)
-                        .padding(.horizontal)
+                    )
                     
-                    List {
-                        ForEach(groupMembers) { member in
-                            MemberRow(member: member)
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button(role: .destructive) {
-                                        itemToDelete = member.name
-                                        deleteType = .member
-                                        showingDeleteAlert = true
-                                    } label: {
-                                        Label("Remove", systemImage: "trash")
-                                    }
-                                }
-                                .listRowInsets(EdgeInsets())
-                                .background(Color(.systemBackground))
-                        }
-                    }
-                    .listStyle(PlainListStyle())
-                    .frame(height: CGFloat(groupMembers.count * 60))
+                    // Proposed Activities
+                    ProposedActivitiesSection(activities: viewModel.proposeActivities)
+                    
+                    // Group Members
+                    GroupMembersSection(members: viewModel.groupMembers, memberNames: viewModel.memberNames)
                 }
             }
         }
-        .navigationTitle("Office")
+        .navigationTitle(viewModel.groupName)
         .navigationBarItems(trailing: NavigationLink("Edit", destination: EditGroupView()))
         .sheet(isPresented: $showingJoinCodeSheet) {
             JoinCodeSheet()
         }
-        .alert(isPresented: $showingDeleteAlert) {
-            switch deleteType {
-            case .activity:
-                return Alert(
-                    title: Text("Delete Activity"),
-                    message: Text("Are you sure you want to delete '\(itemToDelete ?? "")'?"),
-                    primaryButton: .destructive(Text("Delete")) {
-                        if let title = itemToDelete {
-                            proposedActivities.removeAll { $0.title == title }
-                        }
-                    },
-                    secondaryButton: .cancel()
-                )
-            case .member:
-                return Alert(
-                    title: Text("Remove Member"),
-                    message: Text("Are you sure you want to remove '\(itemToDelete ?? "")'?"),
-                    primaryButton: .destructive(Text("Remove")) {
-                        if let name = itemToDelete {
-                            groupMembers.removeAll { $0.name == name }
-                        }
-                    },
-                    secondaryButton: .cancel()
-                )
-            case .none:
-                return Alert(title: Text("Error"), message: Text("Unknown delete type"))
-            }
+        .alert(item: Binding(
+            get: { viewModel.errorMessage.map { ErrorWrapper(error: $0) } },
+            set: { viewModel.errorMessage = $0?.error }
+        )) { errorWrapper in
+            Alert(
+                title: Text("Error"),
+                message: Text(errorWrapper.error),
+                dismissButton: .default(Text("OK"))
+            )
+        }
+        .onAppear {
+            viewModel.fetchGroupDetails(groupCode: groupCode)
         }
     }
 }
@@ -180,40 +279,15 @@ struct GroupCalendarView: View {
     }
 }
 
-struct ActivityRow: View {
-    let activity: GroupActivity
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            // Activity Info
-            VStack(alignment: .leading, spacing: 4) {
-                Text(activity.title)
-                    .font(.system(size: 17))
-                    .lineLimit(1)
-                Text("from \(activity.from)")
-                    .font(.system(size: 15))
-                    .foregroundColor(Color(.systemGray))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color(.systemBackground))
-    }
-}
-
 struct MemberRow: View {
     let member: Members
     
     var body: some View {
         HStack {
-            Circle()
-                .fill(Color("CustomBlue"))
-                .frame(width: 40, height: 40)
-                .overlay(
-                    Text(String(member.name.prefix(1)))
-                        .foregroundColor(.white)
-                )
+            Image(systemName: "person.circle.fill")
+                .resizable()
+                .foregroundColor(Color("CustomBlue"))
+                .frame(width: 35, height: 35)
             
             Text(member.name)
                 .padding(.leading, 8)
@@ -221,29 +295,6 @@ struct MemberRow: View {
             Spacer()
         }
         .padding(.horizontal)
-    }
-}
-
-struct ProposeActivityDetailView: View {
-    let activity: GroupActivity
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Activity Details")
-                .font(.title)
-                .padding()
-            
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Title: \(activity.title)")
-                    .font(.headline)
-                Text("Proposed by: \(activity.from)")
-                    .font(.subheadline)
-            }
-            .padding()
-            
-            Spacer()
-        }
-        .navigationTitle(activity.title)
     }
 }
 
@@ -260,7 +311,6 @@ struct JoinCodeSheet: View {
                 Spacer().frame(height: 20)
                 
                 ZStack {
-                    // Main join code display
                     Text(joinCode)
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -271,7 +321,6 @@ struct JoinCodeSheet: View {
                         )
                         .padding(.horizontal, 10)
                     
-                    // Copy button overlay
                     HStack {
                         Spacer()
                         Button(action: {
@@ -285,12 +334,11 @@ struct JoinCodeSheet: View {
                         .padding(.trailing, 10)
                     }
                 }
-                
                 Text("or")
                     .foregroundColor(.gray)
-                
+                                
                 Button(action: {
-                    // Handle QR code download
+                // Handle QR code download
                 }) {
                     HStack {
                         Image(systemName: "qrcode")
@@ -307,10 +355,12 @@ struct JoinCodeSheet: View {
                 Spacer()
             }
             .padding()
-            .navigationBarTitle("", displayMode: .inline)
+            .navigationTitle("Join Code")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
+
 
 
 // Models

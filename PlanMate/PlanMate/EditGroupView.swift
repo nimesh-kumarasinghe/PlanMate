@@ -11,8 +11,7 @@ struct EditGroupView: View {
     @State private var groupName: String = ""
     @State private var description: String = ""
     @State private var isImagePickerPresented = false
-    @State private var groupImage: Image? = Image(systemName: "person.fill")
-    // Default icon
+    @State private var groupImage: Image? = Image("defaultimg") 
 
     var body: some View {
         NavigationView {
@@ -20,23 +19,12 @@ struct EditGroupView: View {
                 // Group Image with Edit Icon
                 ZStack(alignment: .bottomTrailing) {
                     groupImage?
-                        .resizable() // Make the image resizable
-                        .aspectRatio(contentMode: .fill) // Maintain aspect ratio
-                        .frame(width: 150, height: 150) // Increased size of the image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 150, height: 150)
                         .clipShape(Circle())
                         .background(Circle().fill(Color("CustomBlue")))
                         .foregroundColor(.white)
-
-                    // Edit Icon
-                    Button(action: {
-                        isImagePickerPresented = true
-                    }) {
-                        Image(systemName: "pencil.circle.fill")
-                            .foregroundColor(.blue)
-                            .background(Circle().fill(Color.white))
-                            .frame(width: 60, height: 30) // Decreased width of the button
-                            .offset(x: 1, y: 1)
-                    }
                 }
                 .padding(.top, 50)
 

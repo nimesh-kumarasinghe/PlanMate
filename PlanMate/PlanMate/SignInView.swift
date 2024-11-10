@@ -349,7 +349,7 @@ struct SignInView: View {
                     "uid": user.uid
                 ]
                 Firestore.firestore().collection("users").document(user.uid).setData(data) { error in
-                    if let error = error {
+                    if error != nil {
                         self.showError("Database Error")
                     }
                 }

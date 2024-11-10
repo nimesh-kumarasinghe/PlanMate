@@ -215,59 +215,6 @@ class HomeViewModel: ObservableObject {
        deinit {
            clearExistingData()
        }
-    
-//    private func fetchGroup(groupCode: String) {
-//        db.collection("groups")
-//            .whereField("groupCode", isEqualTo: groupCode)
-//            .getDocuments { [weak self] querySnapshot, error in
-//                guard let documents = querySnapshot?.documents,
-//                      let groupDoc = documents.first,
-//                      let groupName = groupDoc.data()["groupName"] as? String,
-//                      let description = groupDoc.data()["description"] as? String,
-//                      let createdBy = groupDoc.data()["createdBy"] as? String,
-//                      let members = groupDoc.data()["members"] as? [String] else {
-//                    print("Error fetching group: \(error?.localizedDescription ?? "")")
-//                    return
-//                }
-//                
-//                let group = HomeGroupModel(
-//                    id: groupDoc.documentID,
-//                    groupName: groupName,
-//                    description: description,
-//                    groupCode: groupCode,
-//                    createdBy: createdBy,
-//                    members: members
-//                )
-//                
-//                DispatchQueue.main.async {
-//                    self?.homeGroups.append(group)
-//                }
-//            }
-//    }
-    
-//    private func fetchProposeActivity(activityId: String) {
-//        db.collection("proposeActivities").document(activityId).getDocument { [weak self] document, error in
-//            guard let document = document,
-//                  let data = document.data(),
-//                  let groupId = data["groupId"] as? String,
-//                  let groupName = data["groupName"] as? String,
-//                  let title = data["title"] as? String else {
-//                print("Error fetching activity: \(error?.localizedDescription ?? "")")
-//                return
-//            }
-//            
-//            let activity = HomeProposeActivityModel(
-//                id: document.documentID,
-//                groupId: groupId,
-//                groupName: groupName,
-//                title: title
-//            )
-//            
-//            DispatchQueue.main.async {
-//                self?.homeProposeActivities.append(activity)
-//            }
-//        }
-//    }
 }
 
 struct HomeView: View {
@@ -360,7 +307,7 @@ struct HomeView: View {
                                     GridItem(.flexible())
                                 ], spacing: 15) {
                                     ForEach(viewModel.homeGroups) { group in
-                                        GroupCard(name: group.groupName, imageName: "defaultimg")
+                                        GroupCard(group: group)
                                     }
                                 }
                             }
@@ -413,22 +360,21 @@ struct ErrorWrapper: Identifiable {
 }
 
 struct GroupCard: View {
-    let name: String
-    let imageName: String
+    let group: HomeGroupModel
     
     var body: some View {
-        NavigationLink(destination: Text(name)) {
+        NavigationLink(destination: GroupDetailView(groupCode: group.groupCode)) {
             VStack {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color.blue.opacity(0.1))
                     .frame(height: 100)
                     .overlay(
-                        Image(imageName)
+                        Image("defaultimg")
                             .resizable()
                             .scaledToFit()
                             .frame(height: 90)
                     )
-                Text(name)
+                Text(group.groupName)
                     .fontWeight(.medium)
             }
         }

@@ -35,17 +35,6 @@ struct CreateGroupView: View {
                             .clipShape(Circle())
                             .background(Circle().fill(Color("CustomBlue")))
                             .foregroundColor(.white)
-
-                        // Edit Icon
-//                        Button(action: {
-//                            isImagePickerPresented = true
-//                        }) {
-//                            Image(systemName: "pencil.circle.fill")
-//                                .foregroundColor(.blue)
-//                                .background(Circle().fill(Color.white))
-//                                .frame(width: 60, height: 30)
-//                                .offset(x: 1, y: 1)
-//                        }
                     }
                     .padding(.top, 50)
 
