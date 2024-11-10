@@ -308,6 +308,7 @@ struct CreateActivityView: View {
     @State private var isLoading: Bool = false
     @State private var showDeleteConfirmation = false
     @State private var navigateToActivityList = false
+    @State private var showLeaveConfirmation = false
     
     // Alret Status
     @State private var showAlert = false
@@ -522,6 +523,19 @@ struct CreateActivityView: View {
                 }
                 
                 if isEditMode {
+                    Section{
+                        Button(action: {
+                            showLeaveConfirmation = true
+                            
+                        }) {
+                            HStack {
+                                Spacer()
+                                Text("Leave Activity")
+                                    .foregroundColor(.orange)
+                                Spacer()
+                            }
+                        }
+                    }
                     Section {
                         Button(action: {
                             showDeleteConfirmation = true
@@ -575,6 +589,14 @@ struct CreateActivityView: View {
             }message :{
                 Text(alertMessage)
             }
+            .alert("Leave Activity", isPresented: $showLeaveConfirmation) {
+                            Button("Cancel", role: .cancel) { }
+                Button("Leave", role: .destructive) {
+                    leaveActivity()
+                }
+            } message: {
+                Text("Are you sure you want to leave from this activity? This action cannot be undone.")
+            }
             .alert("Delete Activity", isPresented: $showDeleteConfirmation) {
                             Button("Cancel", role: .cancel) { }
                 Button("Delete", role: .destructive) {
@@ -624,48 +646,117 @@ struct CreateActivityView: View {
         }
     }
     
+    // leaving the activity
+    private func leaveActivity() {
+        guard let activityId = editActivityId,
+              let currentUserId = Auth.auth().currentUser?.uid else { return }
+        
+        isLoading = true
+        let db = Firestore.firestore()
+        
+        // Create a batch write
+        let batch = db.batch()
+        
+        // Remove the activity ID from the user's activities array
+        let userRef = db.collection("users").document(currentUserId)
+        batch.updateData([
+            "activities": FieldValue.arrayRemove([activityId])
+        ], forDocument: userRef)
+        
+        // Update the activity's participants array to remove the current user
+        let activityRef = db.collection("activities").document(activityId)
+        batch.updateData([
+            "participants": FieldValue.arrayRemove([currentUserId])
+        ], forDocument: activityRef)
+        
+        // Commit the batch
+        batch.commit { error in
+            DispatchQueue.main.async {
+                self.isLoading = false
+                
+                if let error = error {
+                    self.alertTitle = "Error"
+                    self.alertMessage = "Failed to leave activity: \(error.localizedDescription)"
+                    self.showAlert = true
+                } else {
+                    self.alertTitle = "Success"
+                    self.alertMessage = "You have left the activity successfully"
+                    self.showAlert = true
+                    self.navigateToActivityList = true
+                    self.dismiss()
+                }
+            }
+        }
+    }
+    
+    // delete activity from all users
     private func deleteActivity() {
         guard let activityId = editActivityId else { return }
         isLoading = true
         
         let db = Firestore.firestore()
         
-        // Get current user ID
-        guard let currentUserId = Auth.auth().currentUser?.uid else {
-            isLoading = false
-            alertTitle = "Error"
-            alertMessage = "User not logged in"
-            showAlert = true
-            return
-        }
-        
-        let batch = db.batch()
-    
-        let activityRef = db.collection("activities").document(activityId)
-        
-        let userRef = db.collection("users").document(currentUserId)
-        
-        batch.deleteDocument(activityRef)
-        
-        // Remove the activity ID from the users collection
-        batch.updateData([
-            "activities": FieldValue.arrayRemove([activityId])
-        ], forDocument: userRef)
-        
-        batch.commit { error in
-            DispatchQueue.main.async {
-                isLoading = false
-                
-                if let error = error {
-                    alertTitle = "Error"
-                    alertMessage = "Failed to delete activity: \(error.localizedDescription)"
-                    showAlert = true
-                } else {
-                    alertTitle = "Success"
-                    alertMessage = "Activity deleted successfully"
-                    showAlert = true
-                    navigateToActivityList = true
-                    dismiss()
+        // First, get the activity document to find all participants
+        db.collection("activities").document(activityId).getDocument { document, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.alertTitle = "Error"
+                    self.alertMessage = "Failed to fetch activity: \(error.localizedDescription)"
+                    self.showAlert = true
+                }
+                return
+            }
+            
+            guard let document = document, document.exists,
+                  let data = document.data(),
+                  let participants = data["participants"] as? [String] else {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.alertTitle = "Error"
+                    self.alertMessage = "Failed to get activity participants"
+                    self.showAlert = true
+                }
+                return
+            }
+            
+            // Create a batch operation
+            let batch = db.batch()
+            
+            // Delete the activity document
+            let activityRef = db.collection("activities").document(activityId)
+            batch.deleteDocument(activityRef)
+            
+            // Get the creator's ID (current user) and add to participants if not already included
+            var allParticipants = Set(participants)
+            if let currentUserId = Auth.auth().currentUser?.uid {
+                allParticipants.insert(currentUserId)
+            }
+            
+            // Remove activity ID from each participant's activities array
+            for participantId in allParticipants {
+                let userRef = db.collection("users").document(participantId)
+                batch.updateData([
+                    "activities": FieldValue.arrayRemove([activityId])
+                ], forDocument: userRef)
+            }
+            
+            // Commit the batch operation
+            batch.commit { error in
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    
+                    if let error = error {
+                        self.alertTitle = "Error"
+                        self.alertMessage = "Failed to delete activity: \(error.localizedDescription)"
+                        self.showAlert = true
+                    } else {
+                        self.alertTitle = "Success"
+                        self.alertMessage = "Activity deleted successfully"
+                        self.showAlert = true
+                        self.navigateToActivityList = true
+                        self.dismiss()
+                    }
                 }
             }
         }
@@ -874,7 +965,6 @@ struct CreateActivityView: View {
         }
     }
         
-        // Modify saveActivity function to handle both create and update
     private func saveActivity() {
         guard !title.trim().isEmpty else {
             alertTitle = "Invalid Input"
@@ -897,7 +987,7 @@ struct CreateActivityView: View {
             activityId = activityRef.documentID // If creating, get the new activity ID
         }
         
-        // Create activity data (same as before)
+        // Create activity data
         var activityData: [String: Any] = [
             "title": title,
             "isAllDay": isAllDay,
@@ -935,65 +1025,70 @@ struct CreateActivityView: View {
                 return
             }
             
-            // After saving activity, update the user's document with the activity ID
+            // Get all selected participants including the creator
+            var allParticipantIds = Set(self.groupMembers.filter { $0.isSelected }.map { $0.id })
             if let currentUserId = Auth.auth().currentUser?.uid {
-                let userRef = db.collection("users").document(currentUserId)
-                userRef.updateData([
+                allParticipantIds.insert(currentUserId) // Add creator if not already included
+            }
+            
+            // Create a batch write for updating all participants' documents
+            let batch = db.batch()
+            
+            // Update each participant's document with the activity ID
+            for userId in allParticipantIds {
+                let userRef = db.collection("users").document(userId)
+                batch.updateData([
                     "activities": FieldValue.arrayUnion([activityId])
-                ]) { error in
-                    if let error = error {
-                        DispatchQueue.main.async {
-                            self.isLoading = false
-                            self.alertTitle = "Error"
-                            self.alertMessage = "Failed to update user activities: \(error.localizedDescription)"
-                            self.showAlert = true
-                        }
-                        return
+                ], forDocument: userRef)
+            }
+            
+            // Commit the batch update
+            batch.commit { batchError in
+                if let batchError = batchError {
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                        self.alertTitle = "Error"
+                        self.alertMessage = "Failed to update participant activities: \(batchError.localizedDescription)"
+                        self.showAlert = true
                     }
-                    
-                    // After successful Firestore save and user update, save to calendar
-                    EventKitManager.shared.requestAccess { granted in
-                        if granted {
-                            EventKitManager.shared.saveToCalendar(
-                                title: self.title,
-                                startDate: self.startDate,
-                                endDate: self.endDate,
-                                isAllDay: self.isAllDay,
-                                location: self.viewModel.locations.first,
-                                notes: self.viewModel.notes,
-                                urls: self.viewModel.urls,
-                                reminder: self.selectedReminder
-                            ) { success, error in
-                                DispatchQueue.main.async {
-                                    self.isLoading = false
-                                    if success {
-                                        self.alertTitle = "Success"
-                                        self.alertMessage = "Activity saved to Firestore and Calendar!"
-                                        self.clearFields()
-                                        self.dismiss()
-                                    } else {
-                                        self.alertTitle = "Partial Success"
-                                        self.alertMessage = "Saved to Firestore but failed to save to Calendar: \(error?.localizedDescription ?? "Unknown error")"
-                                    }
-                                    self.showAlert = true
-                                }
-                            }
-                        } else {
+                    return
+                }
+                
+                // After successful Firestore save and user updates, save to calendar
+                EventKitManager.shared.requestAccess { granted in
+                    if granted {
+                        EventKitManager.shared.saveToCalendar(
+                            title: self.title,
+                            startDate: self.startDate,
+                            endDate: self.endDate,
+                            isAllDay: self.isAllDay,
+                            location: self.viewModel.locations.first,
+                            notes: self.viewModel.notes,
+                            urls: self.viewModel.urls,
+                            reminder: self.selectedReminder
+                        ) { success, error in
                             DispatchQueue.main.async {
                                 self.isLoading = false
-                                self.alertTitle = "Calendar Access Denied"
-                                self.alertMessage = "Please enable calendar access in Settings to save events to your calendar."
+                                if success {
+                                    self.alertTitle = "Success"
+                                    self.alertMessage = "Activity saved to Firestore and Calendar!"
+                                    self.clearFields()
+                                    self.dismiss()
+                                } else {
+                                    self.alertTitle = "Partial Success"
+                                    self.alertMessage = "Saved to Firestore but failed to save to Calendar: \(error?.localizedDescription ?? "Unknown error")"
+                                }
                                 self.showAlert = true
                             }
                         }
+                    } else {
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.alertTitle = "Calendar Access Denied"
+                            self.alertMessage = "Please enable calendar access in Settings to save events to your calendar."
+                            self.showAlert = true
+                        }
                     }
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.alertTitle = "Error"
-                    self.alertMessage = "User not logged in."
-                    self.showAlert = true
                 }
             }
         }
