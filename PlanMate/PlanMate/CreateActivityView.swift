@@ -11,7 +11,7 @@ import MapKit
 import FirebaseAuth
 import EventKit
 
-// Add EventKit permission handler
+// EventKit permission handler
 class EventKitManager {
     static let shared = EventKitManager()
     private let eventStore = EKEventStore()

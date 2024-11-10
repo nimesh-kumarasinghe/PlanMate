@@ -13,6 +13,7 @@ import FirebaseAuth
 import FirebaseCore
 import GoogleSignIn
 import FirebaseFirestore
+import LocalAuthentication
 
 struct SignInView: View {
     @State private var email = ""
@@ -24,9 +25,13 @@ struct SignInView: View {
     @State private var navigateToHome: Bool = false
     @State private var showResetPassword: Bool = false
     
+    @StateObject private var biometricManager = BiometricManager()
     @AppStorage("user_name") private var userName: String = ""
     @AppStorage("userid") private var userid: String = ""
     @AppStorage("log_status") private var logStatus: Bool = false
+    @AppStorage("use_face_id") private var useFaceID = false
+    @AppStorage("saved_email") private var savedEmail = ""
+    @AppStorage("saved_password") private var savedPassword = ""
     
     var body: some View {
         NavigationStack {
@@ -78,20 +83,38 @@ struct SignInView: View {
                 }
                 .padding(.bottom, 20)
                 
-                // Sign In Button
-                Button(action: {
-                    handleEmailPasswordSignIn()
-                }) {
-                    Text("Sign In")
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .font(.headline)
-                        .background(Color("CustomBlue"))
-                        .cornerRadius(50)
-                        .padding(.horizontal, 30)
+                HStack(spacing: 5) {
+                    // Sign In Button
+                    Button(action: {
+                        handleEmailPasswordSignIn()
+                    }) {
+                        Text("Sign In")
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .font(.headline)
+                            .background(Color("CustomBlue"))
+                            .cornerRadius(50)
+                            //.padding(.horizontal, 10)
+                    }
+                    
+                    // Face ID Button (only shown if Face ID is enabled and credentials are saved)
+                    if useFaceID && !savedEmail.isEmpty && !savedPassword.isEmpty {
+                        Button(action: {
+                            handleFaceIDLogin()
+                        }) {
+                            Image(systemName: "faceid")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                                .foregroundColor(.black)
+                                .padding(15)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(10)
+                        }
+                    }
                 }
                 .padding(.bottom, 10)
+                .padding(.horizontal, 20)
                 
                 Text("or")
                     .foregroundColor(.gray)
@@ -155,15 +178,6 @@ struct SignInView: View {
                 .padding(.bottom, 20)
             }
             .alert(errorMessage, isPresented: $showAlert) { }
-//            .alert("Reset Password", isPresented: $showResetPassword) {
-//                TextField("Enter your email", text: $email)
-//                Button("Cancel", role: .cancel) { }
-//                Button("Reset") {
-//                    handlePasswordReset()
-//                }
-//            } message: {
-//                Text("Enter your email to receive a password reset link")
-//            }
             .overlay {
                 if isLoading {
                     LoadingScreen()
@@ -177,6 +191,18 @@ struct SignInView: View {
                 FindAccountView()
                     .navigationBarBackButtonHidden(false)
                     .navigationBarHidden(false)
+            }
+        }
+    }
+    // Add Face ID login handler
+    private func handleFaceIDLogin() {
+        biometricManager.authenticateWithBiometrics { success in
+            if success {
+                email = savedEmail
+                password = savedPassword
+                handleEmailPasswordSignIn()
+            } else {
+                showError("Face ID authentication failed")
             }
         }
     }
@@ -209,6 +235,12 @@ struct SignInView: View {
             guard let user = result?.user else {
                 self.showError("Could not retrieve user data.")
                 return
+            }
+            
+            // Save credentials if face Id is enabled
+            if self.useFaceID {
+                self.savedEmail = self.email
+                self.savedPassword = self.password
             }
 
             // Set the userName and userid in @AppStorage

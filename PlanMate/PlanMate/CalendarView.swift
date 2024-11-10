@@ -44,7 +44,7 @@ struct CalendarView: View {
                             Image(systemName: "person.circle.fill")
                                 .resizable()
                                 .frame(width: 35, height: 35)
-                                .foregroundColor(.blue)
+                                .foregroundColor(Color("CustomBlue"))
                         }
                     }
                     .padding(.horizontal)

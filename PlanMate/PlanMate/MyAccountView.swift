@@ -16,7 +16,8 @@ struct MyAccountView: View {
     
     @AppStorage("user_name") private var userName: String = ""
     @AppStorage("userid") private var userid: String = ""
-    @AppStorage("log_status") private var logStatus: Bool = false // This is used to track login status
+    @AppStorage("log_status") private var logStatus: Bool = false
+    @AppStorage("use_face_id") private var useFaceID = false
     
     let profileInitial: String = "N"
     
@@ -79,6 +80,28 @@ struct MyAccountView: View {
                             Divider().padding(.leading, 16)
                             LinkButton(title: "App info")
                         }
+                        .background(Color(.systemBackground))
+                        .cornerRadius(10)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Security")
+                            .font(.system(size: 17))
+                            .foregroundColor(.black)
+                            .padding(.leading, 16)
+                            .padding(.bottom, 8)
+                            .fontWeight(.bold)
+                        
+                        Toggle(isOn: $useFaceID) {
+                            HStack {
+                                Image(systemName: "faceid")
+                                    .foregroundColor(.primary)
+                                Text("Enable Face ID Login")
+                                    .foregroundColor(.primary)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                         .background(Color(.systemBackground))
                         .cornerRadius(10)
                     }

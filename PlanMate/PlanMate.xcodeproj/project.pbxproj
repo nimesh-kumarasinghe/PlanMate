@@ -12,6 +12,7 @@
 		9E91F28A2CDCFCC6003CA0C1 /* ProposeActivityList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */; };
 		9EAC123F2CD89CB2002A84A0 /* EditGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */; };
 		9EAC12412CD8AB9A002A84A0 /* LocationSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */; };
+		9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */; };
 		9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */; };
 		9EE4F0F12CCE1199009D0F71 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F0F02CCE1199009D0F71 /* ContentView.swift */; };
 		9EE4F0F32CCE119A009D0F71 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */; };
@@ -78,6 +79,7 @@
 		9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditGroupView.swift; sourceTree = "<group>"; };
 		9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchView.swift; sourceTree = "<group>"; };
 		9EAC12422CD8BFA3002A84A0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricManager.swift; sourceTree = "<group>"; };
 		9EE4F0EB2CCE1199009D0F71 /* PlanMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlanMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanMateApp.swift; sourceTree = "<group>"; };
 		9EE4F0F02CCE1199009D0F71 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 				9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */,
 				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
 				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
+				9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */,
 				9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */,
 				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
 				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
@@ -396,6 +399,7 @@
 				9EE4F0F12CCE1199009D0F71 /* ContentView.swift in Sources */,
 				9EE971E72CCF6E9900108C12 /* ActivityListView.swift in Sources */,
 				9EE4F11E2CCE1592009D0F71 /* SplashScreenView.swift in Sources */,
+				9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */,
 				9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */,
 				9EE971F32CCF930500108C12 /* AvailabilityListView.swift in Sources */,
 				9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */,
@@ -582,6 +586,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PlanMate/Info.plist;
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to your calendar to add activities as events";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Allow Face ID for quick sign in";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show nearby places.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs access to save QR codes to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -615,6 +620,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PlanMate/Info.plist;
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to your calendar to add activities as events";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Allow Face ID for quick sign in";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show nearby places.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs access to save QR codes to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
