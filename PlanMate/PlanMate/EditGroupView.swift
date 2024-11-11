@@ -6,17 +6,26 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseFirestore
 
 struct EditGroupView: View {
-    @State private var groupName: String = ""
-    @State private var description: String = ""
+    @State private var groupName: String
+    @State private var description: String
     @State private var isImagePickerPresented = false
-    @State private var groupImage: Image? = Image("defaultimg") 
+    @State private var groupImage: Image? = Image("defaultimg")
+    let groupCode: String
+
+    // Explicit initializer for EditGroupView
+    init(groupName: String, description: String, groupCode: String) {
+        _groupName = State(initialValue: groupName)
+        _description = State(initialValue: description)
+        self.groupCode = groupCode
+    }
 
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // Group Image with Edit Icon
                 ZStack(alignment: .bottomTrailing) {
                     groupImage?
                         .resizable()
@@ -28,7 +37,6 @@ struct EditGroupView: View {
                 }
                 .padding(.top, 50)
 
-                // Group Name TextField
                 TextField("Group Name", text: $groupName)
                     .padding()
                     .cornerRadius(10)
@@ -38,7 +46,6 @@ struct EditGroupView: View {
                         )
                     .padding(.horizontal, 20)
 
-                // Description TextField
                 TextField("Description (optional)", text: $description)
                     .padding()
                     .cornerRadius(10)
@@ -48,9 +55,8 @@ struct EditGroupView: View {
                         )
                     .padding(.horizontal, 20)
 
-                // Create Button
                 Button(action: {
-                    // Add create action here
+                    saveGroupDetails()
                 }) {
                     Text("Save")
                         .foregroundColor(.white)
@@ -71,11 +77,28 @@ struct EditGroupView: View {
             // Implement image picker here
         }
     }
+
+    private func saveGroupDetails() {
+        let db = Firestore.firestore()
+
+        // Update the Firestore group document
+        db.collection("groups").document(groupCode).updateData([
+            "groupName": groupName,
+            "description": description // Assuming 'description' is a field in Firestore
+        ]) { error in
+            if let error = error {
+                print("Error updating group: \(error.localizedDescription)")
+            } else {
+                print("Group updated successfully!")
+            }
+        }
+    }
 }
 
 struct EditGroupView_Previews: PreviewProvider {
     static var previews: some View {
-        EditGroupView()
+        EditGroupView(groupName: "Sample Group", description: "This is a sample group", groupCode: "sample123")
     }
 }
+
 

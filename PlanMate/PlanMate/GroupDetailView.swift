@@ -11,12 +11,13 @@ import FirebaseFirestore
 
 class GroupDetailViewModel: ObservableObject {
     @Published var groupName: String = ""
+    @Published var description: String = ""
     @Published var groupMembers: [String] = []
     @Published var memberNames: [String: String] = [:]
     @Published var proposeActivities: [HomeProposeActivityModel] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    
+
     private var db = Firestore.firestore()
     private var listeners: [ListenerRegistration] = []
     
@@ -43,6 +44,7 @@ class GroupDetailViewModel: ObservableObject {
                 }
                 
                 self.groupName = data["groupName"] as? String ?? ""
+                self.description = data["description"] as? String ?? ""
                 self.groupMembers = data["members"] as? [String] ?? []
                 
                 // Fetch member names
@@ -213,6 +215,8 @@ struct GroupDetailView: View {
     @StateObject private var viewModel = GroupDetailViewModel()
     @State private var selectedDate = Date()
     @State private var showingJoinCodeSheet = false
+    @State private var groupName: String = ""
+    @State private var description: String = ""
     
     let groupCode: String
     
@@ -246,7 +250,8 @@ struct GroupDetailView: View {
             }
         }
         .navigationTitle(viewModel.groupName)
-        .navigationBarItems(trailing: NavigationLink("Edit", destination: EditGroupView()))
+        .navigationBarItems(trailing: NavigationLink("Edit", destination: EditGroupView(groupName: groupName, description: description, groupCode: groupCode)))
+
         .sheet(isPresented: $showingJoinCodeSheet) {
             JoinCodeSheet()
         }
@@ -262,6 +267,8 @@ struct GroupDetailView: View {
         }
         .onAppear {
             viewModel.fetchGroupDetails(groupCode: groupCode)
+            groupName = viewModel.groupName
+            description = viewModel.description
         }
     }
 }
