@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct GroupMember: Identifiable, Hashable {
     let id = UUID()
@@ -13,19 +14,19 @@ struct GroupMember: Identifiable, Hashable {
 }
 
 struct ProposeActivityView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var activityName: String = ""
     @State private var selectedMembers: Set<GroupMember> = []
     @State private var showLocationSearch = false
+    @State private var selectedLocation: LocationData?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
     
-    let groupMembers = [
-        GroupMember(name: "Dilanjana"),
-        GroupMember(name: "Lakshan"),
-        GroupMember(name: "Haritha"),
-        GroupMember(name: "Nisal"),
-        GroupMember(name: "Lakshika")
-    ]
-    let activityId: String
-    @State private var proposeActvityId = ""
+    let groupId: String
+    let groupName: String
+    let groupMembers: [GroupMember]
+        
+    private let db = Firestore.firestore()
     
     var body: some View {
         NavigationStack {
@@ -35,9 +36,9 @@ struct ProposeActivityView: View {
                     .padding()
                     .cornerRadius(10)
                     .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color(.systemGray3), lineWidth: 2)
-                        )
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(.systemGray3), lineWidth: 2)
+                    )
                     .padding(.horizontal,20)
                 
                 Button(action: {
@@ -53,9 +54,11 @@ struct ProposeActivityView: View {
                     .cornerRadius(50)
                 }
                 .padding(.horizontal)
-                .navigationDestination(isPresented: $showLocationSearch) {
-                    //LocationSearchView()
-                        //.navigationBarBackButtonHidden(true)
+                .sheet(isPresented: $showLocationSearch) {
+                    LocationSearchView(onLocationSelected: { location in
+                        selectedLocation = location
+                        showLocationSearch = false
+                    })
                 }
                 
                 // Group Members Section
@@ -92,7 +95,7 @@ struct ProposeActivityView: View {
                         }) {
                             HStack {
                                 Image(systemName: selectedMembers.contains(member) ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(selectedMembers.contains(member) ? .blue : .gray)
+                                    .foregroundColor(selectedMembers.contains(member) ? Color("CustomBlue") : .gray)
                                 
                                 Image(systemName: "person.circle.fill")
                                     .resizable()
@@ -114,23 +117,95 @@ struct ProposeActivityView: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    // active save
-                }) {
-                    Text("Save")
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color("CustomBlue"))
-                        .cornerRadius(50)
+                Button(action: saveActivity) {
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text("Save")
+                    }
                 }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color("CustomBlue"))
+                .cornerRadius(50)
                 .padding(.horizontal, 40)
+                .disabled(isLoading || activityName.isEmpty || selectedLocation == nil || selectedMembers.isEmpty)
             }
             .navigationBarTitle("Propose an Activity", displayMode: .inline)
+            .alert("Error", isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+            )) {
+                Text(errorMessage ?? "")
+                Button("OK") {
+                    errorMessage = nil
+                }
+            }
+        }
+    }
+    
+    private func saveActivity() {
+        guard let location = selectedLocation else { return }
+        
+        isLoading = true
+        
+        let activityData: [String: Any] = [
+            "groupId": groupId,
+            "groupName": groupName,
+            "title": activityName,
+            "location": [
+                "name": location.name,
+                "address": location.address,
+                "latitude": location.coordinate.latitude,
+                "longitude": location.coordinate.longitude
+            ],
+            "participants": Array(selectedMembers).map { $0.name },
+            "createdAt": Timestamp(),
+            "status": "pending"
+        ]
+        
+        // Add to proposeActivities collection
+        let activityRef = db.collection("proposeActivities").document()
+        
+        activityRef.setData(activityData) { error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    errorMessage = error.localizedDescription
+                    isLoading = false
+                }
+                return
+            }
+            
+            // Update the group's proposeActivities array
+            let groupRef = db.collection("groups").document(groupId)
+            groupRef.updateData([
+                "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
+            ]) { error in
+                DispatchQueue.main.async {
+                    isLoading = false
+                    if let error = error {
+                        errorMessage = error.localizedDescription
+                    } else {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
 
-#Preview {
-    ProposeActivityView(activityId: "")
+// Preview Provider
+struct ProposeActivityView_Previews: PreviewProvider {
+    static var previews: some View {
+        ProposeActivityView(
+            groupId: "roXJFgmYmKwZF9lshpA5",
+            groupName: "Bio Friends",
+            groupMembers: [
+                GroupMember(name: "John"),
+                GroupMember(name: "Jane")
+            ]
+        )
+    }
 }

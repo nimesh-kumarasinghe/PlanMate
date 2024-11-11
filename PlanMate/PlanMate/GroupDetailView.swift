@@ -8,6 +8,7 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import CoreImage.CIFilterBuiltins
 
 class GroupDetailViewModel: ObservableObject {
     @Published var groupName: String = ""
@@ -154,13 +155,18 @@ class GroupDetailViewModel: ObservableObject {
 
 // Action Buttons Component
 struct GroupActionButtons: View {
-    let proposeActivityAction: () -> Void
-    let showJoinCodeAction: () -> Void
+    let groupId: String
+        let groupName: String
+        let members: [GroupMember]
+        @Binding var showingProposeActivitySheet: Bool
+        @Binding var showingJoinCodeSheet: Bool
     
     var body: some View {
         VStack(spacing: 10) {
             // Propose Activity Button
-            Button(action: proposeActivityAction) {
+            Button(action: {
+                showingProposeActivitySheet = true
+            }) {
                 HStack {
                     Text("Propose an Activity")
                         .foregroundColor(.white)
@@ -175,7 +181,9 @@ struct GroupActionButtons: View {
             }
             
             // Join Code Button
-            Button(action: showJoinCodeAction) {
+            Button(action: {
+                showingJoinCodeSheet = true
+            }) {
                 HStack {
                     Text("Get Join Code or QR")
                         .foregroundColor(.white)
@@ -239,6 +247,12 @@ struct GroupDetailView: View {
     @State private var showingJoinCodeSheet = false
     @State private var showingProposeActivitySheet = false
     
+    var groupMembers: [GroupMember] {
+        viewModel.groupMembers.compactMap { memberId in
+            GroupMember(name: viewModel.memberNames[memberId] ?? "Unknown")
+        }
+    }
+    
     let groupCode: String
     
     var body: some View {
@@ -268,12 +282,11 @@ struct GroupDetailView: View {
                     
                     // Action Buttons
                     GroupActionButtons(
-                        proposeActivityAction: {
-                            showingProposeActivitySheet = true
-                        },
-                        showJoinCodeAction: {
-                            showingJoinCodeSheet = true
-                        }
+                        groupId: groupCode,
+                        groupName: viewModel.groupName,
+                        members: groupMembers,
+                        showingProposeActivitySheet: $showingProposeActivitySheet,
+                        showingJoinCodeSheet: $showingJoinCodeSheet
                     )
                     
                     // Proposed Activities
@@ -297,8 +310,11 @@ struct GroupDetailView: View {
             JoinCodeSheet(joinCode: groupCode)
         }
         .sheet(isPresented: $showingProposeActivitySheet) {
-            // Add your ProposeActivityView here
-            Text("Propose Activity View")
+            ProposeActivityView(
+                groupId: groupCode,
+                groupName: viewModel.groupName,
+                groupMembers: groupMembers
+            )
         }
         .alert(item: Binding(
             get: { viewModel.errorMessage.map { ErrorWrapper(error: $0) } },
@@ -349,6 +365,9 @@ struct MemberRow: View {
 }
 
 struct JoinCodeSheet: View {
+    @State private var isCopied = false
+    @State private var isSaveSuccessAlertPresented = false
+    @State private var isLoading = false
     let joinCode: String
     @Environment(\.presentationMode) var presentationMode
     
@@ -391,7 +410,7 @@ struct JoinCodeSheet: View {
                     .foregroundColor(.gray)
                 
                 Button(action: {
-                    // Handle QR code generation
+                    saveQRCodeImage()
                 }) {
                     HStack {
                         Image(systemName: "qrcode")
@@ -413,11 +432,45 @@ struct JoinCodeSheet: View {
             .navigationBarItems(trailing: Button("Done") {
                 presentationMode.wrappedValue.dismiss()
             })
+            .alert(isPresented: $isSaveSuccessAlertPresented) {
+                Alert(title: Text("Success"), message: Text("QR Code image saved to Photos"), dismissButton: .default(Text("OK")))
+            }
+            if isLoading {
+                LoadingScreen()
+            }
         }
     }
+    
+    // Function to generate and save QR code as an image
+    private func saveQRCodeImage() {
+        isLoading = true  // Start loading
+        let qrCodeImage = generateHighQualityQRCode(from: joinCode)
+        
+        // Save QR code to the photo library
+        let imageSaver = ImageSaver { success in
+            isLoading = false  // Stop loading
+            if success {
+                isSaveSuccessAlertPresented = true
+            }
+        }
+        imageSaver.writeToPhotoAlbum(image: qrCodeImage)
+    }
+
+    // Function to generate a high-quality QR code image from a string
+    private func generateHighQualityQRCode(from string: String) -> UIImage {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+
+        let transform = CGAffineTransform(scaleX: 10, y: 10) // Scale for higher resolution
+
+        if let outputImage = filter.outputImage?.transformed(by: transform),
+           let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
+            return UIImage(cgImage: cgImage)
+        }
+        return UIImage(systemName: "xmark.circle") ?? UIImage()
+    }
 }
-
-
 
 // Models
 struct GroupActivity: Identifiable {

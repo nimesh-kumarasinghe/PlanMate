@@ -79,9 +79,6 @@ struct CreateGroupView: View {
                 .alert(isPresented: $isAlertPresented) {
                     Alert(title: Text("Required"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
                 }
-                .sheet(isPresented: $isImagePickerPresented) {
-                    // Implement image picker here
-                }
                 .sheet(isPresented: $isQRCodePopupPresented) {
                     QRCodePopupView(groupCode: groupCode)
                 }
