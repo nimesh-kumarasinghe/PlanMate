@@ -179,9 +179,9 @@ struct ProposeActivityView: View {
     
     private func saveActivity() {
         guard !selectedLocations.isEmpty else { return }
-        
+
         isLoading = true
-        
+
         // Create locations array
         let locations = selectedLocations.map { location -> [String: Any] in
             return [
@@ -191,12 +191,12 @@ struct ProposeActivityView: View {
                 "longitude": location.coordinate.longitude
             ]
         }
-        
+
         // Get participant UIDs
         let participantUIDs = Array(selectedMembers).map { $0.uid }
-        
+
         let activityData: [String: Any] = [
-            "groupId": groupId,
+            "groupId": groupId,  // Assuming groupId is the groupCode now
             "groupName": groupName,
             "title": activityName,
             "locations": locations,
@@ -205,10 +205,10 @@ struct ProposeActivityView: View {
             "createdAt": Timestamp(),
             "status": "pending"
         ]
-        
+
         // Add to proposeActivities collection
         let activityRef = db.collection("proposeActivities").document()
-        
+
         activityRef.setData(activityData) { error in
             if let error = error {
                 DispatchQueue.main.async {
@@ -217,37 +217,58 @@ struct ProposeActivityView: View {
                 }
                 return
             }
-            
-            // Create a batch write for multiple operations
-            let batch = db.batch()
-            
-            // Update the group's proposeActivities array
-//            let groupRef = db.collection("groups").document(groupId)
-//            batch.updateData([
-//                "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
-//            ], forDocument: groupRef)
-            
-            // Update each user proposeActivities array in users collection
-            for participantUID in participantUIDs {
-                let userRef = db.collection("users").document(participantUID)
+
+            // Find the group using the groupCode (groupId in this case)
+            let groupQuery = db.collection("groups").whereField("groupCode", isEqualTo: self.groupId)
+            groupQuery.getDocuments { querySnapshot, error in
+                if let error = error {
+                    DispatchQueue.main.async {
+                        errorMessage = error.localizedDescription
+                        isLoading = false
+                    }
+                    return
+                }
+
+                guard let groupDocument = querySnapshot?.documents.first else {
+                    DispatchQueue.main.async {
+                        errorMessage = "Group not found"
+                        isLoading = false
+                    }
+                    return
+                }
+
+                // Create a batch write for multiple operations
+                let batch = db.batch()
+
+                // Update the group's proposeActivities array
+                let groupRef = groupDocument.reference
                 batch.updateData([
                     "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
-                ], forDocument: userRef)
-            }
-            
-            // Commit the batch
-            batch.commit { error in
-                DispatchQueue.main.async {
-                    isLoading = false
-                    if let error = error {
-                        errorMessage = error.localizedDescription
-                    } else {
-                        dismiss()
+                ], forDocument: groupRef)
+
+                // Update each user proposeActivities array in users collection
+                for participantUID in participantUIDs {
+                    let userRef = db.collection("users").document(participantUID)
+                    batch.updateData([
+                        "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
+                    ], forDocument: userRef)
+                }
+
+                // Commit the batch
+                batch.commit { error in
+                    DispatchQueue.main.async {
+                        isLoading = false
+                        if let error = error {
+                            errorMessage = error.localizedDescription
+                        } else {
+                            dismiss()
+                        }
                     }
                 }
             }
         }
     }
+
 }
 
 // Location Chip View

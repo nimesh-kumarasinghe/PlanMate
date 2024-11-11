@@ -19,6 +19,8 @@ class GroupDetailViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    @AppStorage("userid") private var userid: String = ""
+    
     private var db = Firestore.firestore()
     private var listeners: [ListenerRegistration] = []
     
@@ -60,7 +62,7 @@ class GroupDetailViewModel: ObservableObject {
                 
                 // Fetch propose activities
                 if let activityIds = data["proposeActivities"] as? [String] {
-                    self.fetchProposeActivities(activityIds: activityIds)
+                    self.fetchProposeActivities(forUserId: userid, groupCode: groupCode)
                 }
                 
                 self.isLoading = false
@@ -104,18 +106,34 @@ class GroupDetailViewModel: ObservableObject {
         }
     }
     
-    private func fetchProposeActivities(activityIds: [String]) {
-        // Clear existing activities first
-        DispatchQueue.main.async {
-            self.proposeActivities.removeAll()
-        }
-        
-        for activityId in activityIds {
-            let cleanActivityId = activityId.trimmingCharacters(in: .whitespaces)
+    private func fetchProposeActivities(forUserId userId: String, groupCode: String) {
+        // Step 1: Fetch the user's proposeActivities array from the users collection
+        let userRef = db.collection("users").document(userId)
+        userRef.getDocument { [weak self] (document, error) in
+            guard let self = self else { return }
             
-            let listener = db.collection("proposeActivities")
-                .document(cleanActivityId)
-                .addSnapshotListener { [weak self] documentSnapshot, error in
+            if let error = error {
+                print("Error fetching user document: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let document = document, document.exists,
+                  let data = document.data(),
+                  let activityIds = data["proposeActivities"] as? [String] else {
+                print("No proposeActivities found for the user.")
+                return
+            }
+            
+            // Step 2: Clear existing activities first
+            DispatchQueue.main.async {
+                self.proposeActivities.removeAll()
+            }
+            
+            // Step 3: Fetch each activity document based on activityIds
+            for activityId in activityIds {
+                let cleanActivityId = activityId.trimmingCharacters(in: .whitespaces)
+                
+                db.collection("proposeActivities").document(cleanActivityId).getDocument { [weak self] documentSnapshot, error in
                     guard let self = self else { return }
                     
                     if let error = error {
@@ -129,23 +147,27 @@ class GroupDetailViewModel: ObservableObject {
                         return
                     }
                     
-                    let activity = HomeProposeActivityModel(
-                        id: document.documentID,
-                        groupId: data["groupId"] as? String ?? "",
-                        groupName: data["groupName"] as? String ?? "",
-                        title: data["title"] as? String ?? ""
-                    )
-                    
-                    DispatchQueue.main.async {
-                        if !self.proposeActivities.contains(where: { $0.id == activity.id }) {
-                            self.proposeActivities.append(activity)
+                    // Check if the activity's groupId matches the current groupCode
+                    if let activityGroupId = data["groupId"] as? String, activityGroupId == groupCode {
+                        // Create activity model and add to proposeActivities array
+                        let activity = HomeProposeActivityModel(
+                            id: document.documentID,
+                            groupId: data["groupId"] as? String ?? "",
+                            groupName: data["groupName"] as? String ?? "",
+                            title: data["title"] as? String ?? ""
+                        )
+                        
+                        DispatchQueue.main.async {
+                            if !self.proposeActivities.contains(where: { $0.id == activity.id }) {
+                                self.proposeActivities.append(activity)
+                            }
                         }
                     }
                 }
-            
-            listeners.append(listener)
+            }
         }
     }
+
     
     deinit {
         // Clean up listeners when view model is deallocated
