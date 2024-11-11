@@ -211,7 +211,7 @@ struct ProposeActivityList: View {
             ZStack {
                 List {
                     ForEach(viewModel.activities) { activity in
-                        NavigationLink(destination: ActivityDetailsView(activity: activity)) {
+                        NavigationLink(destination: VotingProposeActivityView()) {
                             ActivitiesRow(activity: activity)
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {

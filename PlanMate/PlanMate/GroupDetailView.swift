@@ -249,7 +249,7 @@ struct GroupDetailView: View {
     
     var groupMembers: [GroupMember] {
         viewModel.groupMembers.compactMap { memberId in
-            GroupMember(name: viewModel.memberNames[memberId] ?? "Unknown")
+            GroupMember(name: viewModel.memberNames[memberId] ?? "Unknown", uid: memberId)
         }
     }
     
