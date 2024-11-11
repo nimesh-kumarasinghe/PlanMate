@@ -4,12 +4,10 @@
 //
 //  Created by COBSCCOMPY4231P-005 on 2024-11-07.
 //
-
 import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
 
-// Model to represent proposed activity data
 struct ActivityData: Identifiable {
     let id: String
     let title: String
@@ -26,7 +24,6 @@ struct ActivityData: Identifiable {
     }
 }
 
-// ViewModel to handle Firebase operations
 class ProposeActivitiesViewModel: ObservableObject {
     @Published var activities: [ActivityData] = []
     @Published var errorMessage: String = ""
@@ -36,56 +33,70 @@ class ProposeActivitiesViewModel: ObservableObject {
     private var activityListeners: [ListenerRegistration] = []
     
     func fetchUserActivities() {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
-        isLoading = true
-        
-        print("Fetching activities for user with ID: \(userId)")
-
-        db.collection("users").document(userId).getDocument { [weak self] document, error in
-            guard let self = self else { return }
-
-            if let error = error {
-                self.errorMessage = "Error fetching user document: \(error.localizedDescription)"
-                self.isLoading = false
-                return
-            }
-
-            guard let document = document,
-                  let proposeActivities = document.data()?["proposeActivities"] as? [String] else {
-                print("No proposeActivities field or invalid format")
-                self.isLoading = false
-                return
-            }
-
-            print("Fetched proposeActivities for user: \(proposeActivities)")
-
-            self.activities.removeAll()
-            self.removeListeners()
-            self.fetchProposeActivities(activityIds: proposeActivities)
+        guard let userId = Auth.auth().currentUser?.uid else {
+            self.errorMessage = "No user logged in"
+            return
         }
+        
+        isLoading = true
+        print("Fetching activities for user with ID: \(userId)")
+        
+        let userListener = db.collection("users").document(userId)
+            .addSnapshotListener { [weak self] documentSnapshot, error in
+                guard let self = self else { return }
+                
+                if let error = error {
+                    self.errorMessage = "Error fetching user data: \(error.localizedDescription)"
+                    self.isLoading = false
+                    return
+                }
+                
+                guard let document = documentSnapshot,
+                      let proposeActivities = document.data()?["proposeActivities"] as? [String] else {
+                    DispatchQueue.main.async {
+                        self.activities.removeAll()
+                        self.isLoading = false
+                    }
+                    return
+                }
+                
+                let cleanActivityIds = proposeActivities.map { $0.trimmingCharacters(in: .whitespaces) }
+                
+                self.removeListeners()
+                self.fetchProposeActivities(activityIds: cleanActivityIds)
+            }
+        
+        activityListeners.append(userListener)
     }
-
+    
     private func fetchProposeActivities(activityIds: [String]) {
+        DispatchQueue.main.async {
+            self.activities.removeAll()
+        }
+        
+        if activityIds.isEmpty {
+            self.isLoading = false
+            return
+        }
+        
         for activityId in activityIds {
-            let cleanActivityId = activityId.trimmingCharacters(in: .whitespaces)
-
             let listener = db.collection("proposeActivities")
-                .document(cleanActivityId)
+                .document(activityId)
                 .addSnapshotListener { [weak self] documentSnapshot, error in
                     guard let self = self else { return }
-
+                    
                     if let error = error {
-                        print("Error fetching activity: \(error.localizedDescription)")
-                        self.errorMessage = "Error fetching activity: \(error.localizedDescription)"
+                        print("Error fetching activity \(activityId): \(error.localizedDescription)")
                         return
                     }
-
-                    guard let document = documentSnapshot, document.exists,
+                    
+                    guard let document = documentSnapshot,
+                          document.exists,
                           let data = document.data() else {
-                        print("No document found for activity ID: \(cleanActivityId)")
+                        print("No document found for activity ID: \(activityId)")
                         return
                     }
-
+                    
                     if let activity = self.parseActivityData(document: document, data: data) {
                         DispatchQueue.main.async {
                             if let index = self.activities.firstIndex(where: { $0.id == activity.id }) {
@@ -96,20 +107,22 @@ class ProposeActivitiesViewModel: ObservableObject {
                         }
                     }
                 }
-
+            
             activityListeners.append(listener)
         }
-
-        isLoading = false
+        
+        DispatchQueue.main.async {
+            self.isLoading = false
+        }
     }
-
+    
     private func parseActivityData(document: DocumentSnapshot, data: [String: Any]) -> ActivityData? {
         guard let title = data["title"] as? String,
               let groupId = data["groupId"] as? String,
               let groupName = data["groupName"] as? String else {
             return nil
         }
-
+        
         return ActivityData(
             id: document.documentID,
             title: title,
@@ -118,53 +131,81 @@ class ProposeActivitiesViewModel: ObservableObject {
             groupName: groupName
         )
     }
-
+    
     private func removeListeners() {
-        activityListeners.forEach { listener in
-            listener.remove()
-        }
+        activityListeners.forEach { $0.remove() }
         activityListeners.removeAll()
     }
-
+    
     func deleteActivity(activityId: String) {
-        guard let currentUser = Auth.auth().currentUser else {
-            print("No current user authenticated.")
+        guard let userId = Auth.auth().currentUser?.uid else {
+            self.errorMessage = "No user logged in"
             return
         }
-
-        let userRef = db.collection("users").document(currentUser.uid)
-
-        print("Attempting to delete activity with ID: \(activityId) from user's proposeActivities array.")
-
-        // Use FieldValue.arrayRemove to directly remove the activityId from proposeActivities array
-        userRef.updateData([
-            "proposeActivities": FieldValue.arrayRemove([activityId])
-        ]) { [weak self] error in
+        
+        let userRef = db.collection("users").document(userId)
+        
+        // Set loading state
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
+        
+        userRef.getDocument { [weak self] (document, error) in
             guard let self = self else { return }
-
+            
             if let error = error {
-                print("Error removing activity from user's proposeActivities array: \(error.localizedDescription)")
-                self.errorMessage = "Error removing activity: \(error.localizedDescription)"
-            } else {
-                print("Successfully removed activity with ID: \(activityId) from user's proposeActivities array.")
+                print("Error fetching user document: \(error.localizedDescription)")
+                self.errorMessage = "Error fetching user document: \(error.localizedDescription)"
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+                return
+            }
+            
+            guard let document = document,
+                  var proposeActivities = document.data()?["proposeActivities"] as? [String] else {
+                print("No proposeActivities found or document doesn't exist")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+                return
+            }
+            
+            // Remove the activity ID from the array
+            proposeActivities.removeAll { $0.trimmingCharacters(in: .whitespaces) == activityId }
+            
+            // Update collection with the new array
+            userRef.updateData([
+                "proposeActivities": proposeActivities
+            ]) { error in
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
                 
-                // Remove activity from local array as well
-                if let index = self.activities.firstIndex(where: { $0.id == activityId }) {
+                if let error = error {
+                    print("Error updating proposeActivities: \(error.localizedDescription)")
+                    self.errorMessage = "Error updating proposeActivities: \(error.localizedDescription)"
+                } else {
+                    print("Successfully deleted activity with ID: \(activityId)")
+                    // Remove the activity from local array immediately
                     DispatchQueue.main.async {
-                        self.activities.remove(at: index)
+                        self.activities.removeAll { $0.id == activityId }
                     }
                 }
             }
         }
     }
+    
+    deinit {
+        removeListeners()
+    }
 }
 
-// ProposeActivityList View
 struct ProposeActivityList: View {
     @StateObject private var viewModel = ProposeActivitiesViewModel()
     @State private var showDeleteAlert = false
-    @State private var indexSetToDelete: IndexSet?
-
+    @State private var selectedActivityId: String?
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -173,23 +214,30 @@ struct ProposeActivityList: View {
                         NavigationLink(destination: ActivityDetailsView(activity: activity)) {
                             ActivitiesRow(activity: activity)
                         }
-                    }
-                    .onDelete { indexSet in
-                        self.indexSetToDelete = indexSet
-                        self.showDeleteAlert = true
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                selectedActivityId = activity.id
+                                showDeleteAlert = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
                 }
                 .navigationBarTitleDisplayMode(.inline)
-                .background(Color(white: 0.95))
+                .background(Color(UIColor.systemGroupedBackground))
                 
                 if viewModel.isLoading {
                     ProgressView()
+                        .scaleEffect(1.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black.opacity(0.1))
                 }
                 
-                if !viewModel.errorMessage.isEmpty {
-                    Text(viewModel.errorMessage)
-                        .foregroundColor(.red)
-                        .padding()
+                if viewModel.activities.isEmpty && !viewModel.isLoading {
+                    Text("No proposed activities")
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .alert(isPresented: $showDeleteAlert) {
@@ -197,8 +245,7 @@ struct ProposeActivityList: View {
                     title: Text("Delete Activity"),
                     message: Text("Are you sure you want to delete this activity?"),
                     primaryButton: .destructive(Text("Delete")) {
-                        if let indexSet = indexSetToDelete, let index = indexSet.first {
-                            let activityId = viewModel.activities[index].id
+                        if let activityId = selectedActivityId {
                             viewModel.deleteActivity(activityId: activityId)
                         }
                     },
@@ -206,51 +253,59 @@ struct ProposeActivityList: View {
                 )
             }
         }
-        .background(Color.white)
         .onAppear {
             viewModel.fetchUserActivities()
         }
     }
 }
 
-// ActivitiesRow View
 struct ActivitiesRow: View {
     let activity: ActivityData
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(activity.title)
-                    .font(.headline)
-                Text("from \(activity.groupName)")
-                    .font(.subheadline)
-            }
-            Spacer()
+        VStack(alignment: .leading, spacing: 8) {
+            Text(activity.title)
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            Text("from \(activity.groupName)")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
         }
-        .padding()
+        .padding(.vertical, 8)
     }
 }
 
-// ActivityDetailsView
 struct ActivityDetailsView: View {
     let activity: ActivityData
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
-        NavigationStack {
+        ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text(activity.title)
                     .font(.title)
-                Text("Group: \(activity.groupName)")
-                    .font(.subheadline)
-                Text("Group ID: \(activity.groupId)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                    .padding(.bottom, 8)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Group Details")
+                        .font(.headline)
+                    
+                    Text(activity.groupName)
+                        .font(.body)
+                    
+                    Text("ID: \(activity.groupId)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 8)
+                
                 Spacer()
             }
             .padding()
-            .background(Color.white)
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(false)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
