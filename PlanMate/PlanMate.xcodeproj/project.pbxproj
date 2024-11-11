@@ -10,6 +10,8 @@
 		9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1DB5672CD6183C008639AB /* NotificationsView.swift */; };
 		9E91F2882CDCE81E003CA0C1 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */; };
 		9E91F28A2CDCFCC6003CA0C1 /* ProposeActivityList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */; };
+		9EA917E12CE20964003E145F /* EventKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA917E02CE20964003E145F /* EventKitManager.swift */; };
+		9EA917E42CE209F1003E145F /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA917E32CE209F1003E145F /* LocationManager.swift */; };
 		9EAC123F2CD89CB2002A84A0 /* EditGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */; };
 		9EAC12412CD8AB9A002A84A0 /* LocationSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */; };
 		9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */; };
@@ -76,6 +78,8 @@
 		9E1DB5672CD6183C008639AB /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
 		9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeActivityList.swift; sourceTree = "<group>"; };
+		9EA917E02CE20964003E145F /* EventKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitManager.swift; sourceTree = "<group>"; };
+		9EA917E32CE209F1003E145F /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditGroupView.swift; sourceTree = "<group>"; };
 		9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchView.swift; sourceTree = "<group>"; };
 		9EAC12422CD8BFA3002A84A0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -151,6 +155,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9EA917E22CE209A9003E145F /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				9EA917E02CE20964003E145F /* EventKitManager.swift */,
+				9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */,
+				9EA917E32CE209F1003E145F /* LocationManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
 		9EE4F0E22CCE1199009D0F71 = {
 			isa = PBXGroup;
 			children = (
@@ -182,8 +196,8 @@
 				9EE4F11D2CCE1592009D0F71 /* SplashScreenView.swift */,
 				9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */,
 				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
+				9EA917E22CE209A9003E145F /* Managers */,
 				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
-				9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */,
 				9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */,
 				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
 				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
@@ -402,10 +416,12 @@
 				9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */,
 				9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */,
 				9EE971F32CCF930500108C12 /* AvailabilityListView.swift in Sources */,
+				9EA917E42CE209F1003E145F /* LocationManager.swift in Sources */,
 				9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */,
 				9EE4F1242CCE2634009D0F71 /* RegisterView.swift in Sources */,
 				9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */,
 				9E91F2882CDCE81E003CA0C1 /* KeychainHelper.swift in Sources */,
+				9EA917E12CE20964003E145F /* EventKitManager.swift in Sources */,
 				9EE7D73D2CDA0CB800F7602D /* AppDelegate.swift in Sources */,
 				9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */,
 				9EE971DD2CCF60B300108C12 /* MainHomeView.swift in Sources */,

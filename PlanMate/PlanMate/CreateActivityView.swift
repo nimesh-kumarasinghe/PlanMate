@@ -9,98 +9,6 @@ import SwiftUI
 import FirebaseFirestore
 import MapKit
 import FirebaseAuth
-import EventKit
-
-// EventKit permission handler
-class EventKitManager {
-    static let shared = EventKitManager()
-    private let eventStore = EKEventStore()
-    
-    func requestAccess(completion: @escaping (Bool) -> Void) {
-        if #available(iOS 17.0, *) {
-            eventStore.requestFullAccessToEvents { granted, error in
-                DispatchQueue.main.async {
-                    completion(granted)
-                }
-            }
-        } else {
-            eventStore.requestAccess(to: .event) { granted, error in
-                DispatchQueue.main.async {
-                    completion(granted)
-                }
-            }
-        }
-    }
-    
-    func saveToCalendar(
-        title: String,
-        startDate: Date,
-        endDate: Date,
-        isAllDay: Bool,
-        location: LocationData?,
-        notes: [Note],
-        urls: [String],
-        reminder: String,
-        completion: @escaping (Bool, Error?) -> Void
-    ) {
-        let event = EKEvent(eventStore: eventStore)
-        event.title = title
-        event.startDate = startDate
-        event.endDate = endDate
-        event.isAllDay = isAllDay
-        
-        // Set location if available
-        if let location = location {
-            event.location = "\(location.name): \(location.address)"
-        }
-        
-        // Combine notes into a single string
-        if !notes.isEmpty {
-            event.notes = notes.map { $0.content }.joined(separator: "\n\n")
-        }
-        
-        // Add URLs to notes
-        if !urls.isEmpty {
-            let urlString = "\n\nURLs:\n" + urls.joined(separator: "\n")
-            event.notes = (event.notes ?? "") + urlString
-        }
-        
-        // Set calendar
-        event.calendar = eventStore.defaultCalendarForNewEvents
-        
-        // Add reminder alarm
-        if let alarm = createAlarm(from: reminder) {
-            event.addAlarm(alarm)
-        }
-        
-        do {
-            try eventStore.save(event, span: .thisEvent)
-            completion(true, nil)
-        } catch {
-            completion(false, error)
-        }
-    }
-    
-    private func createAlarm(from reminder: String) -> EKAlarm? {
-        let components = reminder.components(separatedBy: " ")
-        guard components.count >= 2,
-              let timeValue = Int(components[0]) else {
-            return nil
-        }
-        
-        var offset: TimeInterval = 0
-        switch components[1] {
-        case "min":
-            offset = TimeInterval(-timeValue * 60)
-        case "hour":
-            offset = TimeInterval(-timeValue * 60 * 60)
-        default:
-            return nil
-        }
-        
-        return EKAlarm(relativeOffset: offset)
-    }
-}
 
 // Models
 struct Task: Identifiable {
@@ -153,7 +61,7 @@ struct AddTaskSheet: View {
     @State private var taskText: String = ""
     @State private var selectedMember: TeamMember?
     @Binding var isShowingSheet: Bool
-    let availableMembers: [TeamMember]  // New property to receive group members
+    let availableMembers: [TeamMember]
     
     var body: some View {
         NavigationView {
@@ -290,8 +198,6 @@ struct URLInputView: View {
 struct CreateActivityView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = ActivityViewModel()
-    @State private var showCalendarPermissionAlert = false
-    @State private var calendarError: String?
     
     var isEditMode: Bool = false
     var editActivityId: String?
@@ -322,6 +228,9 @@ struct CreateActivityView: View {
     @State private var isShowingGroupMenu = false
     @State private var isShowingMembersSheet = false
     @State private var userGroups: [String] = []
+    
+    @State private var saveToCalendar = false
+    @State private var calendarAccessGranted = false
     
     let reminderOptions = [
         "5 min before",
@@ -523,6 +432,29 @@ struct CreateActivityView: View {
                 }
                 
                 if isEditMode {
+                    Section {
+                        HStack{
+                            Image(systemName: "calendar")
+                                .foregroundColor(Color("CustomBlue"))
+                            Toggle("Save to Phone Calendar", isOn: $saveToCalendar)
+                                .onChange(of: saveToCalendar) { newValue in
+                                    if newValue {
+                                        // Request calendar access when toggle is enabled
+                                        EventKitManager.shared.requestAccess { granted in
+                                            if granted {
+                                                calendarAccessGranted = true
+                                            } else {
+                                                // If access is denied, reset the toggle
+                                                saveToCalendar = false
+                                                alertTitle = "Calendar Access"
+                                                alertMessage = "Please enable calendar access in Settings to use this feature."
+                                                showAlert = true
+                                            }
+                                        }
+                                    }
+                                }
+                        }
+                    }
                     Section{
                         Button(action: {
                             showLeaveConfirmation = true
@@ -615,13 +547,6 @@ struct CreateActivityView: View {
                     loadActivityData()
                 }
                 loadGroups()
-                
-                // Request calendar access when view appears
-                EventKitManager.shared.requestAccess { granted in
-                    if !granted {
-                        showCalendarPermissionAlert = true
-                    }
-                }
             }
             .overlay {
                 if isLoading {
@@ -843,6 +768,21 @@ struct CreateActivityView: View {
                     }
                     selectedReminder = data["reminder"] as? String ?? "10 min before"
                     
+                    // Load the calendar toggle state
+                    saveToCalendar = data["saveToCalendar"] as? Bool ?? false
+                                    
+                                    // If calendar was previously enabled, check for permission
+                    if saveToCalendar {
+                        EventKitManager.shared.requestAccess { granted in
+                            DispatchQueue.main.async {
+                                calendarAccessGranted = granted
+                                if !granted {
+                                    saveToCalendar = false
+                                }
+                            }
+                        }
+                    }
+                    
                     // Load group
                     let groupId = data["groupId"] as? String ?? ""
                     if !groupId.isEmpty {
@@ -976,6 +916,31 @@ struct CreateActivityView: View {
         isLoading = true
         let db = Firestore.firestore()
         
+        
+        if isEditMode && saveToCalendar && calendarAccessGranted {
+            // Get the first location if any exists
+            let firstLocation = viewModel.locations.first
+            
+            EventKitManager.shared.saveToCalendar(
+                title: title,
+                startDate: startDate,
+                endDate: endDate,
+                isAllDay: isAllDay,
+                location: firstLocation,
+                notes: viewModel.notes,
+                urls: viewModel.urls,
+                reminder: selectedReminder
+            ) { success, error in
+                if let error = error {
+                    DispatchQueue.main.async {
+                        alertTitle = "Calendar Error"
+                        alertMessage = "Failed to save to calendar: \(error.localizedDescription)"
+                        showAlert = true
+                    }
+                }
+            }
+        }
+        
         // Determine if we're creating or updating
         let activityRef: DocumentReference
         var activityId: String
@@ -1011,7 +976,8 @@ struct CreateActivityView: View {
             ] },
             "notes": viewModel.notes.map { $0.content },
             "urls": viewModel.urls,
-            "updatedAt": Timestamp(date: Date())
+            "updatedAt": Timestamp(date: Date()),
+            "saveToCalendar": saveToCalendar
         ]
         
         let saveOperation: (Error?) -> Void = { error in
@@ -1025,16 +991,15 @@ struct CreateActivityView: View {
                 return
             }
             
-            // Get all selected participants including the creator
+            // Get all selected participants
             var allParticipantIds = Set(self.groupMembers.filter { $0.isSelected }.map { $0.id })
             if let currentUserId = Auth.auth().currentUser?.uid {
                 allParticipantIds.insert(currentUserId) // Add creator if not already included
             }
             
-            // Create a batch write for updating all participants' documents
             let batch = db.batch()
             
-            // Update each participant's document with the activity ID
+            // Update each participant document with the activity ID
             for userId in allParticipantIds {
                 let userRef = db.collection("users").document(userId)
                 batch.updateData([
@@ -1053,47 +1018,18 @@ struct CreateActivityView: View {
                     }
                     return
                 }
-                
-                // After successful Firestore save and user updates, save to calendar
-                EventKitManager.shared.requestAccess { granted in
-                    if granted {
-                        EventKitManager.shared.saveToCalendar(
-                            title: self.title,
-                            startDate: self.startDate,
-                            endDate: self.endDate,
-                            isAllDay: self.isAllDay,
-                            location: self.viewModel.locations.first,
-                            notes: self.viewModel.notes,
-                            urls: self.viewModel.urls,
-                            reminder: self.selectedReminder
-                        ) { success, error in
-                            DispatchQueue.main.async {
-                                self.isLoading = false
-                                if success {
-                                    self.alertTitle = "Success"
-                                    self.alertMessage = "Activity saved to Firestore and Calendar!"
-                                    self.clearFields()
-                                    self.dismiss()
-                                } else {
-                                    self.alertTitle = "Partial Success"
-                                    self.alertMessage = "Saved to Firestore but failed to save to Calendar: \(error?.localizedDescription ?? "Unknown error")"
-                                }
-                                self.showAlert = true
-                            }
-                        }
-                    } else {
-                        DispatchQueue.main.async {
-                            self.isLoading = false
-                            self.alertTitle = "Calendar Access Denied"
-                            self.alertMessage = "Please enable calendar access in Settings to save events to your calendar."
-                            self.showAlert = true
-                        }
-                    }
-                }
+            }
+            
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.alertTitle = "Success"
+                self.alertMessage = "Activity saved successfully!"
+                self.clearFields()
+                self.dismiss()
+                self.showAlert = true
             }
         }
         
-        // Execute the Firestore operation
         if editActivityId != nil {
             activityRef.updateData(activityData, completion: saveOperation)
         } else {
@@ -1194,7 +1130,7 @@ struct ParticipantsSelectionView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var members: [TeamMember]
     @State private var selectAll: Bool = false
-    @State private var selectedMembers: Set<TeamMember> = []  // Track selected members
+    @State private var selectedMembers: Set<TeamMember> = []
     
     var body: some View {
         NavigationView {
@@ -1202,7 +1138,6 @@ struct ParticipantsSelectionView: View {
                 Toggle("Select All", isOn: $selectAll)
                     .padding()
                     .onChange(of: selectAll) { newValue in
-                        // Update selected members based on "Select All" status
                         if newValue {
                             selectedMembers = Set(members)
                         } else {
@@ -1224,7 +1159,6 @@ struct ParticipantsSelectionView: View {
                                     } else {
                                         selectedMembers.insert(member)
                                     }
-                                    // Update "Select All" toggle based on selection status
                                     selectAll = selectedMembers.count == members.count
                                 }
                         }
