@@ -11,19 +11,22 @@ import FirebaseFirestore
 
 class GroupDetailViewModel: ObservableObject {
     @Published var groupName: String = ""
-    @Published var description: String = ""
+    @Published var groupDescription: String = ""
     @Published var groupMembers: [String] = []
     @Published var memberNames: [String: String] = [:]
     @Published var proposeActivities: [HomeProposeActivityModel] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-
+    
     private var db = Firestore.firestore()
     private var listeners: [ListenerRegistration] = []
     
     func fetchGroupDetails(groupCode: String) {
         isLoading = true
+        proposeActivities.removeAll()
+        memberNames.removeAll()
         
+        // Query the groups collection using groupCode
         let listener = db.collection("groups")
             .whereField("groupCode", isEqualTo: groupCode)
             .limit(to: 1)
@@ -36,19 +39,23 @@ class GroupDetailViewModel: ObservableObject {
                     return
                 }
                 
-                guard let document = querySnapshot?.documents.first,
-                      let data = document.data() as? [String: Any] else {
+                guard let document = querySnapshot?.documents.first else {
                     self.errorMessage = "Group not found"
                     self.isLoading = false
                     return
                 }
+
+                let data = document.data()
                 
-                self.groupName = data["groupName"] as? String ?? ""
-                self.description = data["description"] as? String ?? ""
-                self.groupMembers = data["members"] as? [String] ?? []
+                // Update basic group info
+                DispatchQueue.main.async {
+                    self.groupName = data["groupName"] as? String ?? ""
+                    self.groupDescription = data["description"] as? String ?? ""
+                    self.groupMembers = data["members"] as? [String] ?? []
+                }
                 
                 // Fetch member names
-                self.fetchMemberNames(memberIds: self.groupMembers)
+                self.fetchMemberNames(memberIds: data["members"] as? [String] ?? [])
                 
                 // Fetch propose activities
                 if let activityIds = data["proposeActivities"] as? [String] {
@@ -62,8 +69,16 @@ class GroupDetailViewModel: ObservableObject {
     }
     
     private func fetchMemberNames(memberIds: [String]) {
+        // Clear existing member names first
+        DispatchQueue.main.async {
+            self.memberNames.removeAll()
+        }
+        
         for memberId in memberIds {
-            let listener = db.collection("users").document(memberId)
+            let cleanMemberId = memberId.trimmingCharacters(in: .whitespaces)
+            
+            let listener = db.collection("users")
+                .document(cleanMemberId)
                 .addSnapshotListener { [weak self] documentSnapshot, error in
                     guard let self = self else { return }
                     
@@ -72,14 +87,15 @@ class GroupDetailViewModel: ObservableObject {
                         return
                     }
                     
-                    guard let document = documentSnapshot, document.exists,
+                    guard let document = documentSnapshot,
+                          document.exists,
                           let data = document.data(),
                           let name = data["name"] as? String else {
                         return
                     }
                     
                     DispatchQueue.main.async {
-                        self.memberNames[memberId] = name
+                        self.memberNames[cleanMemberId] = name
                     }
                 }
             
@@ -88,6 +104,11 @@ class GroupDetailViewModel: ObservableObject {
     }
     
     private func fetchProposeActivities(activityIds: [String]) {
+        // Clear existing activities first
+        DispatchQueue.main.async {
+            self.proposeActivities.removeAll()
+        }
+        
         for activityId in activityIds {
             let cleanActivityId = activityId.trimmingCharacters(in: .whitespaces)
             
@@ -126,6 +147,7 @@ class GroupDetailViewModel: ObservableObject {
     }
     
     deinit {
+        // Clean up listeners when view model is deallocated
         listeners.forEach { $0.remove() }
     }
 }
@@ -215,18 +237,31 @@ struct GroupDetailView: View {
     @StateObject private var viewModel = GroupDetailViewModel()
     @State private var selectedDate = Date()
     @State private var showingJoinCodeSheet = false
-    @State private var groupName: String = ""
-    @State private var description: String = ""
+    @State private var showingProposeActivitySheet = false
     
     let groupCode: String
     
     var body: some View {
         ScrollView {
             if viewModel.isLoading {
-                ProgressView("Loading...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack {
+                    Spacer()
+                    ProgressView("Loading group details...")
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, minHeight: 300)
             } else {
                 VStack(spacing: 20) {
+                    // Group Info Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        if !viewModel.groupDescription.isEmpty {
+                            Text(viewModel.groupDescription)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal)
+                        }
+                    }
+                    
                     // Calendar Section
                     GroupCalendarView(selectedDate: $selectedDate)
                         .padding(.horizontal)
@@ -234,7 +269,7 @@ struct GroupDetailView: View {
                     // Action Buttons
                     GroupActionButtons(
                         proposeActivityAction: {
-                            // Handle propose activity navigation
+                            showingProposeActivitySheet = true
                         },
                         showJoinCodeAction: {
                             showingJoinCodeSheet = true
@@ -242,18 +277,28 @@ struct GroupDetailView: View {
                     )
                     
                     // Proposed Activities
-                    ProposedActivitiesSection(activities: viewModel.proposeActivities)
+                    if !viewModel.proposeActivities.isEmpty {
+                        ProposedActivitiesSection(activities: viewModel.proposeActivities)
+                    }
                     
                     // Group Members
-                    GroupMembersSection(members: viewModel.groupMembers, memberNames: viewModel.memberNames)
+                    if !viewModel.groupMembers.isEmpty {
+                        GroupMembersSection(
+                            members: viewModel.groupMembers,
+                            memberNames: viewModel.memberNames
+                        )
+                    }
                 }
             }
         }
         .navigationTitle(viewModel.groupName)
-        .navigationBarItems(trailing: NavigationLink("Edit", destination: EditGroupView(groupName: groupName, description: description, groupCode: groupCode)))
-
+        .navigationBarItems(trailing: NavigationLink("Edit", destination: EditGroupView(groupName: viewModel.groupName, description: viewModel.groupDescription, groupCode: groupCode)))
         .sheet(isPresented: $showingJoinCodeSheet) {
-            JoinCodeSheet()
+            JoinCodeSheet(joinCode: groupCode)
+        }
+        .sheet(isPresented: $showingProposeActivitySheet) {
+            // Add your ProposeActivityView here
+            Text("Propose Activity View")
         }
         .alert(item: Binding(
             get: { viewModel.errorMessage.map { ErrorWrapper(error: $0) } },
@@ -267,8 +312,6 @@ struct GroupDetailView: View {
         }
         .onAppear {
             viewModel.fetchGroupDetails(groupCode: groupCode)
-            groupName = viewModel.groupName
-            description = viewModel.description
         }
     }
 }
@@ -306,7 +349,8 @@ struct MemberRow: View {
 }
 
 struct JoinCodeSheet: View {
-    let joinCode = "QB7825NG"
+    let joinCode: String
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         NavigationView {
@@ -317,6 +361,7 @@ struct JoinCodeSheet: View {
                 
                 Spacer().frame(height: 20)
                 
+                // Join Code Display
                 ZStack {
                     Text(joinCode)
                         .padding()
@@ -341,11 +386,12 @@ struct JoinCodeSheet: View {
                         .padding(.trailing, 10)
                     }
                 }
+                
                 Text("or")
                     .foregroundColor(.gray)
-                                
+                
                 Button(action: {
-                // Handle QR code download
+                    // Handle QR code generation
                 }) {
                     HStack {
                         Image(systemName: "qrcode")
@@ -364,6 +410,9 @@ struct JoinCodeSheet: View {
             .padding()
             .navigationTitle("Join Code")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing: Button("Done") {
+                presentationMode.wrappedValue.dismiss()
+            })
         }
     }
 }
