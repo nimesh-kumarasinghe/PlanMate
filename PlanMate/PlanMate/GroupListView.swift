@@ -35,11 +35,11 @@ struct UserGroup: Identifiable {
 class FirebaseGroupViewModel: ObservableObject {
     @Published var groups: [UserGroup] = []
     private var db = Firestore.firestore()
+    @Environment(\.presentationMode) var presentationMode
     
     func fetchUserGroups() {
         guard let currentUser = Auth.auth().currentUser else { return }
         
-        // First fetch user document to get group codes
         db.collection("users").document(currentUser.uid).getDocument { [weak self] document, error in
             if let error = error {
                 print("Error fetching user: \(error)")
@@ -51,7 +51,6 @@ class FirebaseGroupViewModel: ObservableObject {
                 return
             }
             
-            // Then fetch all groups that match these codes
             self?.fetchGroups(withCodes: groupCodes)
         }
     }
@@ -113,22 +112,25 @@ struct GroupListView: View {
     @StateObject private var viewModel = FirebaseGroupViewModel()
     @State private var showAlert = false
     @State private var groupToLeave: UserGroup?
+    @Environment(\.presentationMode) var presentationMode // Environment variable for dismissing view
     
     var body: some View {
         NavigationView {
             List {
                 ForEach(viewModel.groups) { group in
-                    HStack {
-                        Image("defaultimg")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(group.memberCount > 6 ? .blue : .green)
-                        VStack(alignment: .leading) {
-                            Text(group.groupName)
-                                .font(.headline)
-                            Text("\(group.memberCount) members")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
+                    NavigationLink(destination: GroupDetailView(groupCode: group.groupCode)) {
+                        HStack {
+                            Image("defaultimg")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .foregroundColor(group.memberCount > 6 ? .blue : .green)
+                            VStack(alignment: .leading) {
+                                Text(group.groupName)
+                                    .font(.headline)
+                                Text("\(group.memberCount) members")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
                         }
                     }
                     .swipeActions {
@@ -149,9 +151,24 @@ struct GroupListView: View {
             } message: { group in
                 Text("Are you sure you want to leave \(group.groupName)?")
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitle("My Groups", displayMode: .inline) // Set the title here
             .background(Color.white)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss() // Dismisses the view
+                    }) {
+                        HStack {
+                            Image(systemName: "chevron.left") // Custom back arrow
+                                .foregroundColor(.blue)
+                            Text("Back") // Custom back label
+                                .foregroundColor(.blue)
+                        }
+                    }
+                }
+            }
         }
+        .navigationBarHidden(true) // Ensure navigation bar is visible
         .onAppear {
             viewModel.fetchUserGroups()
         }
