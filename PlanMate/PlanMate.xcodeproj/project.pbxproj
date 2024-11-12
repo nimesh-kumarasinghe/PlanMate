@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9E0981012CE38D38005E715C /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0981002CE38D38005E715C /* AppStateManager.swift */; };
 		9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1DB5672CD6183C008639AB /* NotificationsView.swift */; };
 		9E91F2882CDCE81E003CA0C1 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */; };
 		9E91F28A2CDCFCC6003CA0C1 /* ProposeActivityList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */; };
@@ -76,6 +77,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9E0981002CE38D38005E715C /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		9E1DB5672CD6183C008639AB /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
 		9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeActivityList.swift; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 			children = (
 				9EA917E02CE20964003E145F /* EventKitManager.swift */,
 				9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */,
+				9E0981002CE38D38005E715C /* AppStateManager.swift */,
 				9EA917E32CE209F1003E145F /* LocationManager.swift */,
 			);
 			path = Managers;
@@ -420,6 +423,7 @@
 				9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */,
 				9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */,
 				9EE971F32CCF930500108C12 /* AvailabilityListView.swift in Sources */,
+				9E0981012CE38D38005E715C /* AppStateManager.swift in Sources */,
 				9EA917E42CE209F1003E145F /* LocationManager.swift in Sources */,
 				9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */,
 				9EE4F1242CCE2634009D0F71 /* RegisterView.swift in Sources */,

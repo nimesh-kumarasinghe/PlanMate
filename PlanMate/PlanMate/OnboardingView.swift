@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @ObservedObject var appStateManager: AppStateManager
     @State private var currentPage = 1
     @State private var navigateToGetStarted = false
     private let totalPages = 3
@@ -99,7 +100,7 @@ struct OnboardingView: View {
                 }
                 .padding(.bottom, 20)
                 .navigationDestination(isPresented: $navigateToGetStarted){
-                    GetstartedView()
+                    GetstartedView(appStateManager: appStateManager)
                         .navigationBarBackButtonHidden(true)
                 }
                 .navigationBarBackButtonHidden(true)
@@ -174,7 +175,7 @@ struct OnboardingPageView: View {
 
 struct OnboardingView_Previews: PreviewProvider {
     static var previews: some View {
-        OnboardingView()
+        OnboardingView(appStateManager: AppStateManager())
     }
 }
 

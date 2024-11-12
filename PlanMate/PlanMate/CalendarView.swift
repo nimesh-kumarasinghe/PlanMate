@@ -9,7 +9,6 @@ import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
 
-// MARK: - Models
 struct GroupEvent: Identifiable, Codable {
     @DocumentID var id: String?
     var title: String
@@ -40,7 +39,7 @@ struct EventTask: Codable, Identifiable {
     var title: String
 }
 
-// MARK: - View Model
+
 class ActivitiesViewModel: ObservableObject {
     @Published var activities: [GroupEvent] = []
     @Published var userActivities: [String] = []
@@ -135,7 +134,6 @@ class ActivitiesViewModel: ObservableObject {
     }
 }
 
-// MARK: - Views
 struct CalendarView: View {
     @StateObject private var viewModel = ActivitiesViewModel()
     @State private var selectedDate: Date = Date()

@@ -20,13 +20,16 @@ struct ContentView: View {
     
     var body: some View {
         
-        if logStatus {
-            // If user is logged in, navigate to the Home View
-            MainHomeView()
-        } else {
-            // If user is not logged in, show the Sign In view
-            SignInView()
-        }
+        SplashScreenView()
+        
+//        if logStatus {
+//            // If user is logged in, navigate to the Home View
+//            MainHomeView()
+//        } else {
+//            // If user is not logged in, show the Sign In view
+//    
+//            //SignInView()
+//        }
         //        NavigationView {
         //            List {
         //                ForEach(items) { item in

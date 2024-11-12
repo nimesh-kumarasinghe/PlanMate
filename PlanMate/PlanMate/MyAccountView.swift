@@ -192,7 +192,7 @@ struct MyAccountView: View {
                     .shadow(radius: 10)
             }
         }
-        .toolbar(.hidden, for: .tabBar)
+        //.toolbar(.hidden, for: .tabBar)
     }
     // delete from firebase authetication
     func deleteUserAccountAuth() {

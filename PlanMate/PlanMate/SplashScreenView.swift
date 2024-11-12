@@ -8,16 +8,26 @@
 import SwiftUI
 
 struct SplashScreenView: View {
-    // check splash screen active
+
     @State private var isActive: Bool = false
+    @StateObject private var appStateManager = AppStateManager()
+    @AppStorage("log_status") private var logStatus: Bool = false
     
     var body: some View {
         NavigationView {
-            VStack {
+            ZStack {
+                Color.white.ignoresSafeArea()
                 if isActive {
-                    // afters plash screen navigate to onboarding
-                   OnboardingView()
-                    
+                    if appStateManager.hasCompletedOnboarding{
+                        if logStatus {
+                            MainHomeView()
+                        } else {
+                            SignInView()
+                        }
+                    }
+                    else{
+                        OnboardingView(appStateManager: AppStateManager())
+                    }
                 } else {
                     VStack {
                         Spacer()
@@ -30,7 +40,7 @@ struct SplashScreenView: View {
                     }
                     .onAppear {
                         // timmer for splashscreen
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                             withAnimation {
                                 self.isActive = true
                             }
@@ -39,16 +49,7 @@ struct SplashScreenView: View {
                 }
             }
         }
-        .navigationBarHidden(true) // Hide navigation bar during splash screen
-    }
-}
-
-// Temporary next page
-struct Next: View {
-    var body: some View {
-        Text("Welcome to PlanMate!")
-            .font(.largeTitle)
-            .padding()
+        .navigationBarHidden(true)
     }
 }
 

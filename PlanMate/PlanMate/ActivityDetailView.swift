@@ -55,6 +55,7 @@ struct ActivityDetailView: View {
         .onAppear {
             fetchActivityDetails()
         }
+        //.toolbar(.hidden, for: .tabBar)
     }
     
     // Function to fetch activity details from Firestore

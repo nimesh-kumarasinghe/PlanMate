@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct GetstartedView: View {
-    
+    @ObservedObject var appStateManager: AppStateManager
     @State private var navigateToSignIn : Bool =  false
     @State private var navigateToSignUp : Bool = false
     var body: some View {
@@ -96,9 +96,15 @@ struct GetstartedView: View {
             .padding(.top, 20)
             .navigationDestination(isPresented: $navigateToSignIn){
                 SignInView()
+                    .onAppear{
+                        appStateManager.completeOnboarding()
+                    }
             }
             .navigationDestination(isPresented: $navigateToSignUp){
                 RegisterAccountView()
+                    .onAppear{
+                        appStateManager.completeOnboarding()
+                    }
             }
             .navigationBarBackButtonHidden(true)
             .navigationBarHidden(true)
@@ -109,7 +115,7 @@ struct GetstartedView: View {
 
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
-        GetstartedView()
+        GetstartedView(appStateManager: AppStateManager())
     }
 }
 
