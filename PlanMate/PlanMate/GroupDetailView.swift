@@ -233,8 +233,9 @@ struct ProposedActivitiesSection: View {
                 .padding(.horizontal)
             
             ForEach(activities) { activity in
-                NavigationLink(destination: VotingProposeActivityView()) {
-                    ActivityListCard(title: activity.title, group: activity.groupName)
+                
+                NavigationLink(destination: VotingProposeActivityView(proposeActivityId: activity.id)) {
+                    ActivityListCard(title: activity.title, group: activity.groupName, activityId: activity.id)
                 }
             }
         }

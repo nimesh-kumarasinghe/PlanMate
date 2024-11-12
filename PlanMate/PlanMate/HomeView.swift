@@ -122,7 +122,7 @@ class HomeViewModel: ObservableObject {
     // Updated method to fetch propose activities
         private func fetchProposeActivities(activityIds: [String]) {
             // Take only the first 4 activities
-            let limitedActivityIds = Array(activityIds.prefix(4))
+            let limitedActivityIds = Array(activityIds.prefix(6))
             
             for activityId in limitedActivityIds {
                 // Remove any leading/trailing whitespace from activity ID
@@ -328,7 +328,11 @@ struct HomeView: View {
                                 
                                 VStack(spacing: 10) {
                                     ForEach(viewModel.homeProposeActivities) { activity in
-                                        ActivityListCard(title: activity.title, group: activity.groupName)
+                                        ActivityListCard(
+                                            title: activity.title,
+                                            group: activity.groupName,
+                                            activityId: activity.id
+                                        )
                                     }
                                 }
                             }
@@ -347,6 +351,7 @@ struct HomeView: View {
                 }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
         .onAppear{
             viewModel.fetchUserData(userId: userid)
         }
@@ -385,9 +390,10 @@ struct GroupCard: View {
 struct ActivityListCard: View {
     let title: String
     let group: String
+    let activityId: String
     
     var body: some View {
-        NavigationLink(destination: Text(title)) {
+        NavigationLink(destination: VotingProposeActivityView(proposeActivityId: activityId)) {
             HStack {
                 VStack(alignment: .leading) {
                     Text(title)

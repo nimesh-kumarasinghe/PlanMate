@@ -112,7 +112,7 @@ struct GroupListView: View {
     @StateObject private var viewModel = FirebaseGroupViewModel()
     @State private var showAlert = false
     @State private var groupToLeave: UserGroup?
-    @Environment(\.presentationMode) var presentationMode // Environment variable for dismissing view
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         NavigationView {
@@ -151,24 +151,24 @@ struct GroupListView: View {
             } message: { group in
                 Text("Are you sure you want to leave \(group.groupName)?")
             }
-            .navigationBarTitle("My Groups", displayMode: .inline) // Set the title here
+            .navigationBarTitle("My Groups", displayMode: .inline)
             .background(Color.white)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
-                        presentationMode.wrappedValue.dismiss() // Dismisses the view
+                        presentationMode.wrappedValue.dismiss()
                     }) {
                         HStack {
-                            Image(systemName: "chevron.left") // Custom back arrow
+                            Image(systemName: "chevron.left")
                                 .foregroundColor(.blue)
-                            Text("Back") // Custom back label
+                            Text("Back")
                                 .foregroundColor(.blue)
                         }
                     }
                 }
             }
         }
-        .navigationBarHidden(true) // Ensure navigation bar is visible
+        .navigationBarHidden(true)
         .onAppear {
             viewModel.fetchUserGroups()
         }

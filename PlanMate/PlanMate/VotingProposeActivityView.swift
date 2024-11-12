@@ -6,105 +6,213 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
+
+// Model for ProposeActivity
+struct ProposeActivity: Identifiable {
+    let id: String
+    let title: String
+    let groupId: String
+    let groupName: String
+    let locations: [ProposeLocation]
+    let participants: [String]
+    let participantNames: [String]
+    let status: String
+    let createdAt: Date
+}
+
+// Model for Location
+struct ProposeLocation: Codable {
+    let name: String
+    let address: String
+    let latitude: Double
+    let longitude: Double
+}
+
+// Model for VoteSubmission
+struct VoteSubmission: Identifiable {
+    let id: String
+    let userId: String
+    let userName: String
+    let proposeActivityId: String
+    let fromDate: Date
+    let toDate: Date
+    let comment: String
+    let selectedLocation: String
+    let submittedAt: Date
+}
+
+// ViewModel for VotingProposeActivityView
+class VotingProposeActivityViewModel: ObservableObject {
+    @Published var proposeActivity: ProposeActivity?
+    @Published var voteSubmissions: [VoteSubmission] = []
+    @Published var isLoading = false
+    @Published var showError = false
+    @Published var errorMessage = ""
+    @AppStorage("user_name") private var userName: String = ""
+    
+    private var db = Firestore.firestore()
+    
+    func fetchProposeActivity(id: String) {
+        isLoading = true
+        
+        db.collection("proposeActivities").document(id).getDocument { [weak self] document, error in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                
+                if let error = error {
+                    self?.showError = true
+                    self?.errorMessage = error.localizedDescription
+                    return
+                }
+                
+                guard let document = document,
+                      let data = document.data() else {
+                    self?.showError = true
+                    self?.errorMessage = "Activity not found"
+                    return
+                }
+                
+                // Parse locations array
+                let locations = (data["locations"] as? [[String: Any]])?.map { locationData in
+                    ProposeLocation(
+                        name: locationData["name"] as? String ?? "",
+                        address: locationData["address"] as? String ?? "",
+                        latitude: locationData["latitude"] as? Double ?? 0.0,
+                        longitude: locationData["longitude"] as? Double ?? 0.0
+                    )
+                } ?? []
+                
+                let proposeActivity = ProposeActivity(
+                    id: document.documentID,
+                    title: data["title"] as? String ?? "",
+                    groupId: data["groupId"] as? String ?? "",
+                    groupName: data["groupName"] as? String ?? "",
+                    locations: locations,
+                    participants: data["participants"] as? [String] ?? [],
+                    participantNames: data["participantNames"] as? [String] ?? [],
+                    status: data["status"] as? String ?? "",
+                    createdAt: (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+                )
+                
+                self?.proposeActivity = proposeActivity
+                self?.fetchVoteSubmissions(proposeActivityId: document.documentID)
+            }
+        }
+    }
+    
+    func fetchVoteSubmissions(proposeActivityId: String) {
+        db.collection("voteSubmissions")
+            .whereField("proposeActivityId", isEqualTo: proposeActivityId)
+            .getDocuments { [weak self] snapshot, error in
+                if let error = error {
+                    print("Error fetching vote submissions: \(error)")
+                    return
+                }
+                
+                let submissions = snapshot?.documents.map { document -> VoteSubmission in
+                    let data = document.data()
+                    return VoteSubmission(
+                        id: document.documentID,
+                        userId: data["userId"] as? String ?? "",
+                        userName: data["userName"] as? String ?? "",
+                        proposeActivityId: data["proposeActivityId"] as? String ?? "",
+                        fromDate: (data["fromDate"] as? Timestamp)?.dateValue() ?? Date(),
+                        toDate: (data["toDate"] as? Timestamp)?.dateValue() ?? Date(),
+                        comment: data["comment"] as? String ?? "",
+                        selectedLocation: data["selectedLocation"] as? String ?? "",
+                        submittedAt: (data["submittedAt"] as? Timestamp)?.dateValue() ?? Date()
+                    )
+                } ?? []
+                
+                DispatchQueue.main.async {
+                    self?.voteSubmissions = submissions
+                }
+            }
+    }
+    
+    func submitVote(fromDate: Date, toDate: Date, comment: String, selectedLocation: String) {
+        guard let currentUser = Auth.auth().currentUser,
+              let proposeActivity = proposeActivity else {
+            showError = true
+            errorMessage = "Unable to submit vote"
+            return
+        }
+        let submission = [
+            "userId": currentUser.uid,
+            "userName": userName,
+            "proposeActivityId": proposeActivity.id,
+            "fromDate": Timestamp(date: fromDate),
+            "toDate": Timestamp(date: toDate),
+            "comment": comment,
+            "selectedLocation": selectedLocation,
+            "submittedAt": Timestamp(date: Date())
+        ] as [String : Any]
+        
+        db.collection("voteSubmissions").addDocument(data: submission) { [weak self] error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.showError = true
+                    self?.errorMessage = error.localizedDescription
+                    return
+                }
+                
+                // Refresh vote submissions after successful submission
+                self?.fetchVoteSubmissions(proposeActivityId: proposeActivity.id)
+            }
+        }
+    }
+}
 
 struct VotingProposeActivityView: View {
+    let proposeActivityId: String
+    @StateObject private var viewModel = VotingProposeActivityViewModel()
     @State private var fromDate = Date()
     @State private var toDate = Date()
     @State private var comment = ""
-    @State private var selectedLocation = "Seethawaka Miracle Nature Resort"
-    
-    let locations = [
-        "Seethawaka Miracle Nature Resort",
-        "Pearl Grand By Rathna",
-        "Leaf Olu Ella",
-        "Kithul Kanda Mountain Resort",
-        "Me Colombo Day Outing"
-    ]
-    
-    struct SubmittedMember: Identifiable {
-        let id = UUID()
-        let name: String
-        let availability: String
-        let location: String
-        let fromDate: Date
-        let toDate: Date
-    }
-    
-    let submittedMembers = [
-        SubmittedMember(
-            name: "Dilanjana",
-            availability: "I am free in the next two weeks",
-            location: "Seethawaka Miracle Nature Resort",
-            fromDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 10))!,
-            toDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 24))!
-        ),
-        SubmittedMember(
-            name: "Lakshan",
-            availability: "I am free in the next three weeks",
-            location: "Seethawaka Miracle Nature Resort",
-            fromDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 10))!,
-            toDate: Calendar.current.date(from: DateComponents(year: 2024, month: 10, day: 31))!
-        )
-    ]
+    @State private var selectedLocation = ""
+    @State private var showingSubmitAlert = false
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
                     Text("Select your availability")
                         .font(.headline)
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("From")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                            Spacer()
-                            DatePicker("", selection: $fromDate, displayedComponents: [.date, .hourAndMinute])
-                                .labelsHidden()
-                        }
-                        HStack {
-                            Text("To")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                            Spacer()
-                            DatePicker("", selection: $toDate, displayedComponents: [.date, .hourAndMinute])
-                                .labelsHidden()
-                        }
+                        DateSelectionRow(title: "From", date: $fromDate)
+                        DateSelectionRow(title: "To", date: $toDate)
                     }
                     .padding(.horizontal, 10)
                     
                     TextField("Write a comment (Optional)", text: $comment)
-                        .padding()
-                        .cornerRadius(10)
-                        .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(.systemGray3), lineWidth: 2)
-                            )
-                        .padding(.horizontal,10)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.horizontal, 10)
                     
-                    Text("Select your favorite place")
-                        .font(.headline)
-                    
-                    VStack(alignment: .leading, spacing: 15) {
-                        ForEach(locations, id: \.self) { location in
-                            HStack {
-                                Image(systemName: selectedLocation == location ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(selectedLocation == location ? .blue : .gray)
-                                Text(location)
-                                    .font(.subheadline)
-                            }
-                            .onTapGesture {
-                                selectedLocation = location
+                    if let activity = viewModel.proposeActivity {
+                        Text("Select your favorite place")
+                            .font(.headline)
+                        
+                        VStack(alignment: .leading, spacing: 15) {
+                            ForEach(activity.locations, id: \.name) { location in
+                                LocationSelectionRow(
+                                    location: location.name,
+                                    isSelected: selectedLocation == location.name,
+                                    action: { selectedLocation = location.name }
+                                )
                             }
                         }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 10)
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal,10)
                     
                     Button(action: {
-                        // Handle submit action
+                        showingSubmitAlert = true
                     }) {
                         Text("Submit")
                             .frame(maxWidth: .infinity)
@@ -112,55 +220,131 @@ struct VotingProposeActivityView: View {
                             .background(Color("CustomBlue"))
                             .foregroundColor(.white)
                             .cornerRadius(50)
-                            .padding(.horizontal,30)
+                            .padding(.horizontal, 30)
                     }
                     
-                    Text("Submitted members")
-                        .font(.headline)
-                        .padding(.top)
-                    
-                    VStack(alignment: .leading, spacing: 20) {
-                        ForEach(submittedMembers) { member in
-                            VStack(alignment: .leading, spacing: 15) {
-                                HStack(spacing: 10) {
-                                    Image(systemName: "person.circle.fill")
-                                        .foregroundColor(.gray)
-                                    Text(member.name)
-                                        .font(.system(size: 18, weight: .semibold))
-                                }
-                                HStack(spacing: 10) {
-                                    Image(systemName: "message.fill")
-                                        .foregroundColor(Color("CustomBlue"))
-                                    Text(member.availability)
-                                        .font(.system(size: 17))
-                                        .foregroundColor(Color("CustomBlue"))
-                                        .fontWeight(.medium)
-                                }
-                                HStack(spacing: 10) {
-                                    Image(systemName: "location.fill")
-                                        .foregroundColor(Color("CustomBlue"))
-                                    Text(member.location)
-                                        .font(.system(size: 17))
-                                }
-                                Text("Available From: \(member.fromDate.formatted(date: .numeric, time: .omitted)) to: \(member.toDate.formatted(date: .numeric, time: .omitted))")
-                                    .font(.system(size: 17))
-                                    .foregroundColor(Color(.black))
+                    // Submissions List
+                    if !viewModel.voteSubmissions.isEmpty {
+                        Text("Submitted members")
+                            .font(.headline)
+                            .padding(.top)
+                        
+                        VStack(alignment: .leading, spacing: 20) {
+                            ForEach(viewModel.voteSubmissions) { submission in
+                                SubmissionCard(submission: submission)
                             }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
                         }
                     }
-
                 }
-                .padding()
             }
-            .navigationTitle("Campus Friends")
-            .navigationBarTitleDisplayMode(.inline)
+            .padding()
+        }
+        .navigationTitle(viewModel.proposeActivity?.title ?? "Loading...")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert(isPresented: $showingSubmitAlert) {
+            Alert(
+                title: Text("Submit Vote"),
+                message: Text("Are you sure you want to submit your vote?"),
+                primaryButton: .default(Text("Submit")) {
+                    viewModel.submitVote(
+                        fromDate: fromDate,
+                        toDate: toDate,
+                        comment: comment,
+                        selectedLocation: selectedLocation
+                    )
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .alert("Error", isPresented: $viewModel.showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage)
+        }
+        .onAppear {
+            viewModel.fetchProposeActivity(id: proposeActivityId)
         }
     }
 }
 
-#Preview {
-    VotingProposeActivityView()
+
+struct DateSelectionRow: View {
+    let title: String
+    @Binding var date: Date
+    
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.gray)
+            Spacer()
+            DatePicker("", selection: $date, displayedComponents: [.date, .hourAndMinute])
+                .labelsHidden()
+        }
+    }
+}
+
+struct LocationSelectionRow: View {
+    let location: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        HStack {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .foregroundColor(isSelected ? Color("CustomBlue") : .gray)
+            Text(location)
+                .font(.subheadline)
+        }
+        .onTapGesture(perform: action)
+    }
+}
+
+struct SubmissionCard: View {
+    let submission: VoteSubmission
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            HStack(spacing: 10) {
+                Image(systemName: "person.circle.fill")
+                    .foregroundColor(.gray)
+                Text(submission.userName)
+                    .font(.system(size: 18, weight: .semibold))
+            }
+            
+            if !submission.comment.isEmpty {
+                HStack(spacing: 10) {
+                    Image(systemName: "message.fill")
+                        .foregroundColor(Color("CustomBlue"))
+                    Text(submission.comment)
+                        .font(.system(size: 17))
+                        .foregroundColor(Color("CustomBlue"))
+                        .fontWeight(.medium)
+                }
+            }
+            
+            HStack(spacing: 10) {
+                Image(systemName: "location.fill")
+                    .foregroundColor(Color("CustomBlue"))
+                Text(submission.selectedLocation)
+                    .font(.system(size: 17))
+            }
+            
+            Text("Available From: \(submission.fromDate.formatted(date: .numeric, time: .omitted)) to: \(submission.toDate.formatted(date: .numeric, time: .omitted))")
+                .font(.system(size: 17))
+                .foregroundColor(.black)
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+// Preview Provider
+struct VotingProposeActivityView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            VotingProposeActivityView(proposeActivityId: "preview-id")
+        }
+    }
 }

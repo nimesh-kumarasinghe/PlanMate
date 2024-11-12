@@ -205,13 +205,14 @@ struct ProposeActivityList: View {
     @StateObject private var viewModel = ProposeActivitiesViewModel()
     @State private var showDeleteAlert = false
     @State private var selectedActivityId: String?
+    @Environment(\.presentationMode) var presentationMode 
     
     var body: some View {
         NavigationView {
             ZStack {
                 List {
                     ForEach(viewModel.activities) { activity in
-                        NavigationLink(destination: VotingProposeActivityView()) {
+                        NavigationLink(destination: VotingProposeActivityView(proposeActivityId: activity.id)) {
                             ActivitiesRow(activity: activity)
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
@@ -224,8 +225,22 @@ struct ProposeActivityList: View {
                         }
                     }
                 }
-                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarTitle("Propose Activities", displayMode: .inline)
                 .background(Color(UIColor.systemGroupedBackground))
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.blue)
+                                Text("Back")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                    }
+                }
                 
                 if viewModel.isLoading {
                     ProgressView()
@@ -253,6 +268,7 @@ struct ProposeActivityList: View {
                 )
             }
         }
+        .navigationBarHidden(true)
         .onAppear {
             viewModel.fetchUserActivities()
         }
