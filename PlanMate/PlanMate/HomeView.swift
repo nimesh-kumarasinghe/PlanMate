@@ -242,14 +242,11 @@ struct HomeView: View {
                                 }
                                 Spacer()
                                 HStack(spacing: 15) {
-                                    // Bell icon navigation link
                                     NavigationLink(destination: NotificationsView()) {
                                         Image(systemName: "bell")
                                             .foregroundColor(.black)
                                     }
-                                    
-                                    // Profile icon navigation link
-                                    NavigationLink(destination: MyAccountView()) {
+                                    NavigationLink(destination: MyAccountView().navigationTitle("My Account")) {
                                         Image(systemName: "person.circle.fill")
                                             .resizable()
                                             .frame(width: 30, height: 30)
