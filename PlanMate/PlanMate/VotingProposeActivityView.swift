@@ -50,6 +50,8 @@ class VotingProposeActivityViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var showError = false
     @Published var errorMessage = ""
+    @Published var userHasSubmitted = false
+    @Published var userSubmission: VoteSubmission?
     @AppStorage("user_name") private var userName: String = ""
     
     private var db = Firestore.firestore()
@@ -103,6 +105,8 @@ class VotingProposeActivityViewModel: ObservableObject {
     }
     
     func fetchVoteSubmissions(proposeActivityId: String) {
+        guard let currentUserId = Auth.auth().currentUser?.uid else { return }
+        
         db.collection("voteSubmissions")
             .whereField("proposeActivityId", isEqualTo: proposeActivityId)
             .getDocuments { [weak self] snapshot, error in
@@ -113,7 +117,7 @@ class VotingProposeActivityViewModel: ObservableObject {
                 
                 let submissions = snapshot?.documents.map { document -> VoteSubmission in
                     let data = document.data()
-                    return VoteSubmission(
+                    let submission = VoteSubmission(
                         id: document.documentID,
                         userId: data["userId"] as? String ?? "",
                         userName: data["userName"] as? String ?? "",
@@ -124,10 +128,20 @@ class VotingProposeActivityViewModel: ObservableObject {
                         selectedLocation: data["selectedLocation"] as? String ?? "",
                         submittedAt: (data["submittedAt"] as? Timestamp)?.dateValue() ?? Date()
                     )
+                    
+                    // Check if this submission belongs to the current user
+                    if submission.userId == currentUserId {
+                        DispatchQueue.main.async {
+                            self?.userHasSubmitted = true
+                            self?.userSubmission = submission
+                        }
+                    }
+                    
+                    return submission
                 } ?? []
                 
                 DispatchQueue.main.async {
-                    self?.voteSubmissions = submissions
+                    self?.voteSubmissions = submissions.filter { $0.userId != currentUserId }
                 }
             }
     }
@@ -139,6 +153,7 @@ class VotingProposeActivityViewModel: ObservableObject {
             errorMessage = "Unable to submit vote"
             return
         }
+        
         let submission = [
             "userId": currentUser.uid,
             "userName": userName,
@@ -158,8 +173,51 @@ class VotingProposeActivityViewModel: ObservableObject {
                     return
                 }
                 
+                self?.userHasSubmitted = true
+                self?.userSubmission = VoteSubmission(
+                    id: UUID().uuidString,
+                    userId: currentUser.uid,
+                    userName: self?.userName ?? "",
+                    proposeActivityId: proposeActivity.id,
+                    fromDate: fromDate,
+                    toDate: toDate,
+                    comment: comment,
+                    selectedLocation: selectedLocation,
+                    submittedAt: Date()
+                )
+                
                 // Refresh vote submissions after successful submission
                 self?.fetchVoteSubmissions(proposeActivityId: proposeActivity.id)
+            }
+        }
+    }
+    
+    func deleteSubmission() {
+        guard let submissionId = userSubmission?.id else {
+            showError = true
+            errorMessage = "Cannot find submission to delete"
+            return
+        }
+        
+        isLoading = true
+        db.collection("voteSubmissions").document(submissionId).delete { [weak self] error in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                
+                if let error = error {
+                    self?.showError = true
+                    self?.errorMessage = error.localizedDescription
+                    return
+                }
+                
+                // Reset user submission state
+                self?.userHasSubmitted = false
+                self?.userSubmission = nil
+                
+                // Refresh submissions list
+                if let proposeActivity = self?.proposeActivity {
+                    self?.fetchVoteSubmissions(proposeActivityId: proposeActivity.id)
+                }
             }
         }
     }
@@ -173,71 +231,126 @@ struct VotingProposeActivityView: View {
     @State private var comment = ""
     @State private var selectedLocation = ""
     @State private var showingSubmitAlert = false
+    @State private var showLocationError = false
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    Text("Select your availability")
-                        .font(.headline)
-                    
-                    VStack(alignment: .leading, spacing: 10) {
-                        DateSelectionRow(title: "From", date: $fromDate)
-                        DateSelectionRow(title: "To", date: $toDate)
-                    }
-                    .padding(.horizontal, 10)
-                    
-                    TextField("Write a comment (Optional)", text: $comment)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal, 10)
-                    
-                    if let activity = viewModel.proposeActivity {
-                        Text("Select your favorite place")
-                            .font(.headline)
-                        
-                        VStack(alignment: .leading, spacing: 15) {
-                            ForEach(activity.locations, id: \.name) { location in
-                                LocationSelectionRow(
-                                    location: location.name,
-                                    isSelected: selectedLocation == location.name,
-                                    action: { selectedLocation = location.name }
-                                )
+            Section {
+                VStack(alignment: .leading, spacing: 16) {
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        if !viewModel.userHasSubmitted {
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Select your availability")
+                                    .font(.headline)
+                                
+                                VStack(alignment: .leading, spacing: 10) {
+                                    DateSelectionRow(title: "From", date: $fromDate)
+                                    DateSelectionRow(title: "To", date: $toDate)
+                                }
+                                .padding(.horizontal, 10)
+                                
+                                TextField("Write a comment (Optional)", text: $comment)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .padding(.horizontal, 10)
+                                
+                                if let activity = viewModel.proposeActivity {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Select your favorite place")
+                                            .font(.headline)
+                                        
+                                        if showLocationError {
+                                            Text("Please select a location")
+                                                .font(.subheadline)
+                                                .foregroundColor(.red)
+                                        }
+                                        
+                                        VStack(alignment: .leading, spacing: 15) {
+                                            ForEach(activity.locations, id: \.name) { location in
+                                                LocationSelectionRow(
+                                                    location: location.name,
+                                                    isSelected: selectedLocation == location.name,
+                                                    action: {
+                                                        selectedLocation = location.name
+                                                        showLocationError = false
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 10)
+                                }
+                                
+                                Button(action: {
+                                    if selectedLocation.isEmpty {
+                                        showLocationError = true
+                                    } else {
+                                        showingSubmitAlert = true
+                                    }
+                                }) {
+                                    Text("Submit")
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color("CustomBlue"))
+                                        .foregroundColor(.white)
+                                        .cornerRadius(50)
+                                        .padding(.horizontal, 30)
+                                }
                             }
                         }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 10)
-                    }
-                    
-                    Button(action: {
-                        showingSubmitAlert = true
-                    }) {
-                        Text("Submit")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color("CustomBlue"))
-                            .foregroundColor(.white)
-                            .cornerRadius(50)
-                            .padding(.horizontal, 30)
-                    }
-                    
-                    // Submissions List
-                    if !viewModel.voteSubmissions.isEmpty {
-                        Text("Submitted members")
-                            .font(.headline)
-                            .padding(.top)
                         
-                        VStack(alignment: .leading, spacing: 20) {
-                            ForEach(viewModel.voteSubmissions) { submission in
-                                SubmissionCard(submission: submission)
+                        // Your Submission Section
+                        if viewModel.userHasSubmitted, let userSubmission = viewModel.userSubmission {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Text("Your Submission")
+                                        .font(.headline)
+                                    
+                                    Spacer()
+                                    
+                                    Button(action: {
+                                        showingDeleteAlert = true
+                                    }) {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "trash")
+                                                .foregroundColor(.red)
+                                            Text("Delete")
+                                                .foregroundColor(.red)
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color.red, lineWidth: 1)
+                                        )
+                                    }
+                                }
+                                
+                                SubmissionCard(submission: userSubmission)
+                            }
+                            .padding(.bottom, 20)
+                        }
+                        
+                        // Other Submissions List
+                        if !viewModel.voteSubmissions.isEmpty {
+                            Text(viewModel.userHasSubmitted ? "Other Submitted Members" : "Submitted Members")
+                                .font(.headline)
+                                .padding(.top)
+                            
+                            VStack(alignment: .leading, spacing: 20) {
+                                ForEach(viewModel.voteSubmissions) { submission in
+                                    SubmissionCard(submission: submission)
+                                }
                             }
                         }
                     }
                 }
+                .padding()
             }
-            .padding()
         }
         .navigationTitle(viewModel.proposeActivity?.title ?? "Loading...")
         .navigationBarTitleDisplayMode(.inline)
@@ -255,6 +368,14 @@ struct VotingProposeActivityView: View {
                 },
                 secondaryButton: .cancel()
             )
+        }
+        .alert("Delete Submission", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                viewModel.deleteSubmission()
+            }
+        } message: {
+            Text("Are you sure you want to delete your submission? This action cannot be undone.")
         }
         .alert("Error", isPresented: $viewModel.showError) {
             Button("OK", role: .cancel) { }
@@ -302,6 +423,8 @@ struct LocationSelectionRow: View {
 
 struct SubmissionCard: View {
     let submission: VoteSubmission
+    var showDeleteButton: Bool = false
+    var onDelete: (() -> Void)? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
@@ -310,6 +433,16 @@ struct SubmissionCard: View {
                     .foregroundColor(.gray)
                 Text(submission.userName)
                     .font(.system(size: 18, weight: .semibold))
+                
+                if showDeleteButton {
+                    Spacer()
+                    Button(action: {
+                        onDelete?()
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                }
             }
             
             if !submission.comment.isEmpty {
