@@ -246,7 +246,7 @@ struct HomeView: View {
                                         Image(systemName: "bell")
                                             .foregroundColor(.black)
                                     }
-                                    NavigationLink(destination: MyAccountView().navigationTitle("My Account")) {
+                                    NavigationLink(destination: MyAccountView() .navigationBarHidden(false)) {
                                         Image(systemName: "person.circle.fill")
                                             .resizable()
                                             .frame(width: 30, height: 30)

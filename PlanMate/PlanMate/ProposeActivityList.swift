@@ -250,9 +250,23 @@ struct ProposeActivityList: View {
                 }
                 
                 if viewModel.activities.isEmpty && !viewModel.isLoading {
-                    Text("No proposed activities")
-                        .foregroundColor(.gray)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    VStack(spacing: 20) {
+                        Image(systemName: "calendar.badge.plus")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 80, height: 80)
+                            .foregroundColor(.gray)
+                        
+                        Text("No Proposed Activities")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        
+                        Text("Activities proposed by your groups will appear here")
+                            .font(.body)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                    }
                 }
             }
             .alert(isPresented: $showDeleteAlert) {
@@ -272,6 +286,7 @@ struct ProposeActivityList: View {
         .onAppear {
             viewModel.fetchUserActivities()
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 

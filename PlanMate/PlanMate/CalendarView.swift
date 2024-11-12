@@ -222,7 +222,7 @@ struct CalendarHeaderView: View {
                 
                 Spacer()
                 
-                NavigationLink(destination: MyAccountView() .navigationTitle("My Account")) {
+                NavigationLink(destination: MyAccountView()) {
                     Image(systemName: "person.circle.fill")
                         .resizable()
                         .frame(width: 35, height: 35)

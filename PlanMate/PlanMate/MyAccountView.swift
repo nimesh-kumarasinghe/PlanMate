@@ -175,6 +175,7 @@ struct MyAccountView: View {
                     Text(errorMessage)
                 }
             }
+            .navigationBarTitle("My Account", displayMode: .inline)
             .navigationDestination(isPresented: $isLoggedOut) {
                 SignInView()
                     .navigationBarBackButtonHidden(true)
@@ -191,6 +192,7 @@ struct MyAccountView: View {
                     .shadow(radius: 10)
             }
         }
+        .toolbar(.hidden, for: .tabBar)
     }
     // delete from firebase authetication
     func deleteUserAccountAuth() {

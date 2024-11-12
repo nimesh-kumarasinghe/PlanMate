@@ -352,6 +352,7 @@ struct GroupDetailView: View {
         .onAppear {
             viewModel.fetchGroupDetails(groupCode: groupCode)
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 

@@ -111,6 +111,7 @@ struct JoinGroupView: View {
                 }
             )
         }
+        .toolbar(.hidden, for: .tabBar)
     }
     
     // Function to handle the group joining process

@@ -89,6 +89,7 @@ struct CreateGroupView: View {
                 LoadingScreen()
             }
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 
     // Function to validate and create the group in Firestore

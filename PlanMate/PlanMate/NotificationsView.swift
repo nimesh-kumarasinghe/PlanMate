@@ -62,6 +62,7 @@ struct NotificationsView: View {
             }
             .navigationBarTitle("Notifications", displayMode: .inline)
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 

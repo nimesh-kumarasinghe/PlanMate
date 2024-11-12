@@ -8,7 +8,7 @@ import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
 
-// Define the Activity model directly in ActivityListView
+// Activity model remains the same
 struct Activity: Identifiable {
     var id: String
     let title: String
@@ -19,7 +19,6 @@ struct Activity: Identifiable {
     let reminder: String
     let groupName: String
     
-    // Initialize from Firestore data
     init?(id: String, data: [String: Any]) {
         guard
             let title = data["title"] as? String,
@@ -55,19 +54,37 @@ struct ActivityListView: View {
             ZStack {
                 Color(.systemBackground).edgesIgnoringSafeArea(.all)
                 
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(activities) { activity in
-                            // Wrap ActivityCard in NavigationLink
-                            NavigationLink(destination: ActivityDetailView(activityId: activity.id)) {
-                                ActivityCard(activity: activity)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 10)
+                if isLoading {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                } else if activities.isEmpty {
+                    EmptyStateView()
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(activities) { activity in
+                                NavigationLink(destination: ActivityDetailView(activityId: activity.id)) {
+                                    ActivityCard(activity: activity)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .buttonStyle(PlainButtonStyle()) // Remove default NavigationLink button style
                         }
+                        .padding(.vertical)
                     }
-                    .padding(.vertical)
+                }
+                
+                if let errorMessage = errorMessage {
+                    VStack {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.red.opacity(0.1))
+                            )
+                    }
                 }
             }
             .navigationTitle("Activities")
@@ -77,106 +94,82 @@ struct ActivityListView: View {
             }
         }
     }
-
-    // Fetch activities from Firestore, ordered by startDate
-//    private func fetchActivities() {
-//        db.collection("activities")
-//            .order(by: "startDate", descending: false) // Set descending to false for ascending order
-//            .getDocuments { snapshot, error in
-//                if let error = error {
-//                    print("Error fetching activities: \(error)")
-//                    return
-//                }
-//                
-//                self.activities = snapshot?.documents.compactMap { document -> Activity? in
-//                    let data = document.data()
-//                    return Activity(id: document.documentID, data: data)
-//                } ?? []
-//            }
-//    }
     
     private func fetchUserActivities() {
-            guard let currentUser = Auth.auth().currentUser else {
-                errorMessage = "No user logged in"
+        guard let currentUser = Auth.auth().currentUser else {
+            errorMessage = "No user logged in"
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        let userRef = db.collection("users").document(currentUser.uid)
+        
+        userRef.getDocument { (document, error) in
+            if let error = error {
+                isLoading = false
+                errorMessage = "Error fetching user data: \(error.localizedDescription)"
                 return
             }
             
-            isLoading = true
-            errorMessage = nil
+            guard let document = document, document.exists,
+                  let userData = document.data() else {
+                isLoading = false
+                errorMessage = "User data not found"
+                return
+            }
             
-            // First, get the user document
-            let userRef = db.collection("users").document(currentUser.uid)
+            let userActivities = (userData["activities"] as? [String] ?? []).map { activityId in
+                activityId.trimmingCharacters(in: .whitespaces)
+            }
             
-            userRef.getDocument { (document, error) in
-                if let error = error {
-                    isLoading = false
-                    errorMessage = "Error fetching user data: \(error.localizedDescription)"
-                    return
-                }
+            if userActivities.isEmpty {
+                isLoading = false
+                activities = []
+                return
+            }
+            
+            print("User Activities IDs:", userActivities)
+            
+            let batch = userActivities.map { activityId in
+                db.collection("activities").document(activityId)
+            }
+            
+            let group = DispatchGroup()
+            var fetchedActivities: [Activity] = []
+            
+            for activityRef in batch {
+                group.enter()
                 
-                guard let document = document, document.exists,
-                      let userData = document.data() else {
-                    isLoading = false
-                    errorMessage = "User data not found"
-                    return
-                }
-                
-                // Get the activities array, making sure to handle the space in the array IDs
-                let userActivities = (userData["activities"] as? [String] ?? []).map { activityId in
-                    // Remove any leading/trailing whitespace from activity IDs
-                    activityId.trimmingCharacters(in: .whitespaces)
-                }
-                
-                if userActivities.isEmpty {
-                    isLoading = false
-                    activities = []
-                    return
-                }
-                
-                print("User Activities IDs:", userActivities) // Debug print
-                
-                // Now fetch the actual activities
-                let batch = userActivities.map { activityId in
-                    db.collection("activities").document(activityId)
-                }
-                
-                // Use a dispatch group to handle multiple async requests
-                let group = DispatchGroup()
-                var fetchedActivities: [Activity] = []
-                
-                for activityRef in batch {
-                    group.enter()
+                activityRef.getDocument { (activityDoc, error) in
+                    defer { group.leave() }
                     
-                    activityRef.getDocument { (activityDoc, error) in
-                        defer { group.leave() }
-                        
-                        if let error = error {
-                            print("Error fetching activity \(activityRef.documentID): \(error)")
-                            return
-                        }
-                        
-                        if let activityDoc = activityDoc,
-                           let data = activityDoc.data(),
-                           let activity = Activity(id: activityDoc.documentID, data: data) {
-                            fetchedActivities.append(activity)
-                        }
+                    if let error = error {
+                        print("Error fetching activity \(activityRef.documentID): \(error)")
+                        return
                     }
-                }
-                
-                group.notify(queue: .main) {
-                    isLoading = false
-                    // Sort activities by start date
-                    activities = fetchedActivities.sorted { $0.startDate < $1.startDate }
                     
-                    if activities.isEmpty {
-                        print("No activities found after fetching") // Debug print
+                    if let activityDoc = activityDoc,
+                       let data = activityDoc.data(),
+                       let activity = Activity(id: activityDoc.documentID, data: data) {
+                        fetchedActivities.append(activity)
                     }
                 }
             }
+            
+            group.notify(queue: .main) {
+                isLoading = false
+                activities = fetchedActivities.sorted { $0.startDate < $1.startDate }
+                
+                if activities.isEmpty {
+                    print("No activities found after fetching")
+                }
+            }
         }
+    }
 }
 
-// ActivityCard to show each activity
 struct ActivityCard: View {
     let activity: Activity
     
@@ -212,6 +205,25 @@ struct ActivityCard: View {
         )
         .padding(.horizontal, 1)
         .padding(.vertical, 1)
+    }
+}
+
+struct EmptyStateView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "calendar.badge.exclamationmark")
+                .font(.system(size: 70))
+                .foregroundColor(.gray)
+            
+            Text("No Activities")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text("Your activities will appear here")
+                .font(.body)
+                .foregroundColor(.secondary)
+        }
     }
 }
 

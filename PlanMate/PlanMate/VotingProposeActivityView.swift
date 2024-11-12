@@ -385,6 +385,7 @@ struct VotingProposeActivityView: View {
         .onAppear {
             viewModel.fetchProposeActivity(id: proposeActivityId)
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 

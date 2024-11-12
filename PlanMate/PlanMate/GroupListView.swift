@@ -9,7 +9,7 @@ import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
 
-// Model for User
+// Model for User and UserGroup remain the same
 struct User: Codable {
     let email: String
     let name: String
@@ -17,7 +17,6 @@ struct User: Codable {
     let uid: String
 }
 
-// Model for Group
 struct UserGroup: Identifiable {
     let id: String
     let groupName: String
@@ -31,7 +30,7 @@ struct UserGroup: Identifiable {
     }
 }
 
-// ViewModel to handle Firebase operations
+// ViewModel remains the same
 class FirebaseGroupViewModel: ObservableObject {
     @Published var groups: [UserGroup] = []
     private var db = Firestore.firestore()
@@ -48,6 +47,7 @@ class FirebaseGroupViewModel: ObservableObject {
             
             guard let userData = document?.data(),
                   let groupCodes = userData["groups"] as? [String] else {
+                self?.groups = []  // Ensure groups is empty if no data
                 return
             }
             
@@ -56,6 +56,15 @@ class FirebaseGroupViewModel: ObservableObject {
     }
     
     private func fetchGroups(withCodes groupCodes: [String]) {
+        // Clear existing groups before fetching
+        DispatchQueue.main.async {
+            self.groups = []
+        }
+        
+        if groupCodes.isEmpty {
+            return
+        }
+        
         for groupCode in groupCodes {
             db.collection("groups")
                 .whereField("groupCode", isEqualTo: groupCode)
@@ -107,7 +116,30 @@ class FirebaseGroupViewModel: ObservableObject {
     }
 }
 
-// Group list view
+// Empty state view
+struct EmptyListStateView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "person.3.sequence")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                .foregroundColor(.gray)
+            
+            Text("No Groups Yet")
+                .font(.title2)
+                .fontWeight(.semibold)
+            
+            Text("Join or create a group to get started")
+                .font(.body)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+    }
+}
+
+// Updated GroupListView
 struct GroupListView: View {
     @StateObject private var viewModel = FirebaseGroupViewModel()
     @State private var showAlert = false
@@ -116,29 +148,35 @@ struct GroupListView: View {
     
     var body: some View {
         NavigationView {
-            List {
-                ForEach(viewModel.groups) { group in
-                    NavigationLink(destination: GroupDetailView(groupCode: group.groupCode)) {
-                        HStack {
-                            Image("defaultimg")
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .foregroundColor(group.memberCount > 6 ? .blue : .green)
-                            VStack(alignment: .leading) {
-                                Text(group.groupName)
-                                    .font(.headline)
-                                Text("\(group.memberCount) members")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
+            ZStack {
+                if viewModel.groups.isEmpty {
+                    EmptyListStateView()
+                } else {
+                    List {
+                        ForEach(viewModel.groups) { group in
+                            NavigationLink(destination: GroupDetailView(groupCode: group.groupCode)) {
+                                HStack {
+                                    Image("defaultimg")
+                                        .resizable()
+                                        .frame(width: 40, height: 40)
+                                        .foregroundColor(group.memberCount > 6 ? .blue : .green)
+                                    VStack(alignment: .leading) {
+                                        Text(group.groupName)
+                                            .font(.headline)
+                                        Text("\(group.memberCount) members")
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
                             }
-                        }
-                    }
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            groupToLeave = group
-                            showAlert = true
-                        } label: {
-                            Text("Leave")
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    groupToLeave = group
+                                    showAlert = true
+                                } label: {
+                                    Text("Leave")
+                                }
+                            }
                         }
                     }
                 }
@@ -172,6 +210,7 @@ struct GroupListView: View {
         .onAppear {
             viewModel.fetchUserGroups()
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
