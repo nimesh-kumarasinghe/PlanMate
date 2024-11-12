@@ -744,114 +744,129 @@ struct CreateActivityView: View {
         }
     
     // Add function to load activity data for editing
-        private func loadActivityData() {
-            guard let activityId = editActivityId else { return }
-            isLoading = true
+    private func loadActivityData() {
+        guard let activityId = editActivityId,
+              let currentUserId = Auth.auth().currentUser?.uid else { return }
+        
+        isLoading = true
+        let db = Firestore.firestore()
+        
+        // Create a dispatch group to manage multiple async operations
+        let group = DispatchGroup()
+        
+        // Enter dispatch group for activity data
+        group.enter()
+        db.collection("activities").document(activityId).getDocument { document, error in
+            defer { group.leave() }
             
-            let db = Firestore.firestore()
-            db.collection("activities").document(activityId).getDocument { document, error in
-                if let error = error {
-                    print("Error fetching activity: \(error)")
-                    isLoading = false
-                    return
-                }
-                
-                if let document = document, document.exists, let data = document.data() {
+            if let error = error {
+                print("Error fetching activity: \(error)")
+                return
+            }
+            
+            if let document = document, document.exists, let data = document.data() {
+                DispatchQueue.main.async {
                     // Populate form fields with existing data
-                    title = data["title"] as? String ?? ""
-                    isAllDay = data["isAllDay"] as? Bool ?? true
+                    self.title = data["title"] as? String ?? ""
+                    self.isAllDay = data["isAllDay"] as? Bool ?? true
                     if let startTimestamp = data["startDate"] as? Timestamp {
-                        startDate = startTimestamp.dateValue()
+                        self.startDate = startTimestamp.dateValue()
                     }
                     if let endTimestamp = data["endDate"] as? Timestamp {
-                        endDate = endTimestamp.dateValue()
+                        self.endDate = endTimestamp.dateValue()
                     }
-                    selectedReminder = data["reminder"] as? String ?? "10 min before"
-                    
-                    // Load the calendar toggle state
-                    saveToCalendar = data["saveToCalendar"] as? Bool ?? false
-                                    
-                                    // If calendar was previously enabled, check for permission
-                    if saveToCalendar {
-                        EventKitManager.shared.requestAccess { granted in
-                            DispatchQueue.main.async {
-                                calendarAccessGranted = granted
-                                if !granted {
-                                    saveToCalendar = false
-                                }
-                            }
-                        }
-                    }
+                    self.selectedReminder = data["reminder"] as? String ?? "10 min before"
                     
                     // Load group
                     let groupId = data["groupId"] as? String ?? ""
                     if !groupId.isEmpty {
-                        loadGroup(groupId: groupId) {
-                            // After loading group members, update selected participants
+                        self.loadGroup(groupId: groupId) {
                             if let participants = data["participants"] as? [String] {
-                                DispatchQueue.main.async {
-                                    // Update selection status for each member
-                                    for index in self.groupMembers.indices {
-                                        self.groupMembers[index].isSelected = participants.contains(self.groupMembers[index].id)
-                                    }
+                                // Update selection status for each member
+                                for index in self.groupMembers.indices {
+                                    self.groupMembers[index].isSelected = participants.contains(self.groupMembers[index].id)
                                 }
                             }
                         }
                     }
                     
                     // Load tasks
-                    DispatchQueue.main.async{
-                        if let tasks = data["tasks"] as? [[String: Any]] {
-                            viewModel.tasks = tasks.compactMap { taskData in
-                                guard let memberId = taskData["memberId"] as? String,
-                                      let memberName = taskData["memberName"] as? String,
-                                      let assignment = taskData["assignment"] as? String else {
-                                    return nil
-                                }
-                                return Task(person: TeamMember(id: memberId, name: memberName), assignment: assignment)
+                    if let tasks = data["tasks"] as? [[String: Any]] {
+                        self.viewModel.tasks = tasks.compactMap { taskData in
+                            guard let memberId = taskData["memberId"] as? String,
+                                  let memberName = taskData["memberName"] as? String,
+                                  let assignment = taskData["assignment"] as? String else {
+                                return nil
                             }
+                            return Task(person: TeamMember(id: memberId, name: memberName), assignment: assignment)
                         }
-                        
-                        // Load notes
-                        if let notes = data["notes"] as? [String] {
-                            viewModel.notes = notes.map { Note(content: $0) }
-                        }
-                        
-                        // Load URLs
-                        viewModel.urls = data["urls"] as? [String] ?? []
                     }
                     
-                    // Parse the JSON data
+                    // Load notes
+                    if let notes = data["notes"] as? [String] {
+                        self.viewModel.notes = notes.map { Note(content: $0) }
+                    }
+                    
+                    // Load URLs
+                    self.viewModel.urls = data["urls"] as? [String] ?? []
+                    
+                    // Load locations
                     if let locations = data["locations"] as? [[String: Any]] {
-                        DispatchQueue.main.async{
-                            self.viewModel.locations = locations.compactMap { locationData in
-                                // Extract coordinate data
-                                guard let latitude = locationData["latitude"] as? Double,
-                                      let longitude = locationData["longitude"] as? Double else {
-                                    return nil
+                        self.viewModel.locations = locations.compactMap { locationData in
+                            guard let latitude = locationData["latitude"] as? Double,
+                                  let longitude = locationData["longitude"] as? Double else {
+                                return nil
+                            }
+                            
+                            let coordinate = CLLocationCoordinate2D(
+                                latitude: latitude,
+                                longitude: longitude
+                            )
+                            
+                            return LocationData(
+                                name: locationData["name"] as? String ?? "",
+                                address: locationData["address"] as? String ?? "",
+                                coordinate: coordinate,
+                                category: locationData["category"] as? String ?? "default"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Enter dispatch group for user settings
+        group.enter()
+        db.collection("users").document(currentUserId).getDocument { document, error in
+            defer { group.leave() }
+            
+            if let document = document,
+               let data = document.data(),
+               let activitySettings = data["activitySettings"] as? [String: [String: Any]],
+               let settings = activitySettings[activityId] {
+                DispatchQueue.main.async {
+                    self.saveToCalendar = settings["saveToCalendar"] as? Bool ?? false
+                    
+                    // If calendar was previously enabled, check for permission
+                    if self.saveToCalendar {
+                        EventKitManager.shared.requestAccess { granted in
+                            DispatchQueue.main.async {
+                                self.calendarAccessGranted = granted
+                                if !granted {
+                                    self.saveToCalendar = false
                                 }
-                                
-                                let coordinate = CLLocationCoordinate2D(
-                                    latitude: latitude,
-                                    longitude: longitude
-                                )
-                                
-                                return LocationData(
-                                    name: locationData["name"] as? String ?? "",
-                                    address: locationData["address"] as? String ?? "",
-                                    coordinate: coordinate,
-                                    category: locationData["category"] as? String ?? "default"
-                                )
                             }
                         }
                     }
                 }
-                DispatchQueue.main.async{
-                    self.isLoading = false
-                }
-                
             }
         }
+        
+        // When all async operations are complete
+        group.notify(queue: .main) {
+            self.isLoading = false
+        }
+    }
     
     private func loadGroup(groupId: String, completion: @escaping () -> Void = {}) {
         let db = Firestore.firestore()
@@ -916,7 +931,6 @@ struct CreateActivityView: View {
         isLoading = true
         let db = Firestore.firestore()
         
-        
         if isEditMode && saveToCalendar && calendarAccessGranted {
             // Get the first location if any exists
             let firstLocation = viewModel.locations.first
@@ -946,13 +960,13 @@ struct CreateActivityView: View {
         var activityId: String
         if let editId = editActivityId {
             activityRef = db.collection("activities").document(editId)
-            activityId = editId // If editing, use the existing activity ID
+            activityId = editId
         } else {
             activityRef = db.collection("activities").document()
-            activityId = activityRef.documentID // If creating, get the new activity ID
+            activityId = activityRef.documentID
         }
         
-        // Create activity data
+        // Create activity data without saveToCalendar field
         var activityData: [String: Any] = [
             "title": title,
             "isAllDay": isAllDay,
@@ -976,8 +990,7 @@ struct CreateActivityView: View {
             ] },
             "notes": viewModel.notes.map { $0.content },
             "urls": viewModel.urls,
-            "updatedAt": Timestamp(date: Date()),
-            "saveToCalendar": saveToCalendar
+            "updatedAt": Timestamp(date: Date())
         ]
         
         let saveOperation: (Error?) -> Void = { error in
@@ -991,16 +1004,33 @@ struct CreateActivityView: View {
                 return
             }
             
+            // Get current user ID
+            guard let currentUserId = Auth.auth().currentUser?.uid else {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.alertTitle = "Error"
+                    self.alertMessage = "No user logged in"
+                    self.showAlert = true
+                }
+                return
+            }
+            
             // Get all selected participants
             var allParticipantIds = Set(self.groupMembers.filter { $0.isSelected }.map { $0.id })
-            if let currentUserId = Auth.auth().currentUser?.uid {
-                allParticipantIds.insert(currentUserId) // Add creator if not already included
-            }
+            allParticipantIds.insert(currentUserId) // Add creator if not already included
             
             let batch = db.batch()
             
-            // Update each participant document with the activity ID
-            for userId in allParticipantIds {
+            // Update current user's document with saveToCalendar setting for this activity
+            let currentUserRef = db.collection("users").document(currentUserId)
+            let activitySettingsField = "activitySettings.\(activityId)"
+            batch.updateData([
+                "activities": FieldValue.arrayUnion([activityId]),
+                activitySettingsField: ["saveToCalendar": self.saveToCalendar]
+            ], forDocument: currentUserRef)
+            
+            // Update other participants' activities arrays (without saveToCalendar setting)
+            for userId in allParticipantIds where userId != currentUserId {
                 let userRef = db.collection("users").document(userId)
                 batch.updateData([
                     "activities": FieldValue.arrayUnion([activityId])
@@ -1018,15 +1048,15 @@ struct CreateActivityView: View {
                     }
                     return
                 }
-            }
-            
-            DispatchQueue.main.async {
-                self.isLoading = false
-                self.alertTitle = "Success"
-                self.alertMessage = "Activity saved successfully!"
-                self.clearFields()
-                self.dismiss()
-                self.showAlert = true
+                
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.alertTitle = "Success"
+                    self.alertMessage = "Activity saved successfully!"
+                    self.clearFields()
+                    self.dismiss()
+                    self.showAlert = true
+                }
             }
         }
         
