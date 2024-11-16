@@ -219,14 +219,6 @@ struct CalendarHeaderView: View {
                 .foregroundColor(.primary)
                 
                 Spacer()
-                
-                NavigationLink(destination: MyAccountView()) {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .frame(width: 35, height: 35)
-                        .foregroundColor(Color("CustomBlue"))
-                    
-                }
             }
             .padding(.horizontal)
             

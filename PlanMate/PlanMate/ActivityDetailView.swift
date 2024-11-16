@@ -19,43 +19,44 @@ struct ActivityDetailView: View {
     private let db = Firestore.firestore()
 
     var body: some View {
-        VStack(spacing: 0) {
-            if let activity = activity {
-                // Event details card - Fixed at top
-                EventDetailsView(event: activity)
-                    .padding(.horizontal)
-                    .padding(.vertical, 16)
-                
-                // Chat messages - Scrollable
-                ScrollView {
-                    ChatMessagesView(messages: sampleMessages) // Replace with real data if needed
-                        .padding(.vertical)
+        ZStack{
+            VStack(spacing: 0) {
+                if let activity = activity {
+                    // Event details card - Fixed at top
+                    EventDetailsView(event: activity)
+                        .padding(.horizontal)
+                        .padding(.vertical, 16)
+                    
+                    // Chat messages - Scrollable
+                    ScrollView {
+                        ChatMessagesView(messages: sampleMessages) // Replace with real data if needed
+                            .padding(.vertical)
+                    }
+                    
+                    // Message input - Fixed at bottom
+                    MessageInputView(messageText: $messageText)
+                } else {
+                    // Show a loading spinner while fetching data
+                    ProgressView("Loading...")
+                        .progressViewStyle(CircularProgressViewStyle())
                 }
-                
-                // Message input - Fixed at bottom
-                MessageInputView(messageText: $messageText)
-            } else {
-                // Show a loading spinner while fetching data
-                ProgressView("Loading...")
-                    .progressViewStyle(CircularProgressViewStyle())
             }
-        }
-        .navigationTitle(activity?.title ?? "Activity Detail")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink(destination: CreateActivityView(isEditMode: true, editActivityId: activityId)) {
-                            Text("Edit")
-                        }
+            .navigationTitle(activity?.title ?? "Activity Detail")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: CreateActivityView(isEditMode: true, editActivityId: activityId)) {
+                        Text("Edit")
+                    }
+                }
             }
+            .background(Color.white)
+            .onAppear {
+                fetchActivityDetails()
+            }
+            //.toolbar(.hidden, for: .tabBar)
         }
-        .background(Color.white)
-        .onAppear {
-            fetchActivityDetails()
-        }
-        //.toolbar(.hidden, for: .tabBar)
+        
     }
     
     // Function to fetch activity details from Firestore

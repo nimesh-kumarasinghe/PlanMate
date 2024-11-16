@@ -93,6 +93,7 @@ struct ActivityListView: View {
                 fetchUserActivities()
             }
         }
+        
     }
     
     private func fetchUserActivities() {

@@ -23,9 +23,7 @@ struct MyAccountView: View {
     @AppStorage("userid") private var userid: String = ""
     @AppStorage("log_status") private var logStatus: Bool = false
     @AppStorage("use_face_id") private var useFaceID = false
-    
-    let profileInitial: String = "N"
-    
+        
     var body: some View {
         ZStack {
             NavigationView {
@@ -192,23 +190,22 @@ struct MyAccountView: View {
                     .shadow(radius: 10)
             }
         }
-        //.toolbar(.hidden, for: .tabBar)
+        .toolbar(.hidden, for: .tabBar)
     }
     // delete from firebase authetication
     func deleteUserAccountAuth() {
         Auth.auth().currentUser?.delete { error in
             if let error = error {
-                // Check if re-authentication is required
+                // Check if reauthentication is required
                 if let authError = error as NSError?,
                    authError.code == AuthErrorCode.requiresRecentLogin.rawValue {
                     self.showErrorWith(message: "Please re-authenticate to delete your account.")
-                    // Prompt the user to re-authenticate here if needed
                 } else {
                     showErrorWith(message: "Error deleting user account: \(error.localizedDescription)")
                 }
             }
         }
-        logOutAfterDeletion()
+        logOut()
     }
     
     // Delete Account Function
@@ -217,7 +214,6 @@ struct MyAccountView: View {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let db = Firestore.firestore()
         
-        // 1. Delete user document
         let userRef = db.collection("users").document(uid)
         userRef.delete { error in
             if let error = error {
@@ -331,14 +327,6 @@ struct MyAccountView: View {
         errorMessage = message
         showError = true
         isLoading = false
-    }
-    
-    func logOutAfterDeletion() {
-        userName = ""
-        userid = ""
-        logStatus = false
-        isLoading = false
-        isLoggedOut = true
     }
     
     func logOut() {
