@@ -10,9 +10,7 @@ import Firebase
 
 @main
 struct PlanMateApp: App {
-//    init() {
-//        FirebaseApp.configure()
-//    }
+
     // Link the AppDelegate to the SwiftUI lifecycle
         @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
@@ -21,12 +19,9 @@ struct PlanMateApp: App {
         WindowGroup {
 //            ContentView()
 //                .environment(\.managedObjectContext, persistenceController.container.viewContext)
-            //RegisterAccountView()
-            //MainHomeView()
-            //SplashScreenView()
-            ContentView()
-            //CreateGroupView()
-            //SignInView()
+            //ContentView()
+            
+            SplashScreenView()
         }
     }
 }

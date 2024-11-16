@@ -18,6 +18,7 @@ struct MyAccountView: View {
     @State private var errorMessage = ""
     @State private var isLoading = false
     @State private var showingEditProfile = false
+    
     @StateObject private var biometricManager = BiometricManager()
     
     @AppStorage("user_name") private var userName: String = ""
@@ -347,6 +348,8 @@ struct MyAccountView: View {
             userid = ""
             logStatus = false
             self.isLoggedOut = true
+            
+            //try KeychainManager.shared.deleteCredentials()
         } catch {
             errorMessage = "Error signing out: \(error.localizedDescription)"
             showError = true

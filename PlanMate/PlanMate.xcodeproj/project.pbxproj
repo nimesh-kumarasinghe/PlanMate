@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		9E0981012CE38D38005E715C /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0981002CE38D38005E715C /* AppStateManager.swift */; };
 		9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1DB5672CD6183C008639AB /* NotificationsView.swift */; };
-		9E91F2882CDCE81E003CA0C1 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */; };
+		9E22DE722CE893A7008CD0D1 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E22DE712CE893A7008CD0D1 /* KeychainManager.swift */; };
 		9E91F28A2CDCFCC6003CA0C1 /* ProposeActivityList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */; };
 		9EA917E12CE20964003E145F /* EventKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA917E02CE20964003E145F /* EventKitManager.swift */; };
 		9EA917E42CE209F1003E145F /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA917E32CE209F1003E145F /* LocationManager.swift */; };
@@ -18,7 +18,6 @@
 		9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */; };
 		9EB740112CE362C90043E809 /* MyAccountEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB740102CE362C90043E809 /* MyAccountEditView.swift */; };
 		9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */; };
-		9EE4F0F12CCE1199009D0F71 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F0F02CCE1199009D0F71 /* ContentView.swift */; };
 		9EE4F0F32CCE119A009D0F71 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */; };
 		9EE4F0F62CCE119A009D0F71 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EE4F0F52CCE119A009D0F71 /* Preview Assets.xcassets */; };
 		9EE4F0F82CCE119A009D0F71 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F0F72CCE119A009D0F71 /* Persistence.swift */; };
@@ -79,7 +78,7 @@
 /* Begin PBXFileReference section */
 		9E0981002CE38D38005E715C /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		9E1DB5672CD6183C008639AB /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
-		9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		9E22DE712CE893A7008CD0D1 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeActivityList.swift; sourceTree = "<group>"; };
 		9EA917E02CE20964003E145F /* EventKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitManager.swift; sourceTree = "<group>"; };
 		9EA917E32CE209F1003E145F /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
@@ -90,7 +89,6 @@
 		9EB740102CE362C90043E809 /* MyAccountEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountEditView.swift; sourceTree = "<group>"; };
 		9EE4F0EB2CCE1199009D0F71 /* PlanMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlanMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanMateApp.swift; sourceTree = "<group>"; };
-		9EE4F0F02CCE1199009D0F71 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9EE4F0F52CCE119A009D0F71 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9EE4F0F72CCE119A009D0F71 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
@@ -166,6 +164,7 @@
 				9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */,
 				9E0981002CE38D38005E715C /* AppStateManager.swift */,
 				9EA917E32CE209F1003E145F /* LocationManager.swift */,
+				9E22DE712CE893A7008CD0D1 /* KeychainManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -203,7 +202,6 @@
 				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
 				9EA917E22CE209A9003E145F /* Managers */,
 				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
-				9E91F2872CDCE81E003CA0C1 /* KeychainHelper.swift */,
 				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
 				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
 				9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */,
@@ -227,7 +225,6 @@
 				9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */,
 				9EE971F22CCF930500108C12 /* AvailabilityListView.swift */,
 				9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */,
-				9EE4F0F02CCE1199009D0F71 /* ContentView.swift */,
 				9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */,
 				9EE4F0F72CCE119A009D0F71 /* Persistence.swift */,
 				9EE4F0F92CCE119A009D0F71 /* PlanMate.xcdatamodeld */,
@@ -417,7 +414,6 @@
 				9EE971D92CCF59C400108C12 /* ResetPasswordView.swift in Sources */,
 				9EE971DF2CCF6A2D00108C12 /* CalendarView.swift in Sources */,
 				9EE971D52CCF53F000108C12 /* EmailVerificationCodeView.swift in Sources */,
-				9EE4F0F12CCE1199009D0F71 /* ContentView.swift in Sources */,
 				9EE971E72CCF6E9900108C12 /* ActivityListView.swift in Sources */,
 				9EE4F11E2CCE1592009D0F71 /* SplashScreenView.swift in Sources */,
 				9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */,
@@ -428,7 +424,7 @@
 				9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */,
 				9EE4F1242CCE2634009D0F71 /* RegisterView.swift in Sources */,
 				9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */,
-				9E91F2882CDCE81E003CA0C1 /* KeychainHelper.swift in Sources */,
+				9E22DE722CE893A7008CD0D1 /* KeychainManager.swift in Sources */,
 				9EA917E12CE20964003E145F /* EventKitManager.swift in Sources */,
 				9EE7D73D2CDA0CB800F7602D /* AppDelegate.swift in Sources */,
 				9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */,

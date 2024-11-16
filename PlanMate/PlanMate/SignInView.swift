@@ -30,8 +30,9 @@ struct SignInView: View {
     @AppStorage("userid") private var userid: String = ""
     @AppStorage("log_status") private var logStatus: Bool = false
     @AppStorage("use_face_id") private var useFaceID = false
-    @AppStorage("saved_email") private var savedEmail = ""
-    @AppStorage("saved_password") private var savedPassword = ""
+    @State private var keychainError: String?
+    //@AppStorage("saved_email") private var savedEmail = ""
+    //@AppStorage("saved_password") private var savedPassword = ""
     
     var body: some View {
         NavigationStack {
@@ -99,7 +100,7 @@ struct SignInView: View {
                     }
                     
                     // Face ID Button (only shown if Face ID is enabled and credentials are saved)
-                    if biometricManager.isFaceIDAvailable && useFaceID && !savedEmail.isEmpty && !savedPassword.isEmpty {
+                    if biometricManager.isFaceIDAvailable && useFaceID{
                         Button(action: {
                             handleFaceIDLogin()
                         }) {
@@ -198,12 +199,25 @@ struct SignInView: View {
     private func handleFaceIDLogin() {
         biometricManager.authenticateWithFaceID { success in
             if success {
-                email = savedEmail
-                password = savedPassword
-                handleEmailPasswordSignIn()
+                do {
+                    // Retrieve saved credentials from the Keychain
+                    let credentials = try KeychainManager.shared.retrieveCredentials()
+                    
+                    DispatchQueue.main.async {
+                        email = credentials.email
+                        password = credentials.password
+                        
+                        handleEmailPasswordSignIn()
+                    }
+                } catch {
+                    showError("Failed to retrieve saved credentials")
+                }
+            } else {
+                showError("Face ID authentication failed")
             }
         }
     }
+
     
     private func showError(_ message: String) {
         errorMessage = message
@@ -234,10 +248,13 @@ struct SignInView: View {
                 return
             }
             
-            // Save credentials if face Id is enabled
+            // Save credentials to Keychain if Face ID is enabled
             if useFaceID && biometricManager.isFaceIDAvailable {
-                savedEmail = email
-                savedPassword = password
+                do {
+                    try KeychainManager.shared.saveCredentials(email: email, password: password)
+                } catch {
+                    print("Failed to save credentials to Keychain: \(error)")
+                }
             }
 
             // Set the userName and userid in @AppStorage
