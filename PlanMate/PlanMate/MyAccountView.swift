@@ -18,6 +18,7 @@ struct MyAccountView: View {
     @State private var errorMessage = ""
     @State private var isLoading = false
     @State private var showingEditProfile = false
+    @StateObject private var biometricManager = BiometricManager()
     
     @AppStorage("user_name") private var userName: String = ""
     @AppStorage("userid") private var userid: String = ""
@@ -98,6 +99,16 @@ struct MyAccountView: View {
                                         .foregroundColor(.primary)
                                     Text("Enable Face ID Login")
                                         .foregroundColor(.primary)
+                                }
+                            }
+                            .disabled(!biometricManager.isFaceIDAvailable)
+                            .onChange(of: useFaceID) { newValue in
+                                if newValue {
+                                    biometricManager.authenticateWithFaceID { success in
+                                        if !success {
+                                            useFaceID = false
+                                        }
+                                    }
                                 }
                             }
                             .padding(.horizontal, 16)

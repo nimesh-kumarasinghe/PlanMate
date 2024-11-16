@@ -95,11 +95,11 @@ struct SignInView: View {
                             .font(.headline)
                             .background(Color("CustomBlue"))
                             .cornerRadius(50)
-                            //.padding(.horizontal, 10)
+                        //.padding(.horizontal, 10)
                     }
                     
                     // Face ID Button (only shown if Face ID is enabled and credentials are saved)
-                    if useFaceID && !savedEmail.isEmpty && !savedPassword.isEmpty {
+                    if biometricManager.isFaceIDAvailable && useFaceID && !savedEmail.isEmpty && !savedPassword.isEmpty {
                         Button(action: {
                             handleFaceIDLogin()
                         }) {
@@ -196,20 +196,18 @@ struct SignInView: View {
     }
     // Add Face ID login handler
     private func handleFaceIDLogin() {
-        biometricManager.authenticateWithBiometrics { success in
+        biometricManager.authenticateWithFaceID { success in
             if success {
                 email = savedEmail
                 password = savedPassword
                 handleEmailPasswordSignIn()
-            } else {
-                showError("Face ID authentication failed")
             }
         }
     }
     
-    func showError(_ message: String) {
+    private func showError(_ message: String) {
         errorMessage = message
-        showAlert.toggle()
+        showAlert = true
         isLoading = false
     }
     
@@ -226,7 +224,6 @@ struct SignInView: View {
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             self.isLoading = false
             if let error = error {
-                // Display error message
                 self.showError("Invalid email or password. Please try again.")
                 print("Sign-in error: \(error.localizedDescription)")
                 return
@@ -238,13 +235,13 @@ struct SignInView: View {
             }
             
             // Save credentials if face Id is enabled
-            if self.useFaceID {
-                self.savedEmail = self.email
-                self.savedPassword = self.password
+            if useFaceID && biometricManager.isFaceIDAvailable {
+                savedEmail = email
+                savedPassword = password
             }
 
             // Set the userName and userid in @AppStorage
-            self.userName = user.displayName ?? "User" // Fallback to "User" if displayName is nil
+            self.userName = user.displayName ?? "User"
             self.userid = user.uid
 
             // Fetch user's name from Firestore
