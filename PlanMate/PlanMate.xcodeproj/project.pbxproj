@@ -10,6 +10,7 @@
 		9E0981012CE38D38005E715C /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0981002CE38D38005E715C /* AppStateManager.swift */; };
 		9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1DB5672CD6183C008639AB /* NotificationsView.swift */; };
 		9E22DE722CE893A7008CD0D1 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E22DE712CE893A7008CD0D1 /* KeychainManager.swift */; };
+		9E22DE742CE8D099008CD0D1 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E22DE732CE8D099008CD0D1 /* CoreDataManager.swift */; };
 		9E91F28A2CDCFCC6003CA0C1 /* ProposeActivityList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */; };
 		9EA917E12CE20964003E145F /* EventKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA917E02CE20964003E145F /* EventKitManager.swift */; };
 		9EA917E42CE209F1003E145F /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA917E32CE209F1003E145F /* LocationManager.swift */; };
@@ -79,6 +80,7 @@
 		9E0981002CE38D38005E715C /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		9E1DB5672CD6183C008639AB /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
 		9E22DE712CE893A7008CD0D1 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		9E22DE732CE8D099008CD0D1 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
 		9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeActivityList.swift; sourceTree = "<group>"; };
 		9EA917E02CE20964003E145F /* EventKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitManager.swift; sourceTree = "<group>"; };
 		9EA917E32CE209F1003E145F /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
@@ -165,6 +167,7 @@
 				9E0981002CE38D38005E715C /* AppStateManager.swift */,
 				9EA917E32CE209F1003E145F /* LocationManager.swift */,
 				9E22DE712CE893A7008CD0D1 /* KeychainManager.swift */,
+				9E22DE732CE8D099008CD0D1 /* CoreDataManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -428,6 +431,7 @@
 				9EA917E12CE20964003E145F /* EventKitManager.swift in Sources */,
 				9EE7D73D2CDA0CB800F7602D /* AppDelegate.swift in Sources */,
 				9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */,
+				9E22DE742CE8D099008CD0D1 /* CoreDataManager.swift in Sources */,
 				9EE971DD2CCF60B300108C12 /* MainHomeView.swift in Sources */,
 				9EE971E52CCF6E5500108C12 /* JoinGroupView.swift in Sources */,
 				9EE971EB2CCF8A1200108C12 /* GroupListView.swift in Sources */,

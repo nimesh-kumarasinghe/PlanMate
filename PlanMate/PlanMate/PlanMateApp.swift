@@ -22,6 +22,7 @@ struct PlanMateApp: App {
             //ContentView()
             
             SplashScreenView()
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
 }
