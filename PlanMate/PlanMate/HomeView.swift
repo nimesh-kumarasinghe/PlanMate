@@ -40,6 +40,7 @@ class HomeViewModel: ObservableObject {
     @Published var homeProposeActivities: [HomeProposeActivityModel] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var profileImageURL: String?
     
     private var db = Firestore.firestore()
     private var groupListeners: [ListenerRegistration] = []
@@ -70,6 +71,8 @@ class HomeViewModel: ObservableObject {
                     self.isLoading = false
                     return
                 }
+                
+                self.profileImageURL = userData["profileImageURL"] as? String
                 
                 // Get user's groups and activities
                 let groupIds = userData["groups"] as? [String] ?? []
@@ -247,9 +250,28 @@ struct HomeView: View {
                                             .foregroundColor(.black)
                                     }
                                     NavigationLink(destination: MyAccountView() .navigationBarHidden(false)) {
-                                        Image(systemName: "person.circle.fill")
-                                            .resizable()
-                                            .frame(width: 30, height: 30)
+                                        if let profileURL = viewModel.profileImageURL, !profileURL.isEmpty {
+                                            AsyncImage(url: URL(string: profileURL)) { image in
+                                                image
+                                                    .resizable()
+                                                    .clipShape(Circle())
+                                                    .frame(width: 30, height: 30)
+                                                    .overlay(Circle().stroke(Color.gray, lineWidth: 1))
+                                            } placeholder: {
+                                                ProgressView()
+                                            }
+                                        } else {
+                                            Circle()
+                                                .fill(Color.blue.opacity(0.1))
+                                                .frame(width: 30, height: 30)
+                                                .overlay(
+                                                    Image(systemName: "person.fill")
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .foregroundColor(.blue)
+                                                        .frame(width: 20, height: 20)
+                                                )
+                                        }
                                     }
                                 }
                                 .font(.title2)
