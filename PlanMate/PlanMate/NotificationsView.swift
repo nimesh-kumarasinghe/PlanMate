@@ -15,6 +15,7 @@ struct NotificationItem: Identifiable {
     let message: String
     let timestamp: String
     let group: String
+    let type: String
     var isRead: Bool = false
 }
 
@@ -23,6 +24,21 @@ struct NotificationsView: View {
     @State private var notifications: [NotificationItem] = []
     @State private var isLoading = true
     @State private var errorMessage: String? = nil
+    @State private var showEventNotifications = false
+    @State private var showProposeNotifications = false
+    
+    var filteredNotifications: [NotificationItem] {
+        notifications.filter { notification in
+            switch notification.type {
+            case "Event":
+                return showEventNotifications
+            case "PA":
+                return showProposeNotifications
+            default:
+                return false
+            }
+        }
+    }
     
     var body: some View {
         NavigationView {
@@ -34,25 +50,44 @@ struct NotificationsView: View {
                     Text(error)
                         .foregroundColor(.red)
                         .padding()
-                } else {
-                    // Mark all button moved to top
-                    HStack {
+                } else if !showEventNotifications && !showProposeNotifications {
+                    // Show message when both notification types are disabled
+                    VStack {
                         Spacer()
-                        MarkAllButton {
-                            markAllAsRead()
-                        }
-                        .padding(.horizontal)
+                        Text("Turn on your notification settings in your account")
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.gray)
+                            .padding()
+                        Spacer()
                     }
-                    
-                    // Notifications list
-                    List {
-                        ForEach(notifications) { notification in
-                            NotificationCell(notification: notification)
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.clear)
+                }  else {
+                    if !filteredNotifications.isEmpty {
+                        // Clear all notification
+                        HStack {
+                            Spacer()
+                            MarkAllButton {
+                                markAllAsRead()
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                        // Notifications list
+                        List {
+                            ForEach(filteredNotifications) { notification in
+                                NotificationCell(notification: notification)
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
+                            }
+                        }
+                        .listStyle(PlainListStyle())
+                    } else {
+                        VStack {
+                            Spacer()
+                            Text("No notifications")
+                                .foregroundColor(.gray)
+                            Spacer()
                         }
                     }
-                    .listStyle(PlainListStyle())
                 }
             }
         }
@@ -79,8 +114,17 @@ struct NotificationsView: View {
                 return
             }
             
-            guard let data = snapshot?.data(),
-                  let notificationsData = data["notifications"] as? [[String: Any]] else {
+            guard let data = snapshot?.data() else {
+                self.errorMessage = "No user data found."
+                self.isLoading = false
+                return
+            }
+            
+            // Get notification preferences
+            self.showEventNotifications = data["showEventNotifications"] as? Bool ?? false
+            self.showProposeNotifications = data["showProposeNotifications"] as? Bool ?? false
+            
+            guard let notificationsData = data["notifications"] as? [[String: Any]] else {
                 self.errorMessage = "No notifications found."
                 self.isLoading = false
                 return
@@ -91,11 +135,11 @@ struct NotificationsView: View {
                 guard let id = dict["id"] as? String,
                       let title = dict["title"] as? String,
                       let message = dict["message"] as? String,
+                      let type = dict["type"] as? String,
                       let timestamp = dict["timestamp"] as? Timestamp else {
                     return nil
                 }
                 
-                // Convert timestamp to a human-readable string
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateStyle = .medium
                 dateFormatter.timeStyle = .short
@@ -103,10 +147,11 @@ struct NotificationsView: View {
                 
                 return NotificationItem(
                     id: id,
-                    title: title, // Using Firestore's title field
-                    message: message, // Using Firestore's message field
+                    title: title,
+                    message: message,
                     timestamp: timestampString,
-                    group: "" // Adjust or fetch group info if needed
+                    group: "",
+                    type: type
                 )
             }
             
