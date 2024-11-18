@@ -250,7 +250,7 @@ struct HomeView: View {
                                 }
                                 Spacer()
                                 HStack(spacing: 15) {
-                                    NavigationLink(destination: NotificationsView()) {
+                                    NavigationLink(destination: NotificationsView() .navigationBarTitle("Notifications")) {
                                         Image(systemName: "bell")
                                             .foregroundColor(.black)
                                     }

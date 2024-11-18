@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseFirestore
+import FirebaseAuth
 
 struct GroupMember: Identifiable, Hashable {
     let id = UUID()
@@ -192,9 +193,10 @@ struct ProposeActivityView: View {
             ]
         }
 
-        // Get participant UIDs
+        // Get participant UIDs (including the creator)
         let participantUIDs = Array(selectedMembers).map { $0.uid }
 
+        // Create activity data
         let activityData: [String: Any] = [
             "groupId": groupId,  // Assuming groupId is the groupCode now
             "groupName": groupName,
@@ -218,6 +220,13 @@ struct ProposeActivityView: View {
                 return
             }
 
+            // Notification message for this activity
+            let notificationMessage = "\(self.activityName) has been created and you are a participant. Check it out and submit your vote."
+            let notificationTitle = "New Activity Proposed!"
+
+            // Create a batch for multiple operations
+            let batch = db.batch()
+
             // Find the group using the groupCode (groupId in this case)
             let groupQuery = db.collection("groups").whereField("groupCode", isEqualTo: self.groupId)
             groupQuery.getDocuments { querySnapshot, error in
@@ -237,29 +246,46 @@ struct ProposeActivityView: View {
                     return
                 }
 
-                // Create a batch write for multiple operations
-                let batch = db.batch()
-
                 // Update the group's proposeActivities array
                 let groupRef = groupDocument.reference
                 batch.updateData([
                     "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
                 ], forDocument: groupRef)
 
-                // Update each user proposeActivities array in users collection
+                // Update each user proposeActivities array in users collection and add notifications
                 for participantUID in participantUIDs {
                     let userRef = db.collection("users").document(participantUID)
+
+                    // Add proposeActivity to user document
                     batch.updateData([
                         "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
                     ], forDocument: userRef)
+
+                    // Add a notification for each selected participant
+                    // We will only skip adding a notification for the creator
+                    if participantUID != Auth.auth().currentUser?.uid {
+                        // Add the notification only if the user is not the creator
+                        batch.updateData([
+                            "notifications": FieldValue.arrayUnion([
+                                [
+                                    "id": UUID().uuidString,
+                                    "message": notificationMessage,
+                                    "activityId": activityRef.documentID,
+                                    "title": notificationTitle,
+                                    "timestamp": Timestamp(date: Date()),
+                                    "type": "PA" // Type indicates "Proposed Activity"
+                                ]
+                            ])
+                        ], forDocument: userRef)
+                    }
                 }
 
                 // Commit the batch
-                batch.commit { error in
+                batch.commit { batchError in
                     DispatchQueue.main.async {
                         isLoading = false
-                        if let error = error {
-                            errorMessage = error.localizedDescription
+                        if let batchError = batchError {
+                            errorMessage = batchError.localizedDescription
                         } else {
                             dismiss()
                         }
@@ -268,6 +294,8 @@ struct ProposeActivityView: View {
             }
         }
     }
+
+
 
 }
 

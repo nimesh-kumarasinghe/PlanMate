@@ -1035,6 +1035,22 @@ struct CreateActivityView: View {
                 batch.updateData([
                     "activities": FieldValue.arrayUnion([activityId])
                 ], forDocument: userRef)
+                
+                // notification for this activity
+                let notificationMessage = "\(self.title) has been created and you are a participant. Check it out."
+                let notificationTitle = "New Event!"
+                    batch.updateData([
+                        "notifications": FieldValue.arrayUnion([
+                        [
+                            "id": UUID().uuidString,
+                            "message": notificationMessage,
+                            "activityId": activityId,
+                            "title":notificationTitle,
+                            "timestamp": Timestamp(date: Date()),
+                            "type": "Event"
+                        ]
+                    ])
+                ], forDocument: userRef)
             }
             
             // Commit the batch update
