@@ -373,22 +373,21 @@ struct DetailView: View {
                         }
                     }
                 }
-            //}
-            //.toolbar {
-//                ToolbarItem(placement: .principal) {
-//                    VStack {
-//                        Text(dateFormatter.string(from: date))
-//                            .font(.subheadline) // Smaller font size for the title
-//                            .foregroundColor(.primary)
-//                    }
-//                }
-//                ToolbarItem(placement: .navigationBarTrailing) {
-//                    Button("Done") {
-//                        presentationMode.wrappedValue.dismiss()
-//                    }
-//                }
-           // }
-        }
+            }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack {
+                        Text(dateFormatter.string(from: date))
+                            .font(.subheadline) // Smaller font size for the title
+                            .foregroundColor(.primary)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
         .onAppear {
             viewModel.fetchActivities(for: date)
         }
