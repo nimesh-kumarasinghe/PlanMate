@@ -55,7 +55,6 @@ struct NotificationsView: View {
                     .listStyle(PlainListStyle())
                 }
             }
-            //.navigationBarTitle("Notifications", displayMode: .inline)
         }
         .toolbar(.hidden, for: .tabBar)
         .onAppear {

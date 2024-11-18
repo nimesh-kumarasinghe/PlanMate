@@ -261,8 +261,8 @@ struct ProposeActivityView: View {
                         "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
                     ], forDocument: userRef)
 
-                    // Add a notification for each selected participant
-                    // We will only skip adding a notification for the creator
+
+                    // exculding the creator and saving for others
                     if participantUID != Auth.auth().currentUser?.uid {
                         // Add the notification only if the user is not the creator
                         batch.updateData([
