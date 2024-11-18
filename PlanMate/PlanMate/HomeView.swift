@@ -8,6 +8,7 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import FirebaseStorage
 
 // Models
 struct HomeGroupModel: Identifiable {
@@ -17,6 +18,7 @@ struct HomeGroupModel: Identifiable {
     let groupCode: String
     let createdBy: String
     let members: [String]
+    let profileImageURL: String?
 }
 
 struct HomeProposeActivityModel: Identifiable {
@@ -174,6 +176,8 @@ class HomeViewModel: ObservableObject {
                  let members = data["members"] as? [String] else {
                return nil
            }
+        
+        let profileImageURL = data["profileImageURL"] as? String
            
            return HomeGroupModel(
                id: document.documentID,
@@ -181,7 +185,8 @@ class HomeViewModel: ObservableObject {
                description: description,
                groupCode: groupCode,
                createdBy: createdBy,
-               members: members
+               members: members,
+               profileImageURL: profileImageURL
            )
        }
        
@@ -385,7 +390,7 @@ struct ErrorWrapper: Identifiable {
 
 struct GroupCard: View {
     let group: HomeGroupModel
-    
+
     var body: some View {
         NavigationLink(destination: GroupDetailView(groupCode: group.groupCode)) {
             VStack {
@@ -393,10 +398,25 @@ struct GroupCard: View {
                     .fill(Color.blue.opacity(0.1))
                     .frame(height: 100)
                     .overlay(
-                        Image("defaultimg")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 90)
+                        ZStack {
+                            if let imageURL = group.profileImageURL, !imageURL.isEmpty {
+                                AsyncImage(url: URL(string: imageURL)) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(height: 100) // Match the RoundedRectangle height
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                            } else {
+                                Image("defaultimg")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(height: 100) // Match the RoundedRectangle height
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                        }
                     )
                 Text(group.groupName)
                     .fontWeight(.medium)
@@ -405,6 +425,7 @@ struct GroupCard: View {
         .foregroundColor(.primary)
     }
 }
+
 
 struct ActivityListCard: View {
     let title: String

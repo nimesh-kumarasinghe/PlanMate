@@ -24,6 +24,7 @@ struct UserGroup: Identifiable {
     let description: String
     let members: [String]
     let createdBy: String
+    let profileImageURL: String?
     
     var memberCount: Int {
         members.count
@@ -85,7 +86,8 @@ class FirebaseGroupViewModel: ObservableObject {
                             groupCode: data["groupCode"] as? String ?? "",
                             description: data["description"] as? String ?? "",
                             members: data["members"] as? [String] ?? [],
-                            createdBy: data["createdBy"] as? String ?? ""
+                            createdBy: data["createdBy"] as? String ?? "",
+                            profileImageURL: data["profileImageURL"] as? String
                         )
                         
                         DispatchQueue.main.async {
@@ -150,36 +152,54 @@ struct GroupListView: View {
         NavigationView {
             ZStack {
                 if viewModel.groups.isEmpty {
-                    EmptyListStateView()
-                } else {
-                    List {
-                        ForEach(viewModel.groups) { group in
-                            NavigationLink(destination: GroupDetailView(groupCode: group.groupCode)) {
-                                HStack {
-                                    Image("defaultimg")
-                                        .resizable()
-                                        .frame(width: 40, height: 40)
-                                        .foregroundColor(group.memberCount > 6 ? .blue : .green)
-                                    VStack(alignment: .leading) {
-                                        Text(group.groupName)
-                                            .font(.headline)
-                                        Text("\(group.memberCount) members")
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                    }
-                                }
-                            }
-                            .swipeActions {
-                                Button(role: .destructive) {
-                                    groupToLeave = group
-                                    showAlert = true
-                                } label: {
-                                    Text("Leave")
-                                }
-                            }
-                        }
-                    }
-                }
+                      EmptyListStateView()
+                  } else {
+                      List {
+                          ForEach(viewModel.groups) { group in
+                              NavigationLink(destination: GroupDetailView(groupCode: group.groupCode)) {
+                                  HStack(spacing: 15) {
+                                      // Group Profile Image
+                                      if let imageURL = group.profileImageURL, !imageURL.isEmpty {
+                                          AsyncImage(url: URL(string: imageURL)) { image in
+                                              image
+                                                  .resizable()
+                                                  .aspectRatio(contentMode: .fill)
+                                                  .frame(width: 50, height: 50)
+                                                  .clipShape(RoundedRectangle(cornerRadius: 8))
+                                          } placeholder: {
+                                              ProgressView()
+                                                  .frame(width: 50, height: 50)
+                                          }
+                                      } else {
+                                          Image("defaultimg")
+                                              .resizable()
+                                              .aspectRatio(contentMode: .fill)
+                                              .frame(width: 50, height: 50)
+                                              .clipShape(RoundedRectangle(cornerRadius: 8))
+                                      }
+                                      
+                                      VStack(alignment: .leading, spacing: 4) {
+                                          Text(group.groupName)
+                                              .font(.headline)
+                                          Text("\(group.memberCount) members")
+                                              .font(.subheadline)
+                                              .foregroundColor(.gray)
+                                      }
+                                  }
+                                  .padding(.vertical, 8)
+                              }
+                              .swipeActions {
+                                  Button(role: .destructive) {
+                                      groupToLeave = group
+                                      showAlert = true
+                                  } label: {
+                                      Text("Leave")
+                                  }
+                              }
+                          }
+                      }
+                      .listStyle(PlainListStyle())
+                  }
             }
             .alert("Leave Group", isPresented: $showAlert, presenting: groupToLeave) { group in
                 Button("Leave", role: .destructive) {
