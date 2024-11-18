@@ -9,6 +9,7 @@ import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
+import SDWebImageSwiftUI
 
 struct MyAccountView: View {
     @State private var showingDeleteAlert = false
@@ -18,6 +19,9 @@ struct MyAccountView: View {
     @State private var errorMessage = ""
     @State private var isLoading = false
     @State private var showingEditProfile = false
+    @State private var profileImageURL: String?
+    @State private var isImageLoading = false
+    @State private var shouldRefreshProfile = false
     
     @StateObject private var biometricManager = BiometricManager()
     
@@ -34,15 +38,35 @@ struct MyAccountView: View {
                         // Profile Section
                         VStack(spacing: 8) {
                             ZStack {
-                                Circle()
-                                    .fill(Color("CustomBlue"))
-                                    .frame(width: 100, height: 100)
-                                
-                                Image(systemName: "person.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 60, height: 60)
-                                    .foregroundColor(.white)
+                                if let imageURL = profileImageURL, !imageURL.isEmpty {
+                                    WebImage(url: URL(string: imageURL))
+                                        .resizable()
+                                        .indicator { _, _ in
+                                            Circle()
+                                                .fill(Color.gray.opacity(0.2))
+                                                .frame(width: 100, height: 100)
+
+                                            Image(systemName: "person.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .foregroundColor(Color.gray)
+                                                .frame(width: 60, height: 60)
+                                        }
+                                        .transition(.fade(duration: 0.5))
+                                        .scaledToFill()
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(Circle())
+                                } else {
+                                    Circle()
+                                        .fill(Color("CustomBlue"))
+                                        .frame(width: 100, height: 100)
+                                    
+                                    Image(systemName: "person.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 60, height: 60)
+                                        .foregroundColor(.white)
+                                }
                             }
                             
                             Text("\(userName)")
@@ -155,12 +179,18 @@ struct MyAccountView: View {
                         }
                     }
                     .padding(.vertical, 16)
+                    .onAppear {
+                        loadProfileImage()
+                    }
                 }
                 .sheet(isPresented: $showingEditProfile) {
+                    loadProfileImage()
+                }content:{
                     MyAccountEditView(
                         userName: userName,
                         email: Auth.auth().currentUser?.email ?? "",
-                        uid: userid
+                        uid: userid,
+                        profileImageURL: profileImageURL
                     )
                 }
                 .alert("Delete Account", isPresented: $showingDeleteAlert) {
@@ -204,6 +234,29 @@ struct MyAccountView: View {
         }
         .toolbar(.hidden, for: .tabBar)
     }
+    
+    private func loadProfileImage() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        
+        isImageLoading = true
+        db.collection("users").document(uid).getDocument { document, error in
+            isImageLoading = false
+            
+            if let error = error {
+                print("Error fetching profile image: \(error.localizedDescription)")
+                return
+            }
+            
+            if let document = document, document.exists {
+                let newProfileImageURL = document.data()?["profileImageURL"] as? String
+                if newProfileImageURL != profileImageURL {
+                    profileImageURL = newProfileImageURL
+                }
+            }
+        }
+    }
+    
     // delete from firebase authetication
     func deleteUserAccountAuth() {
         Auth.auth().currentUser?.delete { error in

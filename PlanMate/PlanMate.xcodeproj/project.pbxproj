@@ -18,6 +18,8 @@
 		9EAC12412CD8AB9A002A84A0 /* LocationSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */; };
 		9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */; };
 		9EB740112CE362C90043E809 /* MyAccountEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB740102CE362C90043E809 /* MyAccountEditView.swift */; };
+		9EBDA9AB2CEB0E6800A8205D /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 9EBDA9AA2CEB0E6800A8205D /* FirebaseStorage */; };
+		9EBDA9AE2CEB11BF00A8205D /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9EBDA9AD2CEB11BF00A8205D /* SDWebImageSwiftUI */; };
 		9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */; };
 		9EE4F0F32CCE119A009D0F71 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */; };
 		9EE4F0F62CCE119A009D0F71 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EE4F0F52CCE119A009D0F71 /* Preview Assets.xcassets */; };
@@ -135,8 +137,10 @@
 				9EE7D73A2CD9E04F00F7602D /* FirebaseDatabase in Frameworks */,
 				9EE7D7382CD9E04F00F7602D /* FirebaseAuth in Frameworks */,
 				9EE7D7422CDA15B800F7602D /* GoogleSignIn in Frameworks */,
+				9EBDA9AE2CEB11BF00A8205D /* SDWebImageSwiftUI in Frameworks */,
 				9EE7D7462CDA544B00F7602D /* FirebaseFirestore in Frameworks */,
 				9EED9E492CDCB9D6003543E7 /* FirebaseCore in Frameworks */,
+				9EBDA9AB2CEB0E6800A8205D /* FirebaseStorage in Frameworks */,
 				9EE7D7442CDA15B800F7602D /* GoogleSignInSwift in Frameworks */,
 				9EED9E4B2CDCB9D6003543E7 /* FirebaseFirestore in Frameworks */,
 			);
@@ -285,6 +289,8 @@
 				9EE7D7452CDA544B00F7602D /* FirebaseFirestore */,
 				9EED9E482CDCB9D6003543E7 /* FirebaseCore */,
 				9EED9E4A2CDCB9D6003543E7 /* FirebaseFirestore */,
+				9EBDA9AA2CEB0E6800A8205D /* FirebaseStorage */,
+				9EBDA9AD2CEB11BF00A8205D /* SDWebImageSwiftUI */,
 			);
 			productName = PlanMate;
 			productReference = 9EE4F0EB2CCE1199009D0F71 /* PlanMate.app */;
@@ -361,6 +367,7 @@
 			packageReferences = (
 				9EE7D7362CD9E04F00F7602D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				9EE7D7402CDA15B800F7602D /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				9EBDA9AC2CEB11BF00A8205D /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 			);
 			productRefGroup = 9EE4F0EC2CCE1199009D0F71 /* Products */;
 			projectDirPath = "";
@@ -781,6 +788,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9EBDA9AC2CEB11BF00A8205D /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.3;
+			};
+		};
 		9EE7D7362CD9E04F00F7602D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -800,6 +815,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9EBDA9AA2CEB0E6800A8205D /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseStorage;
+		};
+		9EBDA9AD2CEB11BF00A8205D /* SDWebImageSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9EBDA9AC2CEB11BF00A8205D /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
+			productName = SDWebImageSwiftUI;
+		};
 		9EE7D7372CD9E04F00F7602D /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9EE7D7362CD9E04F00F7602D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
