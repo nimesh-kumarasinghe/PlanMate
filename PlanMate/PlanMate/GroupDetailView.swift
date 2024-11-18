@@ -19,6 +19,7 @@ class GroupDetailViewModel: ObservableObject {
     @Published var proposeActivities: [HomeProposeActivityModel] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var profileImageURL: String = ""
 
     @AppStorage("userid") private var userid: String = ""
     
@@ -55,6 +56,7 @@ class GroupDetailViewModel: ObservableObject {
                     self.groupName = data["groupName"] as? String ?? ""
                     self.groupDescription = data["description"] as? String ?? ""
                     self.groupMembers = data["members"] as? [String] ?? []
+                    self.profileImageURL = data["profileImageURL"] as? String ?? ""
                 }
                 
                 // Save group data to Core Data
@@ -365,7 +367,7 @@ struct GroupDetailView: View {
             }
         }
         .navigationTitle(viewModel.groupName)
-        .navigationBarItems(trailing: NavigationLink("Edit", destination: EditGroupView(groupName: viewModel.groupName, description: viewModel.groupDescription, groupCode: groupCode)))
+        .navigationBarItems(trailing: NavigationLink("Edit", destination: EditGroupView(groupName: viewModel.groupName, description: viewModel.groupDescription, groupCode: groupCode, profileImageURL: viewModel.profileImageURL)))
         .sheet(isPresented: $showingJoinCodeSheet) {
             JoinCodeSheet(joinCode: groupCode)
         }

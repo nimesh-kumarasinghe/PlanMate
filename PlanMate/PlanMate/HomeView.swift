@@ -262,13 +262,13 @@ struct HomeView: View {
                                             }
                                         } else {
                                             Circle()
-                                                .fill(Color.blue.opacity(0.1))
+                                                .fill(Color("CustomBlue"))
                                                 .frame(width: 30, height: 30)
                                                 .overlay(
                                                     Image(systemName: "person.fill")
                                                         .resizable()
                                                         .scaledToFit()
-                                                        .foregroundColor(.blue)
+                                                        .foregroundColor(.white)
                                                         .frame(width: 20, height: 20)
                                                 )
                                         }

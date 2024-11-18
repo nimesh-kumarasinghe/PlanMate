@@ -8,17 +8,23 @@
 import SwiftUI
 import FirebaseFirestore
 import CoreImage.CIFilterBuiltins
+import PhotosUI
+import FirebaseStorage
 
 struct CreateGroupView: View {
     @State private var groupName: String = ""
     @State private var description: String = ""
     @State private var isImagePickerPresented = false
-    @State private var groupImage: Image? = Image("defaultimg")
     @State private var isAlertPresented = false
     @State private var alertMessage = ""
     @State private var isQRCodePopupPresented = false
     @State private var groupCode: String = ""
-    @State private var isLoading = false  // State for showing loading overlay
+    @State private var isLoading = false
+    @State private var showError = false
+    @State private var errorMessage = ""
+    
+    @State private var selectedItem: PhotosPickerItem?
+    @State private var selectedImageData: Data?
 
     @AppStorage("userid") private var userid: String = ""
 
@@ -28,13 +34,54 @@ struct CreateGroupView: View {
                 VStack(spacing: 20) {
                     // Group Image with Edit Icon
                     ZStack(alignment: .bottomTrailing) {
-                        groupImage?
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+                        // Background Circle
+                        Circle()
+                            .fill(Color.gray.opacity(0.2))
                             .frame(width: 150, height: 150)
-                            .clipShape(Circle())
-                            .background(Circle().fill(Color("CustomBlue")))
-                            .foregroundColor(.white)
+                        
+                        // Selected Image or Default Image
+                        if let imageData = selectedImageData,
+                           let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 150, height: 150)
+                                .clipShape(Circle())
+                        } else {
+                            Image("defaultimg")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 150, height: 150)
+                                .clipShape(Circle())
+                        }
+                        
+                        // Photos Picker
+                        PhotosPicker(selection: $selectedItem,
+                                     matching: .images) {
+                            Image(systemName: "camera.fill")
+                                .foregroundColor(.white)
+                                .padding(8)
+                                .background(Color.black.opacity(0.6))
+                                .clipShape(Circle())
+                        }
+                        .onChange(of: selectedItem) { newItem in
+                            if let newItem = newItem {
+                                newItem.loadTransferable(type: Data.self) { result in
+                                    switch result {
+                                    case .success(let data):
+                                        if let data = data {
+                                            DispatchQueue.main.async {
+                                                selectedImageData = data
+                                            }
+                                        }
+                                    case .failure(let error):
+                                        print("Error loading image: \(error.localizedDescription)")
+                                    }
+                                }
+                            }
+                        }
+                        .frame(width: 40, height: 40)
+                        .offset(x: -10, y: -10)
                     }
                     .padding(.top, 50)
 
@@ -76,6 +123,11 @@ struct CreateGroupView: View {
                 }
                 .navigationTitle("Create a Group")
                 .navigationBarTitleDisplayMode(.inline)
+                .alert("Error", isPresented: $showError) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text(errorMessage)
+                }
                 .alert(isPresented: $isAlertPresented) {
                     Alert(title: Text("Required"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
                 }
@@ -91,59 +143,100 @@ struct CreateGroupView: View {
         }
         .toolbar(.hidden, for: .tabBar)
     }
-
-    // Function to validate and create the group in Firestore
-    private func createGroup() {
-        guard !groupName.isEmpty else {
-            alertMessage = "Group Name is required"
-            isAlertPresented = true
-            return
-        }
-        
-        // Start loading
-        isLoading = true
-
-        // Generate a unique code
-        groupCode = UUID().uuidString.prefix(8).uppercased()
-
-        // Prepare data for Firestore
-        let groupData: [String: Any] = [
-            "groupName": groupName,
-            "description": description,
-            "groupCode": groupCode,
-            "createdBy": userid,  // The user who created the group
-            "members": [userid]    // Add the current user as a member
-        ]
-
-        // Add the group data to Firestore
-        let db = Firestore.firestore()
-        db.collection("groups").addDocument(data: groupData) { error in
-            isLoading = false  // Stop loading
-            if let error = error {
-                alertMessage = "Error creating group: \(error.localizedDescription)"
-                isAlertPresented = true
-            } else {
-                // Update the user's document in the 'users' collection to include the new group
-                let userDocRef = db.collection("users").document(userid)
-                userDocRef.updateData([
-                    "groups": FieldValue.arrayUnion([groupCode])  // Add the groupCode to the user's groups array
-                ]) { error in
+    
+    private func uploadImage(groupCode: String, completion: @escaping (String?) -> Void) {
+            guard let imageData = selectedImageData else {
+                completion(nil)
+                return
+            }
+            
+            let storage = Storage.storage()
+            let storageRef = storage.reference()
+            let imageRef = storageRef.child("group_images/\(groupCode)_\(UUID().uuidString).jpg")
+            
+            let metadata = StorageMetadata()
+            metadata.contentType = "image/jpeg"
+            
+            // Compress image
+            guard let compressedImageData = UIImage(data: imageData)?.jpegData(compressionQuality: 0.5) else {
+                completion(nil)
+                return
+            }
+            
+            imageRef.putData(compressedImageData, metadata: metadata) { _, error in
+                if let error = error {
+                    print("Error uploading image: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+                
+                imageRef.downloadURL { url, error in
                     if let error = error {
-                        alertMessage = "Error updating user: \(error.localizedDescription)"
-                        isAlertPresented = true
-                    } else {
-                        // Clear text fields and state variables after successful creation
-                        groupName = ""
-                        description = ""
-                        
-                        // Show the QR code popup if creation is successful
-                        isQRCodePopupPresented = true
+                        print("Error getting download URL: \(error.localizedDescription)")
+                        completion(nil)
+                        return
+                    }
+                    
+                    completion(url?.absoluteString)
+                }
+            }
+        }
+
+        private func createGroup() {
+            guard !groupName.isEmpty else {
+                alertMessage = "Group Name is required"
+                isAlertPresented = true
+                return
+            }
+            
+            isLoading = true
+            groupCode = UUID().uuidString.prefix(8).uppercased()
+            
+            uploadImage(groupCode: groupCode) { imageURL in
+                var groupData: [String: Any] = [
+                    "groupName": groupName,
+                    "description": description,
+                    "groupCode": groupCode,
+                    "createdBy": userid,
+                    "members": [userid]
+                ]
+                
+                if let imageURL = imageURL {
+                    groupData["profileImageURL"] = imageURL
+                }
+                
+                let db = Firestore.firestore()
+                db.collection("groups").addDocument(data: groupData) { error in
+                    if let error = error {
+                        DispatchQueue.main.async {
+                            isLoading = false
+                            errorMessage = "Error creating group: \(error.localizedDescription)"
+                            showError = true
+                        }
+                        return
+                    }
+                    
+                    let userDocRef = db.collection("users").document(userid)
+                    userDocRef.updateData([
+                        "groups": FieldValue.arrayUnion([groupCode])
+                    ]) { error in
+                        DispatchQueue.main.async {
+                            isLoading = false
+                            
+                            if let error = error {
+                                errorMessage = "Error updating user: \(error.localizedDescription)"
+                                showError = true
+                            } else {
+                                groupName = ""
+                                description = ""
+                                isQRCodePopupPresented = true
+                            }
+                        }
                     }
                 }
             }
         }
-    }
-
+    
 }
 
 struct QRCodePopupView: View {
