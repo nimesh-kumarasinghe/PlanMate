@@ -378,7 +378,7 @@ struct DetailView: View {
                 ToolbarItem(placement: .principal) {
                     VStack {
                         Text(dateFormatter.string(from: date))
-                            .font(.subheadline) // Smaller font size for the title
+                            .font(.subheadline) 
                             .foregroundColor(.primary)
                     }
                 }
