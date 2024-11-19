@@ -17,7 +17,7 @@ struct MainHomeView: View {
                         Text("Home")
                     }
                 }
-
+            
             CalendarView()
                 .tabItem {
                     VStack {
@@ -25,7 +25,7 @@ struct MainHomeView: View {
                         Text("Calendar")
                     }
                 }
-
+            
             CreateActivityView()
                 .tabItem {
                     VStack {
@@ -33,7 +33,7 @@ struct MainHomeView: View {
                         Text("Create")
                     }
                 }
-
+            
             ActivityListView()
                 .tabItem {
                     VStack {

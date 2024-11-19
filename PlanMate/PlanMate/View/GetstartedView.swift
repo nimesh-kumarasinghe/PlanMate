@@ -16,7 +16,7 @@ struct GetstartedView: View {
             VStack(spacing: 20) {
                 Spacer()
                 
-                Image("PlanMate") // logo
+                Image("PlanMate")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 180, height: 180)

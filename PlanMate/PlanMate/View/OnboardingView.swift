@@ -64,7 +64,7 @@ struct OnboardingView: View {
                     
                     if currentPage == totalPages {
                         Button(action: {
-                            navigateToGetStarted = true 
+                            navigateToGetStarted = true
                         }) {
                             HStack {
                                 Text("Get Started")
@@ -87,7 +87,7 @@ struct OnboardingView: View {
                                 Circle()
                                     .fill(Color("CustomBlue"))
                                     .frame(width: 44, height: 44)
-
+                                
                                 Image("next")
                                     .resizable()
                                     .scaledToFit()

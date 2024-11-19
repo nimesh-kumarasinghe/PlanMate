@@ -25,16 +25,15 @@ struct CreateGroupView: View {
     
     @State private var selectedItem: PhotosPickerItem?
     @State private var selectedImageData: Data?
-
+    
     @AppStorage("userid") private var userid: String = ""
-
+    
     var body: some View {
         ZStack {
             NavigationView {
                 VStack(spacing: 20) {
                     // Group Image with Edit Icon
                     ZStack(alignment: .bottomTrailing) {
-                        // Background Circle
                         Circle()
                             .fill(Color.gray.opacity(0.2))
                             .frame(width: 150, height: 150)
@@ -64,27 +63,27 @@ struct CreateGroupView: View {
                                 .background(Color.black.opacity(0.6))
                                 .clipShape(Circle())
                         }
-                        .onChange(of: selectedItem) { newItem in
-                            if let newItem = newItem {
-                                newItem.loadTransferable(type: Data.self) { result in
-                                    switch result {
-                                    case .success(let data):
-                                        if let data = data {
-                                            DispatchQueue.main.async {
-                                                selectedImageData = data
-                                            }
-                                        }
-                                    case .failure(let error):
-                                        print("Error loading image: \(error.localizedDescription)")
-                                    }
-                                }
-                            }
-                        }
-                        .frame(width: 40, height: 40)
-                        .offset(x: -10, y: -10)
+                                     .onChange(of: selectedItem) { newItem in
+                                         if let newItem = newItem {
+                                             newItem.loadTransferable(type: Data.self) { result in
+                                                 switch result {
+                                                 case .success(let data):
+                                                     if let data = data {
+                                                         DispatchQueue.main.async {
+                                                             selectedImageData = data
+                                                         }
+                                                     }
+                                                 case .failure(let error):
+                                                     print("Error loading image: \(error.localizedDescription)")
+                                                 }
+                                             }
+                                         }
+                                     }
+                                     .frame(width: 40, height: 40)
+                                     .offset(x: -10, y: -10)
                     }
                     .padding(.top, 50)
-
+                    
                     // Group Name TextField
                     TextField("Group Name", text: $groupName)
                         .padding()
@@ -94,7 +93,7 @@ struct CreateGroupView: View {
                                 .stroke(Color(.systemGray3), lineWidth: 2)
                         )
                         .padding(.horizontal, 20)
-
+                    
                     // Description TextField
                     TextField("Description (optional)", text: $description)
                         .padding()
@@ -104,7 +103,7 @@ struct CreateGroupView: View {
                                 .stroke(Color(.systemGray3), lineWidth: 2)
                         )
                         .padding(.horizontal, 20)
-
+                    
                     // Create Button
                     Button(action: {
                         createGroup()
@@ -118,7 +117,7 @@ struct CreateGroupView: View {
                             .padding(.horizontal, 40)
                     }
                     .padding(.top, 20)
-
+                    
                     Spacer()
                 }
                 .navigationTitle("Create a Group")
@@ -135,8 +134,6 @@ struct CreateGroupView: View {
                     QRCodePopupView(groupCode: groupCode)
                 }
             }
-
-            // Show Loading Overlay if needed
             if isLoading {
                 LoadingScreen()
             }
@@ -145,97 +142,97 @@ struct CreateGroupView: View {
     }
     
     private func uploadImage(groupCode: String, completion: @escaping (String?) -> Void) {
-            guard let imageData = selectedImageData else {
+        guard let imageData = selectedImageData else {
+            completion(nil)
+            return
+        }
+        
+        let storage = Storage.storage()
+        let storageRef = storage.reference()
+        let imageRef = storageRef.child("group_images/\(groupCode)_\(UUID().uuidString).jpg")
+        
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpeg"
+        
+        // Compress image
+        guard let compressedImageData = UIImage(data: imageData)?.jpegData(compressionQuality: 0.5) else {
+            completion(nil)
+            return
+        }
+        
+        imageRef.putData(compressedImageData, metadata: metadata) { _, error in
+            if let error = error {
+                print("Error uploading image: \(error.localizedDescription)")
                 completion(nil)
                 return
             }
             
-            let storage = Storage.storage()
-            let storageRef = storage.reference()
-            let imageRef = storageRef.child("group_images/\(groupCode)_\(UUID().uuidString).jpg")
-            
-            let metadata = StorageMetadata()
-            metadata.contentType = "image/jpeg"
-            
-            // Compress image
-            guard let compressedImageData = UIImage(data: imageData)?.jpegData(compressionQuality: 0.5) else {
-                completion(nil)
-                return
-            }
-            
-            imageRef.putData(compressedImageData, metadata: metadata) { _, error in
+            imageRef.downloadURL { url, error in
                 if let error = error {
-                    print("Error uploading image: \(error.localizedDescription)")
+                    print("Error getting download URL: \(error.localizedDescription)")
                     completion(nil)
                     return
                 }
                 
-                imageRef.downloadURL { url, error in
-                    if let error = error {
-                        print("Error getting download URL: \(error.localizedDescription)")
-                        completion(nil)
-                        return
-                    }
-                    
-                    completion(url?.absoluteString)
-                }
+                completion(url?.absoluteString)
             }
         }
-
-        private func createGroup() {
-            guard !groupName.isEmpty else {
-                alertMessage = "Group Name is required"
-                isAlertPresented = true
-                return
+    }
+    
+    private func createGroup() {
+        guard !groupName.isEmpty else {
+            alertMessage = "Group Name is required"
+            isAlertPresented = true
+            return
+        }
+        
+        isLoading = true
+        groupCode = UUID().uuidString.prefix(8).uppercased()
+        
+        uploadImage(groupCode: groupCode) { imageURL in
+            var groupData: [String: Any] = [
+                "groupName": groupName,
+                "description": description,
+                "groupCode": groupCode,
+                "createdBy": userid,
+                "members": [userid]
+            ]
+            
+            if let imageURL = imageURL {
+                groupData["profileImageURL"] = imageURL
             }
             
-            isLoading = true
-            groupCode = UUID().uuidString.prefix(8).uppercased()
-            
-            uploadImage(groupCode: groupCode) { imageURL in
-                var groupData: [String: Any] = [
-                    "groupName": groupName,
-                    "description": description,
-                    "groupCode": groupCode,
-                    "createdBy": userid,
-                    "members": [userid]
-                ]
-                
-                if let imageURL = imageURL {
-                    groupData["profileImageURL"] = imageURL
+            let db = Firestore.firestore()
+            db.collection("groups").addDocument(data: groupData) { error in
+                if let error = error {
+                    DispatchQueue.main.async {
+                        isLoading = false
+                        errorMessage = "Error creating group: \(error.localizedDescription)"
+                        showError = true
+                    }
+                    return
                 }
                 
-                let db = Firestore.firestore()
-                db.collection("groups").addDocument(data: groupData) { error in
-                    if let error = error {
-                        DispatchQueue.main.async {
-                            isLoading = false
-                            errorMessage = "Error creating group: \(error.localizedDescription)"
+                let userDocRef = db.collection("users").document(userid)
+                userDocRef.updateData([
+                    "groups": FieldValue.arrayUnion([groupCode])
+                ]) { error in
+                    DispatchQueue.main.async {
+                        isLoading = false
+                        
+                        if let error = error {
+                            errorMessage = "Error updating user: \(error.localizedDescription)"
                             showError = true
-                        }
-                        return
-                    }
-                    
-                    let userDocRef = db.collection("users").document(userid)
-                    userDocRef.updateData([
-                        "groups": FieldValue.arrayUnion([groupCode])
-                    ]) { error in
-                        DispatchQueue.main.async {
-                            isLoading = false
-                            
-                            if let error = error {
-                                errorMessage = "Error updating user: \(error.localizedDescription)"
-                                showError = true
-                            } else {
-                                groupName = ""
-                                description = ""
-                                isQRCodePopupPresented = true
-                            }
+                        } else {
+                            groupName = ""
+                            description = ""
+                            isQRCodePopupPresented = true
                         }
                     }
                 }
             }
         }
+    }
     
 }
 
@@ -243,14 +240,14 @@ struct QRCodePopupView: View {
     let groupCode: String
     @State private var isCopied = false
     @State private var isSaveSuccessAlertPresented = false
-    @State private var isLoading = false  // Loading state for saving QR code
-
+    @State private var isLoading = false
+    
     var body: some View {
         ZStack {
             VStack(spacing: 20) {
                 Text("Copy join code or download QR code")
                     .font(.headline)
-
+                
                 // Group Code Display with Copy Button
                 HStack {
                     Text(groupCode)
@@ -291,14 +288,13 @@ struct QRCodePopupView: View {
             .alert(isPresented: $isSaveSuccessAlertPresented) {
                 Alert(title: Text("Success"), message: Text("QR Code image saved to Photos"), dismissButton: .default(Text("OK")))
             }
-
-            // Show Loading Overlay if needed
+            
             if isLoading {
                 LoadingScreen()
             }
         }
     }
-
+    
     // Function to generate and save QR code as an image
     private func saveQRCodeImage() {
         isLoading = true  // Start loading
@@ -306,22 +302,22 @@ struct QRCodePopupView: View {
         
         // Save QR code to the photo library
         let imageSaver = ImageSaver { success in
-            isLoading = false  // Stop loading
+            isLoading = false
             if success {
                 isSaveSuccessAlertPresented = true
             }
         }
         imageSaver.writeToPhotoAlbum(image: qrCodeImage)
     }
-
+    
     // Function to generate a high-quality QR code image from a string
     private func generateHighQualityQRCode(from string: String) -> UIImage {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
-
+        
         let transform = CGAffineTransform(scaleX: 10, y: 10) // Scale for higher resolution
-
+        
         if let outputImage = filter.outputImage?.transformed(by: transform),
            let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
             return UIImage(cgImage: cgImage)
@@ -341,7 +337,7 @@ class ImageSaver: NSObject {
     func writeToPhotoAlbum(image: UIImage) {
         UIImageWriteToSavedPhotosAlbum(image, self, #selector(saveError), nil)
     }
-
+    
     @objc func saveError(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
         if let _ = error {
             completion(false)

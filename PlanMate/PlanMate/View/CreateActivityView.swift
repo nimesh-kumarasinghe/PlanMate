@@ -10,50 +10,6 @@ import FirebaseFirestore
 import MapKit
 import FirebaseAuth
 
-// Models
-struct Task: Identifiable {
-    let id = UUID()
-    var person: TeamMember
-    var assignment: String
-}
-
-struct Member: Identifiable {
-    let id = UUID()
-    let name: String
-}
-
-struct Location: Identifiable {
-    let id = UUID()
-    let name: String
-}
-
-struct Note: Identifiable {
-    let id = UUID()
-    var content: String
-}
-
-// Using TeamGroup instead of Group to avoid conflicts
-struct TeamGroup: Identifiable {
-    let id: String
-    let name: String
-    let groupCode: String
-    let members: [String] // UIDs of members
-}
-
-struct TeamMember: Identifiable, Hashable {
-    let id: String // UID from Firebase
-    let name: String
-    var isSelected: Bool = false
-}
-
-// View Models
-class ActivityViewModel: ObservableObject {
-    @Published var tasks: [Task] = []
-    @Published var locations: [LocationData] = []
-    @Published var notes: [Note] = []
-    @Published var urls: [String] = []
-}
-
 // Task Creation Sheet View
 struct AddTaskSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -522,7 +478,7 @@ struct CreateActivityView: View {
                 Text(alertMessage)
             }
             .alert("Leave Activity", isPresented: $showLeaveConfirmation) {
-                            Button("Cancel", role: .cancel) { }
+                Button("Cancel", role: .cancel) { }
                 Button("Leave", role: .destructive) {
                     leaveActivity()
                 }
@@ -530,7 +486,7 @@ struct CreateActivityView: View {
                 Text("Are you sure you want to leave from this activity? This action cannot be undone.")
             }
             .alert("Delete Activity", isPresented: $showDeleteConfirmation) {
-                            Button("Cancel", role: .cancel) { }
+                Button("Cancel", role: .cancel) { }
                 Button("Delete", role: .destructive) {
                     deleteActivity()
                 }
@@ -686,62 +642,62 @@ struct CreateActivityView: View {
             }
         }
     }
-   
+    
     private func loadUserGroups() {
-            guard let currentUser = Auth.auth().currentUser else {
-                print("No user logged in")
+        guard let currentUser = Auth.auth().currentUser else {
+            print("No user logged in")
+            return
+        }
+        
+        let db = Firestore.firestore()
+        db.collection("users").document(currentUser.uid).getDocument { snapshot, error in
+            if let error = error {
+                print("Error fetching user data: \(error.localizedDescription)")
                 return
             }
             
-            let db = Firestore.firestore()
-            db.collection("users").document(currentUser.uid).getDocument { snapshot, error in
-                if let error = error {
-                    print("Error fetching user data: \(error.localizedDescription)")
-                    return
-                }
-                
-                if let data = snapshot?.data(),
-                   let userGroups = data["groups"] as? [String] {
-                    self.userGroups = userGroups
-                    loadGroupsForUser(groupCodes: userGroups)
-                }
+            if let data = snapshot?.data(),
+               let userGroups = data["groups"] as? [String] {
+                self.userGroups = userGroups
+                loadGroupsForUser(groupCodes: userGroups)
             }
         }
+    }
+    
+    private func loadGroupsForUser(groupCodes: [String]) {
+        let db = Firestore.firestore()
         
-        private func loadGroupsForUser(groupCodes: [String]) {
-            let db = Firestore.firestore()
-            
-            // Create a query that only gets groups with matching group codes
-            let groupsRef = db.collection("groups")
-            
-            // If there are no group codes, don't proceed with the query
-            guard !groupCodes.isEmpty else {
-                self.groups = []
+        // Create a query that only gets groups with matching group codes
+        let groupsRef = db.collection("groups")
+        
+        // If there are no group codes, don't proceed with the query
+        guard !groupCodes.isEmpty else {
+            self.groups = []
+            return
+        }
+        
+        groupsRef.whereField("groupCode", in: groupCodes).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error loading groups: \(error.localizedDescription)")
                 return
             }
             
-            groupsRef.whereField("groupCode", in: groupCodes).getDocuments { snapshot, error in
-                if let error = error {
-                    print("Error loading groups: \(error.localizedDescription)")
-                    return
-                }
-                
-                self.groups = snapshot?.documents.compactMap { document -> TeamGroup? in
-                    let data = document.data()
-                    return TeamGroup(
-                        id: document.documentID,
-                        name: data["groupName"] as? String ?? "",
-                        groupCode: data["groupCode"] as? String ?? "",
-                        members: data["members"] as? [String] ?? []
-                    )
-                } ?? []
-            }
+            self.groups = snapshot?.documents.compactMap { document -> TeamGroup? in
+                let data = document.data()
+                return TeamGroup(
+                    id: document.documentID,
+                    name: data["groupName"] as? String ?? "",
+                    groupCode: data["groupCode"] as? String ?? "",
+                    members: data["members"] as? [String] ?? []
+                )
+            } ?? []
         }
-        
-        // Replace the existing loadGroups() function with this:
-        private func loadGroups() {
-            loadUserGroups()
-        }
+    }
+    
+    // Replace the existing loadGroups() function with this:
+    private func loadGroups() {
+        loadUserGroups()
+    }
     
     // Add function to load activity data for editing
     private func loadActivityData() {
@@ -919,7 +875,7 @@ struct CreateActivityView: View {
             completion() // Call completion handler after members are loaded
         }
     }
-        
+    
     private func saveActivity() {
         guard !title.trim().isEmpty else {
             alertTitle = "Invalid Input"
@@ -1039,8 +995,8 @@ struct CreateActivityView: View {
                 // notification for this activity
                 let notificationMessage = "\(self.title) has been created and you are a participant. Check it out."
                 let notificationTitle = "New Event!"
-                    batch.updateData([
-                        "notifications": FieldValue.arrayUnion([
+                batch.updateData([
+                    "notifications": FieldValue.arrayUnion([
                         [
                             "id": UUID().uuidString,
                             "message": notificationMessage,
@@ -1082,7 +1038,7 @@ struct CreateActivityView: View {
             activityRef.setData(activityData, completion: saveOperation)
         }
     }
-
+    
     
     private func clearFields() {
         title = ""
@@ -1098,35 +1054,35 @@ struct CreateActivityView: View {
             groupMembers[index].isSelected = false
         }
     }
-        
-        private func handleSaveCompletion(_ error: Error?) {
-            if let error = error {
-                alertTitle = "Error"
-                alertMessage = "Failed to save activity: \(error.localizedDescription)"
-                showAlert = true
-            } else {
-                alertTitle = "Success"
-                alertMessage = isEditMode ? "Successfully updated activity!" : "Successfully created activity!"
-                showAlert = true
-                isLoading = false
-                dismiss()
-                
-                // Clear all fields after saving
-                title = ""
-                isAllDay = false
-                startDate = Date()
-                endDate = Date()
-                selectedReminder = ""
-                viewModel.tasks.removeAll()
-                viewModel.locations.removeAll()
-                viewModel.notes.removeAll()
-                viewModel.urls.removeAll()
-                for index in groupMembers.indices {
-                    groupMembers[index].isSelected = false
-                }
+    
+    private func handleSaveCompletion(_ error: Error?) {
+        if let error = error {
+            alertTitle = "Error"
+            alertMessage = "Failed to save activity: \(error.localizedDescription)"
+            showAlert = true
+        } else {
+            alertTitle = "Success"
+            alertMessage = isEditMode ? "Successfully updated activity!" : "Successfully created activity!"
+            showAlert = true
+            isLoading = false
+            dismiss()
+            
+            // Clear all fields after saving
+            title = ""
+            isAllDay = false
+            startDate = Date()
+            endDate = Date()
+            selectedReminder = ""
+            viewModel.tasks.removeAll()
+            viewModel.locations.removeAll()
+            viewModel.notes.removeAll()
+            viewModel.urls.removeAll()
+            for index in groupMembers.indices {
+                groupMembers[index].isSelected = false
             }
         }
-        
+    }
+    
     private func loadGroupMembers(groupCode: String) {
         guard let selectedGroup = selectedGroup else { return }
         

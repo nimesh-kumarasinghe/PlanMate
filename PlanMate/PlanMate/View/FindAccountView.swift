@@ -19,7 +19,6 @@ struct FindAccountView: View {
     
     var body: some View {
         VStack {
-            // Title
             Text("Find Account")
                 .font(.system(size: 20, weight: .bold))
                 .padding(.top, 20)
@@ -46,9 +45,9 @@ struct FindAccountView: View {
                 .padding()
                 .cornerRadius(8)
                 .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color(.systemGray3), lineWidth: 2)
-                    )
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color(.systemGray3), lineWidth: 2)
+                )
                 .padding(.horizontal, 30)
             
             Spacer().frame(height: 40)

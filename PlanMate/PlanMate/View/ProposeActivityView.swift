@@ -8,14 +8,7 @@
 import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
-
-struct GroupMember: Identifiable, Hashable {
-    let id = UUID()
-    let name: String
-    let uid: String
-}
-
-
+import Foundation
 
 struct ProposeActivityView: View {
     @Environment(\.dismiss) private var dismiss
@@ -180,9 +173,9 @@ struct ProposeActivityView: View {
     
     private func saveActivity() {
         guard !selectedLocations.isEmpty else { return }
-
+        
         isLoading = true
-
+        
         // Create locations array
         let locations = selectedLocations.map { location -> [String: Any] in
             return [
@@ -192,10 +185,10 @@ struct ProposeActivityView: View {
                 "longitude": location.coordinate.longitude
             ]
         }
-
+        
         // Get participant UIDs (including the creator)
         let participantUIDs = Array(selectedMembers).map { $0.uid }
-
+        
         // Create activity data
         let activityData: [String: Any] = [
             "groupId": groupId,  // Assuming groupId is the groupCode now
@@ -207,10 +200,10 @@ struct ProposeActivityView: View {
             "createdAt": Timestamp(),
             "status": "pending"
         ]
-
+        
         // Add to proposeActivities collection
         let activityRef = db.collection("proposeActivities").document()
-
+        
         activityRef.setData(activityData) { error in
             if let error = error {
                 DispatchQueue.main.async {
@@ -219,14 +212,14 @@ struct ProposeActivityView: View {
                 }
                 return
             }
-
+            
             // Notification message for this activity
             let notificationMessage = "\(self.activityName) has been created and you are a participant. Check it out and submit your vote."
             let notificationTitle = "New Activity Proposed!"
-
+            
             // Create a batch for multiple operations
             let batch = db.batch()
-
+            
             // Find the group using the groupCode (groupId in this case)
             let groupQuery = db.collection("groups").whereField("groupCode", isEqualTo: self.groupId)
             groupQuery.getDocuments { querySnapshot, error in
@@ -237,7 +230,7 @@ struct ProposeActivityView: View {
                     }
                     return
                 }
-
+                
                 guard let groupDocument = querySnapshot?.documents.first else {
                     DispatchQueue.main.async {
                         errorMessage = "Group not found"
@@ -245,23 +238,23 @@ struct ProposeActivityView: View {
                     }
                     return
                 }
-
+                
                 // Update the group's proposeActivities array
                 let groupRef = groupDocument.reference
                 batch.updateData([
                     "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
                 ], forDocument: groupRef)
-
+                
                 // Update each user proposeActivities array in users collection and add notifications
                 for participantUID in participantUIDs {
                     let userRef = db.collection("users").document(participantUID)
-
+                    
                     // Add proposeActivity to user document
                     batch.updateData([
                         "proposeActivities": FieldValue.arrayUnion([activityRef.documentID])
                     ], forDocument: userRef)
-
-
+                    
+                    
                     // exculding the creator and saving for others
                     if participantUID != Auth.auth().currentUser?.uid {
                         // Add the notification only if the user is not the creator
@@ -279,7 +272,7 @@ struct ProposeActivityView: View {
                         ], forDocument: userRef)
                     }
                 }
-
+                
                 // Commit the batch
                 batch.commit { batchError in
                     DispatchQueue.main.async {
@@ -294,9 +287,9 @@ struct ProposeActivityView: View {
             }
         }
     }
-
-
-
+    
+    
+    
 }
 
 // Location Chip View
@@ -326,10 +319,10 @@ struct ProposeActivityView_Previews: PreviewProvider {
     static var previews: some View {
         ProposeActivityView(
             groupId: "roXJFgmYmKwZF9lshpA5",
-            groupName: "Bio Friends",
+            groupName: "Friends",
             groupMembers: [
-                GroupMember(name: "John", uid: "uid1"),
-                GroupMember(name: "Jane", uid: "uid2")
+                GroupMember(name: "nim", uid: "uid1"),
+                GroupMember(name: "dil", uid: "uid2")
             ]
         )
     }

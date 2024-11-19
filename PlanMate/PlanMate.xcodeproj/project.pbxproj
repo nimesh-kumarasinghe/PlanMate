@@ -16,6 +16,30 @@
 		9EA917E42CE209F1003E145F /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA917E32CE209F1003E145F /* LocationManager.swift */; };
 		9EAC123F2CD89CB2002A84A0 /* EditGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */; };
 		9EAC12412CD8AB9A002A84A0 /* LocationSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */; };
+		9EAEF7CB2CECB4AE0080A09D /* UserGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7CA2CECB4AE0080A09D /* UserGroup.swift */; };
+		9EAEF7CE2CECB54A0080A09D /* FirebaseGroupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7CD2CECB54A0080A09D /* FirebaseGroupViewModel.swift */; };
+		9EAEF7D02CECB68A0080A09D /* ActivityData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7CF2CECB68A0080A09D /* ActivityData.swift */; };
+		9EAEF7D22CECBD2C0080A09D /* ProposeActivitiesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7D12CECBD2C0080A09D /* ProposeActivitiesViewModel.swift */; };
+		9EAEF7D42CECBE0F0080A09D /* GroupEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7D32CECBE0F0080A09D /* GroupEvent.swift */; };
+		9EAEF7D62CECBE550080A09D /* ActivitiesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7D52CECBE550080A09D /* ActivitiesViewModel.swift */; };
+		9EAEF7DA2CECC1280080A09D /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7D92CECC1280080A09D /* Task.swift */; };
+		9EAEF7DC2CECC1610080A09D /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7DB2CECC1610080A09D /* Note.swift */; };
+		9EAEF7DE2CECC1740080A09D /* TeamGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7DD2CECC1740080A09D /* TeamGroup.swift */; };
+		9EAEF7E02CECC1C00080A09D /* TeamMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7DF2CECC1C00080A09D /* TeamMember.swift */; };
+		9EAEF7E22CECC1D90080A09D /* ActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7E12CECC1D90080A09D /* ActivityViewModel.swift */; };
+		9EAEF7E42CECC28C0080A09D /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7E32CECC28C0080A09D /* Activity.swift */; };
+		9EAEF7E62CECC4130080A09D /* ActivityChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7E52CECC4130080A09D /* ActivityChatViewModel.swift */; };
+		9EAEF7E82CECC4460080A09D /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7E72CECC4460080A09D /* ChatMessage.swift */; };
+		9EAEF7EA2CECC5240080A09D /* GroupDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7E92CECC5240080A09D /* GroupDetailViewModel.swift */; };
+		9EAEF7EC2CECC5D20080A09D /* GroupMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7EB2CECC5D20080A09D /* GroupMember.swift */; };
+		9EAEF7EF2CECC7070080A09D /* ProposeActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7EE2CECC7070080A09D /* ProposeActivity.swift */; };
+		9EAEF7F12CECC72D0080A09D /* ProposeLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7F02CECC72D0080A09D /* ProposeLocation.swift */; };
+		9EAEF7F32CECC7490080A09D /* VoteSubmission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7F22CECC7490080A09D /* VoteSubmission.swift */; };
+		9EAEF7F52CECC76B0080A09D /* VotingProposeActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7F42CECC76B0080A09D /* VotingProposeActivityViewModel.swift */; };
+		9EAEF7F72CECC8980080A09D /* HomeGroupModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7F62CECC8980080A09D /* HomeGroupModel.swift */; };
+		9EAEF7F92CECC8B20080A09D /* HomeProposeActivityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7F82CECC8B20080A09D /* HomeProposeActivityModel.swift */; };
+		9EAEF7FB2CECC8E10080A09D /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7FA2CECC8E10080A09D /* HomeViewModel.swift */; };
+		9EAEF7FD2CECD0CC0080A09D /* Members.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7FC2CECD0CB0080A09D /* Members.swift */; };
 		9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */; };
 		9EB740112CE362C90043E809 /* MyAccountEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB740102CE362C90043E809 /* MyAccountEditView.swift */; };
 		9EBDA9AB2CEB0E6800A8205D /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 9EBDA9AA2CEB0E6800A8205D /* FirebaseStorage */; };
@@ -40,9 +64,7 @@
 		9EE7D7422CDA15B800F7602D /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 9EE7D7412CDA15B800F7602D /* GoogleSignIn */; };
 		9EE7D7442CDA15B800F7602D /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 9EE7D7432CDA15B800F7602D /* GoogleSignInSwift */; };
 		9EE7D7462CDA544B00F7602D /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9EE7D7452CDA544B00F7602D /* FirebaseFirestore */; };
-		9EE971D52CCF53F000108C12 /* EmailVerificationCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */; };
 		9EE971D72CCF582500108C12 /* FindAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D62CCF582500108C12 /* FindAccountView.swift */; };
-		9EE971D92CCF59C400108C12 /* ResetPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */; };
 		9EE971DB2CCF5C4E00108C12 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971DA2CCF5C4E00108C12 /* HomeView.swift */; };
 		9EE971DD2CCF60B300108C12 /* MainHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971DC2CCF60B300108C12 /* MainHomeView.swift */; };
 		9EE971DF2CCF6A2D00108C12 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971DE2CCF6A2D00108C12 /* CalendarView.swift */; };
@@ -55,7 +77,6 @@
 		9EE971ED2CCF8C4000108C12 /* GroupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971EC2CCF8C4000108C12 /* GroupDetailView.swift */; };
 		9EE971EF2CCF8E5800108C12 /* ProposeActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971EE2CCF8E5800108C12 /* ProposeActivityView.swift */; };
 		9EE971F12CCF916900108C12 /* VotingProposeActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */; };
-		9EE971F32CCF930500108C12 /* AvailabilityListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F22CCF930500108C12 /* AvailabilityListView.swift */; };
 		9EE971F52CCF945600108C12 /* MyAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE971F42CCF945600108C12 /* MyAccountView.swift */; };
 		9EED9E492CDCB9D6003543E7 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9EED9E482CDCB9D6003543E7 /* FirebaseCore */; };
 		9EED9E4B2CDCB9D6003543E7 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 9EED9E4A2CDCB9D6003543E7 /* FirebaseFirestore */; };
@@ -89,6 +110,30 @@
 		9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditGroupView.swift; sourceTree = "<group>"; };
 		9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchView.swift; sourceTree = "<group>"; };
 		9EAC12422CD8BFA3002A84A0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		9EAEF7CA2CECB4AE0080A09D /* UserGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGroup.swift; sourceTree = "<group>"; };
+		9EAEF7CD2CECB54A0080A09D /* FirebaseGroupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseGroupViewModel.swift; sourceTree = "<group>"; };
+		9EAEF7CF2CECB68A0080A09D /* ActivityData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityData.swift; sourceTree = "<group>"; };
+		9EAEF7D12CECBD2C0080A09D /* ProposeActivitiesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeActivitiesViewModel.swift; sourceTree = "<group>"; };
+		9EAEF7D32CECBE0F0080A09D /* GroupEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupEvent.swift; sourceTree = "<group>"; };
+		9EAEF7D52CECBE550080A09D /* ActivitiesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitiesViewModel.swift; sourceTree = "<group>"; };
+		9EAEF7D92CECC1280080A09D /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
+		9EAEF7DB2CECC1610080A09D /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		9EAEF7DD2CECC1740080A09D /* TeamGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamGroup.swift; sourceTree = "<group>"; };
+		9EAEF7DF2CECC1C00080A09D /* TeamMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamMember.swift; sourceTree = "<group>"; };
+		9EAEF7E12CECC1D90080A09D /* ActivityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityViewModel.swift; sourceTree = "<group>"; };
+		9EAEF7E32CECC28C0080A09D /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
+		9EAEF7E52CECC4130080A09D /* ActivityChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityChatViewModel.swift; sourceTree = "<group>"; };
+		9EAEF7E72CECC4460080A09D /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
+		9EAEF7E92CECC5240080A09D /* GroupDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailViewModel.swift; sourceTree = "<group>"; };
+		9EAEF7EB2CECC5D20080A09D /* GroupMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupMember.swift; sourceTree = "<group>"; };
+		9EAEF7EE2CECC7070080A09D /* ProposeActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeActivity.swift; sourceTree = "<group>"; };
+		9EAEF7F02CECC72D0080A09D /* ProposeLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeLocation.swift; sourceTree = "<group>"; };
+		9EAEF7F22CECC7490080A09D /* VoteSubmission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteSubmission.swift; sourceTree = "<group>"; };
+		9EAEF7F42CECC76B0080A09D /* VotingProposeActivityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingProposeActivityViewModel.swift; sourceTree = "<group>"; };
+		9EAEF7F62CECC8980080A09D /* HomeGroupModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeGroupModel.swift; sourceTree = "<group>"; };
+		9EAEF7F82CECC8B20080A09D /* HomeProposeActivityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeProposeActivityModel.swift; sourceTree = "<group>"; };
+		9EAEF7FA2CECC8E10080A09D /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		9EAEF7FC2CECD0CB0080A09D /* Members.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Members.swift; sourceTree = "<group>"; };
 		9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricManager.swift; sourceTree = "<group>"; };
 		9EB740102CE362C90043E809 /* MyAccountEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountEditView.swift; sourceTree = "<group>"; };
 		9EE4F0EB2CCE1199009D0F71 /* PlanMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlanMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,9 +155,7 @@
 		9EE7D73B2CD9E36A00F7602D /* PlanMate.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PlanMate.entitlements; sourceTree = "<group>"; };
 		9EE7D73C2CDA0CB800F7602D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9EE7D73E2CDA152A00F7602D /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
-		9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailVerificationCodeView.swift; sourceTree = "<group>"; };
 		9EE971D62CCF582500108C12 /* FindAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindAccountView.swift; sourceTree = "<group>"; };
-		9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetPasswordView.swift; sourceTree = "<group>"; };
 		9EE971DA2CCF5C4E00108C12 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		9EE971DC2CCF60B300108C12 /* MainHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainHomeView.swift; sourceTree = "<group>"; };
 		9EE971DE2CCF6A2D00108C12 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
@@ -125,7 +168,6 @@
 		9EE971EC2CCF8C4000108C12 /* GroupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailView.swift; sourceTree = "<group>"; };
 		9EE971EE2CCF8E5800108C12 /* ProposeActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposeActivityView.swift; sourceTree = "<group>"; };
 		9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingProposeActivityView.swift; sourceTree = "<group>"; };
-		9EE971F22CCF930500108C12 /* AvailabilityListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailabilityListView.swift; sourceTree = "<group>"; };
 		9EE971F42CCF945600108C12 /* MyAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -185,8 +227,79 @@
 				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
 				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
 				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
+				9EE971DA2CCF5C4E00108C12 /* HomeView.swift */,
+				9EE971F42CCF945600108C12 /* MyAccountView.swift */,
+				9EB740102CE362C90043E809 /* MyAccountEditView.swift */,
+				9E1DB5672CD6183C008639AB /* NotificationsView.swift */,
+				9EE971E22CCF6DB500108C12 /* CreateGroupView.swift */,
+				9EE971E42CCF6E5500108C12 /* JoinGroupView.swift */,
+				9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */,
+				9EE971DE2CCF6A2D00108C12 /* CalendarView.swift */,
+				9EE971E02CCF6B0200108C12 /* CreateActivityView.swift */,
+				9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */,
+				9EE971EA2CCF8A1200108C12 /* GroupListView.swift */,
+				9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */,
+				9EE971E62CCF6E9900108C12 /* ActivityListView.swift */,
+				9EE971E82CCF72EE00108C12 /* ActivityDetailView.swift */,
+				9EE971EC2CCF8C4000108C12 /* GroupDetailView.swift */,
+				9EE971EE2CCF8E5800108C12 /* ProposeActivityView.swift */,
+				9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		9EAEF7C92CECACDD0080A09D /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				9EAEF7ED2CECC6B40080A09D /* VotingProposeActivityModel */,
+				9EAEF7D82CECC1160080A09D /* CreateActivityModel */,
+				9EAEF7CA2CECB4AE0080A09D /* UserGroup.swift */,
+				9EAEF7CF2CECB68A0080A09D /* ActivityData.swift */,
+				9EAEF7D32CECBE0F0080A09D /* GroupEvent.swift */,
+				9EAEF7E32CECC28C0080A09D /* Activity.swift */,
+				9EAEF7E72CECC4460080A09D /* ChatMessage.swift */,
+				9EAEF7EB2CECC5D20080A09D /* GroupMember.swift */,
+				9EAEF7F62CECC8980080A09D /* HomeGroupModel.swift */,
+				9EAEF7F82CECC8B20080A09D /* HomeProposeActivityModel.swift */,
+				9EAEF7FC2CECD0CB0080A09D /* Members.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		9EAEF7CC2CECB5150080A09D /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				9EAEF7CD2CECB54A0080A09D /* FirebaseGroupViewModel.swift */,
+				9EAEF7D12CECBD2C0080A09D /* ProposeActivitiesViewModel.swift */,
+				9EAEF7D52CECBE550080A09D /* ActivitiesViewModel.swift */,
+				9EAEF7E12CECC1D90080A09D /* ActivityViewModel.swift */,
+				9EAEF7E52CECC4130080A09D /* ActivityChatViewModel.swift */,
+				9EAEF7E92CECC5240080A09D /* GroupDetailViewModel.swift */,
+				9EAEF7F42CECC76B0080A09D /* VotingProposeActivityViewModel.swift */,
+				9EAEF7FA2CECC8E10080A09D /* HomeViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		9EAEF7D82CECC1160080A09D /* CreateActivityModel */ = {
+			isa = PBXGroup;
+			children = (
+				9EAEF7D92CECC1280080A09D /* Task.swift */,
+				9EAEF7DB2CECC1610080A09D /* Note.swift */,
+				9EAEF7DD2CECC1740080A09D /* TeamGroup.swift */,
+				9EAEF7DF2CECC1C00080A09D /* TeamMember.swift */,
+			);
+			path = CreateActivityModel;
+			sourceTree = "<group>";
+		};
+		9EAEF7ED2CECC6B40080A09D /* VotingProposeActivityModel */ = {
+			isa = PBXGroup;
+			children = (
+				9EAEF7EE2CECC7070080A09D /* ProposeActivity.swift */,
+				9EAEF7F02CECC72D0080A09D /* ProposeLocation.swift */,
+				9EAEF7F22CECC7490080A09D /* VoteSubmission.swift */,
+			);
+			path = VotingProposeActivityModel;
 			sourceTree = "<group>";
 		};
 		9EE4F0E22CCE1199009D0F71 = {
@@ -215,31 +328,13 @@
 				9EE7D73B2CD9E36A00F7602D /* PlanMate.entitlements */,
 				9EAC12422CD8BFA3002A84A0 /* Info.plist */,
 				9EE7D73E2CDA152A00F7602D /* GoogleService-Info.plist */,
-				9EA917E22CE209A9003E145F /* Managers */,
-				9EAEF7C82CEC8C750080A09D /* View */,
 				9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */,
 				9EE7D73C2CDA0CB800F7602D /* AppDelegate.swift */,
-				9E1DB5672CD6183C008639AB /* NotificationsView.swift */,
 				9EE971DC2CCF60B300108C12 /* MainHomeView.swift */,
-				9EE971DA2CCF5C4E00108C12 /* HomeView.swift */,
-				9EE971F42CCF945600108C12 /* MyAccountView.swift */,
-				9EE971DE2CCF6A2D00108C12 /* CalendarView.swift */,
-				9EE971E02CCF6B0200108C12 /* CreateActivityView.swift */,
-				9EB740102CE362C90043E809 /* MyAccountEditView.swift */,
-				9EE971E62CCF6E9900108C12 /* ActivityListView.swift */,
-				9EE971E22CCF6DB500108C12 /* CreateGroupView.swift */,
-				9EE971E42CCF6E5500108C12 /* JoinGroupView.swift */,
-				9EE971EA2CCF8A1200108C12 /* GroupListView.swift */,
-				9EE971E82CCF72EE00108C12 /* ActivityDetailView.swift */,
-				9EE971EC2CCF8C4000108C12 /* GroupDetailView.swift */,
-				9EAC123E2CD89CB2002A84A0 /* EditGroupView.swift */,
-				9E91F2892CDCFCC6003CA0C1 /* ProposeActivityList.swift */,
-				9EE971EE2CCF8E5800108C12 /* ProposeActivityView.swift */,
-				9EE971F02CCF916900108C12 /* VotingProposeActivityView.swift */,
-				9EE971F22CCF930500108C12 /* AvailabilityListView.swift */,
-				9EAC12402CD8AB9A002A84A0 /* LocationSearchView.swift */,
-				9EE971D42CCF53F000108C12 /* EmailVerificationCodeView.swift */,
-				9EE971D82CCF59C400108C12 /* ResetPasswordView.swift */,
+				9EA917E22CE209A9003E145F /* Managers */,
+				9EAEF7C82CEC8C750080A09D /* View */,
+				9EAEF7C92CECACDD0080A09D /* Model */,
+				9EAEF7CC2CECB5150080A09D /* ViewModel */,
 				9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */,
 				9EE4F0F72CCE119A009D0F71 /* Persistence.swift */,
 				9EE4F0F92CCE119A009D0F71 /* PlanMate.xcdatamodeld */,
@@ -421,42 +516,63 @@
 			buildActionMask = 2147483647;
 			files = (
 				9EE971EF2CCF8E5800108C12 /* ProposeActivityView.swift in Sources */,
+				9EAEF7CE2CECB54A0080A09D /* FirebaseGroupViewModel.swift in Sources */,
+				9EAEF7E02CECC1C00080A09D /* TeamMember.swift in Sources */,
+				9EAEF7CB2CECB4AE0080A09D /* UserGroup.swift in Sources */,
 				9EE971F12CCF916900108C12 /* VotingProposeActivityView.swift in Sources */,
 				9EE4F1262CCE2B96009D0F71 /* SignInView.swift in Sources */,
 				9EE4F0F82CCE119A009D0F71 /* Persistence.swift in Sources */,
+				9EAEF7DA2CECC1280080A09D /* Task.swift in Sources */,
 				9EAC123F2CD89CB2002A84A0 /* EditGroupView.swift in Sources */,
 				9E91F28A2CDCFCC6003CA0C1 /* ProposeActivityList.swift in Sources */,
 				9EB740112CE362C90043E809 /* MyAccountEditView.swift in Sources */,
 				9EE971DB2CCF5C4E00108C12 /* HomeView.swift in Sources */,
 				9EE971D72CCF582500108C12 /* FindAccountView.swift in Sources */,
-				9EE971D92CCF59C400108C12 /* ResetPasswordView.swift in Sources */,
 				9EE971DF2CCF6A2D00108C12 /* CalendarView.swift in Sources */,
-				9EE971D52CCF53F000108C12 /* EmailVerificationCodeView.swift in Sources */,
 				9EE971E72CCF6E9900108C12 /* ActivityListView.swift in Sources */,
 				9EE4F11E2CCE1592009D0F71 /* SplashScreenView.swift in Sources */,
+				9EAEF7F92CECC8B20080A09D /* HomeProposeActivityModel.swift in Sources */,
+				9EAEF7DE2CECC1740080A09D /* TeamGroup.swift in Sources */,
 				9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */,
+				9EAEF7FD2CECD0CC0080A09D /* Members.swift in Sources */,
+				9EAEF7FB2CECC8E10080A09D /* HomeViewModel.swift in Sources */,
+				9EAEF7D42CECBE0F0080A09D /* GroupEvent.swift in Sources */,
 				9EE4F1222CCE1A78009D0F71 /* GetstartedView.swift in Sources */,
-				9EE971F32CCF930500108C12 /* AvailabilityListView.swift in Sources */,
 				9E0981012CE38D38005E715C /* AppStateManager.swift in Sources */,
 				9EA917E42CE209F1003E145F /* LocationManager.swift in Sources */,
+				9EAEF7E42CECC28C0080A09D /* Activity.swift in Sources */,
 				9EE4F1202CCE17B2009D0F71 /* OnboardingView.swift in Sources */,
 				9EE4F1242CCE2634009D0F71 /* RegisterView.swift in Sources */,
+				9EAEF7D02CECB68A0080A09D /* ActivityData.swift in Sources */,
+				9EAEF7DC2CECC1610080A09D /* Note.swift in Sources */,
 				9EE4F0EF2CCE1199009D0F71 /* PlanMateApp.swift in Sources */,
+				9EAEF7EA2CECC5240080A09D /* GroupDetailViewModel.swift in Sources */,
+				9EAEF7D22CECBD2C0080A09D /* ProposeActivitiesViewModel.swift in Sources */,
 				9E22DE722CE893A7008CD0D1 /* KeychainManager.swift in Sources */,
+				9EAEF7E62CECC4130080A09D /* ActivityChatViewModel.swift in Sources */,
 				9EA917E12CE20964003E145F /* EventKitManager.swift in Sources */,
 				9EE7D73D2CDA0CB800F7602D /* AppDelegate.swift in Sources */,
+				9EAEF7E82CECC4460080A09D /* ChatMessage.swift in Sources */,
 				9E1DB5682CD6183C008639AB /* NotificationsView.swift in Sources */,
 				9E22DE742CE8D099008CD0D1 /* CoreDataManager.swift in Sources */,
+				9EAEF7F72CECC8980080A09D /* HomeGroupModel.swift in Sources */,
+				9EAEF7F12CECC72D0080A09D /* ProposeLocation.swift in Sources */,
+				9EAEF7D62CECBE550080A09D /* ActivitiesViewModel.swift in Sources */,
 				9EE971DD2CCF60B300108C12 /* MainHomeView.swift in Sources */,
+				9EAEF7E22CECC1D90080A09D /* ActivityViewModel.swift in Sources */,
+				9EAEF7F52CECC76B0080A09D /* VotingProposeActivityViewModel.swift in Sources */,
+				9EAEF7F32CECC7490080A09D /* VoteSubmission.swift in Sources */,
 				9EE971E52CCF6E5500108C12 /* JoinGroupView.swift in Sources */,
 				9EE971EB2CCF8A1200108C12 /* GroupListView.swift in Sources */,
 				9EAC12412CD8AB9A002A84A0 /* LocationSearchView.swift in Sources */,
 				9EE971E32CCF6DB500108C12 /* CreateGroupView.swift in Sources */,
 				9EE4F0FB2CCE119A009D0F71 /* PlanMate.xcdatamodeld in Sources */,
+				9EAEF7EC2CECC5D20080A09D /* GroupMember.swift in Sources */,
 				9EE971ED2CCF8C4000108C12 /* GroupDetailView.swift in Sources */,
 				9EE971E92CCF72EE00108C12 /* ActivityDetailView.swift in Sources */,
 				9EE971F52CCF945600108C12 /* MyAccountView.swift in Sources */,
 				9EE971E12CCF6B0200108C12 /* CreateActivityView.swift in Sources */,
+				9EAEF7EF2CECC7070080A09D /* ProposeActivity.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

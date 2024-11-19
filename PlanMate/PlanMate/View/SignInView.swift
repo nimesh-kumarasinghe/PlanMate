@@ -214,7 +214,7 @@ struct SignInView: View {
             }
         }
     }
-
+    
     
     private func showError(_ message: String) {
         errorMessage = message
@@ -228,9 +228,9 @@ struct SignInView: View {
             showError("Please fill in all fields")
             return
         }
-
+        
         isLoading = true
-
+        
         // Firebase Auth sign-in with email and password
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             self.isLoading = false
@@ -239,7 +239,7 @@ struct SignInView: View {
                 print("Sign-in error: \(error.localizedDescription)")
                 return
             }
-
+            
             guard let user = result?.user else {
                 self.showError("Could not retrieve user data.")
                 return
@@ -253,11 +253,11 @@ struct SignInView: View {
                     print("Failed to save credentials to Keychain: \(error)")
                 }
             }
-
+            
             // Set the userName and userid in @AppStorage
             self.userName = user.displayName ?? "User"
             self.userid = user.uid
-
+            
             // Fetch user's name from Firestore
             let db = Firestore.firestore()
             db.collection("users").document(user.uid).getDocument { document, error in
@@ -265,7 +265,7 @@ struct SignInView: View {
                     self.showError("Failed to fetch user data from Firestore: \(error.localizedDescription)")
                     return
                 }
-
+                
                 if let document = document, document.exists {
                     let name = document.data()?["name"] as? String ?? "Unknown"
                     self.userName = name // Update userName with the fetched name
@@ -273,31 +273,10 @@ struct SignInView: View {
                     self.showError("User data not found in Firestore")
                 }
             }
-
+            
             // If sign-in successful, update login status and navigate to home
             self.logStatus = true
             self.navigateToHome = true
-        }
-    }
-
-
-    
-    // Password Reset
-    private func handlePasswordReset() {
-        guard !email.isEmpty else {
-            showError("Please enter your email")
-            return
-        }
-        
-        isLoading = true
-        Auth.auth().sendPasswordReset(withEmail: email) { error in
-            isLoading = false
-            if let error = error {
-                showError(error.localizedDescription)
-                return
-            }
-            
-            showError("Password reset email sent successfully")
         }
     }
     
@@ -332,7 +311,7 @@ struct SignInView: View {
             }
             
             let credential = GoogleAuthProvider.credential(withIDToken: idToken,
-                                                         accessToken: user.accessToken.tokenString)
+                                                           accessToken: user.accessToken.tokenString)
             
             Auth.auth().signIn(with: credential) { result, error in
                 if let error = error {
@@ -400,8 +379,8 @@ struct SignInView: View {
             }
             
             let credential = OAuthProvider.appleCredential(withIDToken: idTokenString,
-                                                         rawNonce: nonce,
-                                                         fullName: appleIDCredential.fullName)
+                                                           rawNonce: nonce,
+                                                           fullName: appleIDCredential.fullName)
             
             Auth.auth().signIn(with: credential) { (authResult, error) in
                 if let error = error {
@@ -426,7 +405,7 @@ struct SignInView: View {
         }
         
         let charset: [Character] =
-            Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
         
         let nonce = randomBytes.map { byte in
             charset[Int(byte) % charset.count]

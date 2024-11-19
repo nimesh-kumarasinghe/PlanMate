@@ -1,8 +1,8 @@
 //
-//  MyAccountEditView.swift
+//  EditGroupView.swift
 //  PlanMate
 //
-//  Created by COBSCCOMPY4231P-005 on 2024-11-12.
+//  Created by COBSCCOMPY4231P-005 on 2024-11-04.
 //
 
 import SwiftUI
@@ -11,47 +11,42 @@ import FirebaseFirestore
 import FirebaseStorage
 import PhotosUI
 
-struct MyAccountEditView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var userName: String
-    @State private var email: String
+struct EditGroupView: View {
+    @State private var groupName: String
+    @State private var description: String
     @State private var isLoading = false
-    @State private var showError = false
-    @State private var errorMessage = ""
     @State private var selectedItem: PhotosPickerItem?
     @State private var selectedImageData: Data?
     @State private var profileImageURL: String?
+    @State private var showError = false
+    @State private var errorMessage = ""
     
-    let uid: String
+    @Environment(\.presentationMode) var presentationMode
     
-    init(userName: String, email: String, uid: String, profileImageURL: String? = nil) {
-        _userName = State(initialValue: userName)
-        _email = State(initialValue: email)
+    let groupCode: String
+    
+    init(groupName: String, description: String, groupCode: String, profileImageURL: String) {
+        _groupName = State(initialValue: groupName)
+        _description = State(initialValue: description)
         _profileImageURL = State(initialValue: profileImageURL)
-        self.uid = uid
+        self.groupCode = groupCode
     }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // Profile Picture Section
-                ZStack {
+                ZStack(alignment: .bottomTrailing) {
                     Circle()
                         .fill(Color.gray.opacity(0.2))
-                        .frame(width: 130, height: 130)
-
-                    Image(systemName: "person.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundColor(Color.gray)
-                        .frame(width: 60, height: 60)
-
+                        .frame(width: 150, height: 150)
+                    
+                    // Selected Image or Default Placeholder
                     if let imageData = selectedImageData,
                        let uiImage = UIImage(data: imageData) {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 130, height: 130)
+                            .frame(width: 150, height: 150)
                             .clipShape(Circle())
                     } else if let profileURL = profileImageURL,
                               !profileURL.isEmpty {
@@ -61,26 +56,27 @@ struct MyAccountEditView: View {
                                 image
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: 130, height: 130)
+                                    .frame(width: 150, height: 150)
                                     .clipShape(Circle())
                             case .failure(_):
-                                Image(systemName: "person.fill")
+                                Image("defaultimg")
                                     .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 90, height: 90)
-                                    .foregroundColor(.white)
+                                    .scaledToFill()
+                                    .frame(width: 150, height: 150)
+                                    .clipShape(Circle())
                             default:
                                 ProgressView()
                                     .frame(width: 150, height: 150)
                             }
                         }
                     } else {
-                        Image(systemName: "person.fill")
+                        Image("defaultimg")
                             .resizable()
-                            .scaledToFit()
-                            .frame(width: 90, height: 90)
-                            .foregroundColor(.white)
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 150, height: 150)
+                            .clipShape(Circle())
                     }
+                    
                     // Photos Picker for Image Selection
                     PhotosPicker(selection: $selectedItem,
                                  matching: .images) {
@@ -106,40 +102,32 @@ struct MyAccountEditView: View {
                         }
                     }
                     .frame(width: 40, height: 40)
-                    .offset(x: 40, y: 50)
+                    .offset(x: -10, y: -10)
                 }
                 .frame(width: 150, height: 150)
-
-                // Text Fields Section
-                //VStack(spacing: 16) {
-                    TextField("Name", text: $userName)
-                        .padding()
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color(.systemGray3), lineWidth: 2)
-                        )
-                        .padding(.horizontal, 20)
-                    
-                    TextField("Email", text: $email)
-                        .padding()
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color(.systemGray3), lineWidth: 2)
-                        )
-                        .padding(.horizontal, 20)
-                        .disabled(true)
-                        .opacity(0.7)
-                //}
-
-                //Spacer()
                 
-                // Save Button Section
+                TextField("Group Name", text: $groupName)
+                    .padding()
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(.systemGray3), lineWidth: 2)
+                    )
+                    .padding(.horizontal, 20)
+                
+                TextField("Description (optional)", text: $description)
+                    .padding()
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(.systemGray3), lineWidth: 2)
+                    )
+                    .padding(.horizontal, 20)
+                
                 if isLoading {
                     ProgressView()
-                        .padding(.bottom, 40)
+                        .padding(.top, 20)
                 } else {
                     Button(action: {
-                        updateUserProfile()
+                        updateGroupDetails()
                     }) {
                         Text("Save")
                             .foregroundColor(.white)
@@ -151,17 +139,11 @@ struct MyAccountEditView: View {
                     }
                     .padding(.top, 20)
                 }
+                
                 Spacer()
             }
-            .navigationTitle("Edit Profile")
+            .navigationTitle("Edit Group")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-            }
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
             } message: {
@@ -170,38 +152,67 @@ struct MyAccountEditView: View {
         }
     }
     
-    private func updateUserProfile() {
+    private func updateGroupDetails() {
         isLoading = true
         
         if let imageData = selectedImageData {
             uploadImage { imageURL in
-                var updateData: [String: Any] = ["name": userName]
+                var updateData: [String: Any] = [
+                    "groupName": groupName,
+                    "description": description,
+                    "updatedAt": FieldValue.serverTimestamp()
+                ]
                 
                 if let imageURL = imageURL {
                     updateData["profileImageURL"] = imageURL
                 }
                 
-                updateFirestoreData(updateData)
+                updateFirestoreGroupData(updateData)
             }
         } else {
-            updateFirestoreData(["name": userName])
+            let updateData: [String: Any] = [
+                "groupName": groupName,
+                "description": description,
+                "updatedAt": FieldValue.serverTimestamp()
+            ]
+            updateFirestoreGroupData(updateData)
         }
     }
     
-    private func updateFirestoreData(_ data: [String: Any]) {
+    private func updateFirestoreGroupData(_ data: [String: Any]) {
         let db = Firestore.firestore()
-        db.collection("users").document(uid).updateData(data) { error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self.errorMessage = "Error updating profile: \(error.localizedDescription)"
-                    self.showError = true
-                    self.isLoading = false
-                    return
+        db.collection("groups").whereField("groupCode", isEqualTo: groupCode).getDocuments { snapshot, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    isLoading = false
+                    errorMessage = "Error finding group: \(error.localizedDescription)"
+                    showError = true
                 }
-                
-                UserDefaults.standard.set(self.userName, forKey: "user_name")
-                self.isLoading = false
-                self.dismiss()
+                return
+            }
+            
+            guard let document = snapshot?.documents.first else {
+                DispatchQueue.main.async {
+                    isLoading = false
+                    errorMessage = "Group not found"
+                    showError = true
+                }
+                return
+            }
+            
+            // Update the document with the new data
+            document.reference.updateData(data) { error in
+                DispatchQueue.main.async {
+                    isLoading = false
+                    
+                    if let error = error {
+                        errorMessage = "Error updating group: \(error.localizedDescription)"
+                        showError = true
+                    } else {
+                        // Successfully updated
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
             }
         }
     }
@@ -214,7 +225,7 @@ struct MyAccountEditView: View {
         
         let storage = Storage.storage()
         let storageRef = storage.reference()
-        let imageRef = storageRef.child("profile_images/\(uid)_\(UUID().uuidString).jpg")
+        let imageRef = storageRef.child("group_images/\(groupCode)_\(UUID().uuidString).jpg")
         
         let metadata = StorageMetadata()
         metadata.contentType = "image/jpeg"
@@ -239,23 +250,18 @@ struct MyAccountEditView: View {
                     return
                 }
                 
-                if let downloadURL = url?.absoluteString {
-                    completion(downloadURL)
-                } else {
-                    completion(nil)
-                }
+                completion(url?.absoluteString)
             }
         }
     }
 }
 
-struct MyAccountEditView_Previews: PreviewProvider {
+struct EditGroupView_Previews: PreviewProvider {
     static var previews: some View {
-        MyAccountEditView(
-            userName: "Nimesh",
-            email: "n@example.com",
-            uid: "sampleUID",
-            profileImageURL: nil
-        )
+        EditGroupView(groupName: "Sample Group", description: "This is a sample group", groupCode: "2F9ED5F4", profileImageURL: "Sample Image")
     }
 }
+
+
+
+

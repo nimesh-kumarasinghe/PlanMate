@@ -8,131 +8,7 @@
 import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
-
-struct GroupEvent: Identifiable, Codable {
-    @DocumentID var id: String?
-    var title: String
-    var groupId: String
-    var groupName: String
-    var isAllDay: Bool
-    var locations: [EventLocation]
-    var notes: [String]
-    var participants: [String]
-    var reminder: String
-    var startDate: Timestamp
-    var endDate: Timestamp
-    var tasks: [EventTask]
-    var urls: [String]
-    var updatedAt: Timestamp?
-}
-
-struct EventLocation: Codable {
-    var address: String
-    var category: String
-    var latitude: Double
-    var longitude: Double
-    var name: String
-}
-
-struct EventTask: Codable, Identifiable {
-    var id: String = UUID().uuidString
-    var title: String
-}
-
-
-class ActivitiesViewModel: ObservableObject {
-    @Published var activities: [GroupEvent] = []
-    @Published var userActivities: [String] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
-    
-    private var db = Firestore.firestore()
-    
-    init() {
-        fetchUserActivities()
-    }
-    
-    func fetchUserActivities() {
-        guard let userId = Auth.auth().currentUser?.uid else {
-            self.errorMessage = "No user logged in"
-            return
-        }
-        
-        isLoading = true
-        
-        db.collection("users").document(userId).getDocument { [weak self] snapshot, error in
-            guard let self = self else { return }
-            
-            self.isLoading = false
-            
-            if let error = error {
-                self.errorMessage = error.localizedDescription
-                return
-            }
-            
-            if let data = snapshot?.data(),
-               let activities = data["activities"] as? [String] {
-                self.userActivities = activities
-                print("Found \(activities.count) activity IDs for user")
-            } else {
-                self.errorMessage = "No activities found"
-            }
-        }
-    }
-    
-    func fetchActivities(for date: Date) {
-        guard !userActivities.isEmpty else {
-            self.errorMessage = "No activities available"
-            return
-        }
-        
-        isLoading = true
-        
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: date)
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
-        
-        db.collection("activities")
-            .whereField(FieldPath.documentID(), in: userActivities)
-            .getDocuments { [weak self] snapshot, error in
-                guard let self = self else { return }
-                
-                self.isLoading = false
-                
-                if let error = error {
-                    self.errorMessage = error.localizedDescription
-                    return
-                }
-                
-                let filteredActivities = snapshot?.documents.compactMap { document -> GroupEvent? in
-                    do {
-                        var activity = try document.data(as: GroupEvent.self)
-                        activity.id = document.documentID
-                        
-                        let activityDate = activity.startDate.dateValue()
-                        if calendar.isDate(activityDate, inSameDayAs: date) {
-                            return activity
-                        }
-                        return nil
-                    } catch {
-                        print("Error decoding activity: \(error)")
-                        return nil
-                    }
-                } ?? []
-                
-                DispatchQueue.main.async {
-                    self.activities = filteredActivities
-                }
-            }
-    }
-    
-    func hasActivities(for date: Date) -> Bool {
-        let calendar = Calendar.current
-        return activities.contains { activity in
-            calendar.isDate(activity.startDate.dateValue(), inSameDayAs: date)
-        }
-    }
-}
+import Foundation
 
 struct CalendarView: View {
     @StateObject private var viewModel = ActivitiesViewModel()
@@ -341,7 +217,7 @@ struct DetailView: View {
     let date: Date
     @ObservedObject var viewModel: ActivitiesViewModel
     @Environment(\.presentationMode) var presentationMode
-
+    
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
@@ -356,38 +232,37 @@ struct DetailView: View {
     
     var body: some View {
         NavigationView {
-            //Group {
-                if viewModel.isLoading {
-                    ProgressView("Loading activities...")
-                } else if viewModel.activities.isEmpty {
-                    VStack(spacing: 20) {
-                        Text("No activities for this day")
-                            .foregroundColor(.gray)
-                    }
-                } else {
-                    List(viewModel.activities) { activity in
-                        Section(header: Text(activity.groupName)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)) {
+            if viewModel.isLoading {
+                ProgressView("Loading activities...")
+            } else if viewModel.activities.isEmpty {
+                VStack(spacing: 20) {
+                    Text("No activities for this day")
+                        .foregroundColor(.gray)
+                }
+            } else {
+                List(viewModel.activities) { activity in
+                    Section(header: Text(activity.groupName)
+                        .font(.headline)
+                        .foregroundColor(.primary)) {
                             ActivityRow(activity: activity, timeFormatter: timeFormatter)
                         }
-                    }
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    VStack {
-                        Text(dateFormatter.string(from: date))
-                            .font(.subheadline) 
-                            .foregroundColor(.primary)
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+        }
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack {
+                    Text(dateFormatter.string(from: date))
+                        .font(.subheadline) 
+                        .foregroundColor(.primary)
                 }
             }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
+        }
         .onAppear {
             viewModel.fetchActivities(for: date)
         }

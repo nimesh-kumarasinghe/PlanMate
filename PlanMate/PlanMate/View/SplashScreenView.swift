@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SplashScreenView: View {
-
+    
     @State private var isActive: Bool = false
     @StateObject private var appStateManager = AppStateManager()
     @AppStorage("log_status") private var logStatus: Bool = false

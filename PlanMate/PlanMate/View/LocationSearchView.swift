@@ -15,13 +15,13 @@ struct LocationData: Identifiable {
     let coordinate: CLLocationCoordinate2D
     let category: String
     
-    // Add Equatable conformance
+    // Equatable conformance
     static func == (lhs: LocationData, rhs: LocationData) -> Bool {
         lhs.id == rhs.id
     }
 }
 
-// Create a completion handler closure type
+// completion handler closure type
 typealias LocationSelectionHandler = (LocationData) -> Void
 
 
@@ -48,7 +48,7 @@ struct LocationSearchView: View {
                             }
                     }
                 }
-                .ignoresSafeArea()
+                    .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
                     SearchBar(text: $searchText, onSubmit: performSearch)
@@ -236,8 +236,6 @@ struct LocationDetailView: View {
                 }
                 
                 Button(action: {
-                    // Select location
-//                    selectedLocationInfo = "Name: \(location.name)\nAddress: \(location.address)"
                     onSelect(location)
                 }) {
                     Text("Select")
@@ -275,7 +273,6 @@ struct LocationDetailView: View {
 struct LocationSearchView_Previews: PreviewProvider {
     static var previews: some View {
         LocationSearchView(onLocationSelected: { location in
-            // Placeholder action for preview
             print("Selected location: \(location.name)")
         })
     }

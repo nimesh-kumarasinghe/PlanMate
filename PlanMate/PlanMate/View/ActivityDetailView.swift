@@ -8,65 +8,6 @@
 import SwiftUI
 import FirebaseFirestore
 
-// View Model
-class ActivityChatViewModel: ObservableObject {
-    @Published var messages: [ChatMessage] = []
-    @Published var errorMessage: String?
-    
-    private var db = Firestore.firestore()
-    private var listener: ListenerRegistration?
-    
-    func startListening(activityId: String) {
-        listener?.remove()
-        
-        listener = db.collection("activities")
-            .document(activityId)
-            .collection("messages")
-            .order(by: "timestamp", descending: false)
-            .addSnapshotListener { [weak self] querySnapshot, error in
-                guard let self = self else { return }
-                
-                if let error = error {
-                    self.errorMessage = error.localizedDescription
-                    return
-                }
-                
-                self.messages = querySnapshot?.documents.compactMap { document in
-                    let data = document.data()
-                    return ChatMessage(
-                        id: document.documentID,
-                        text: data["text"] as? String ?? "",
-                        senderId: data["senderId"] as? String ?? "",
-                        senderName: data["senderName"] as? String ?? "",
-                        timestamp: (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
-                    )
-                } ?? []
-            }
-    }
-    
-    func sendMessage(activityId: String, text: String, senderId: String, senderName: String) {
-        let message = [
-            "text": text,
-            "senderId": senderId,
-            "senderName": senderName,
-            "timestamp": Timestamp(date: Date())
-        ] as [String: Any]
-        
-        db.collection("activities")
-            .document(activityId)
-            .collection("messages")
-            .addDocument(data: message) { [weak self] error in
-                if let error = error {
-                    self?.errorMessage = error.localizedDescription
-                }
-            }
-    }
-    
-    func stopListening() {
-        listener?.remove()
-    }
-}
-
 struct ChatContentView: View {
     let messages: [ChatMessage]
     let currentUserId: String
@@ -265,30 +206,6 @@ struct DetailRow: View {
         }
     }
 }
-
-struct ChatMessage: Identifiable, Equatable {
-    let id: String
-    let text: String
-    let senderId: String
-    let senderName: String
-    let timestamp: Date
-    
-    var timeString: String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter.string(from: timestamp)
-    }
-    
-    // Implement Equatable
-    static func == (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
-        return lhs.id == rhs.id &&
-               lhs.text == rhs.text &&
-               lhs.senderId == rhs.senderId &&
-               lhs.senderName == rhs.senderName &&
-               lhs.timestamp == rhs.timestamp
-    }
-}
-
 struct ChatMessagesView: View {
     let messages: [ChatMessage]
     let currentUserId: String

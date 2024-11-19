@@ -44,9 +44,9 @@ struct JoinGroupView: View {
                         .padding()
                         .cornerRadius(8)
                         .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color(.systemGray3), lineWidth: 2)
-                            )
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color(.systemGray3), lineWidth: 2)
+                        )
                         .padding(.horizontal, 20)
                     
                     Button(action: {

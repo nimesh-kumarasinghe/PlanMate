@@ -32,7 +32,7 @@ struct MyAccountView: View {
     @AppStorage("userid") private var userid: String = ""
     @AppStorage("log_status") private var logStatus: Bool = false
     @AppStorage("use_face_id") private var useFaceID = false
-        
+    
     var body: some View {
         ZStack {
             NavigationView {
@@ -48,7 +48,7 @@ struct MyAccountView: View {
                                             Circle()
                                                 .fill(Color.gray.opacity(0.2))
                                                 .frame(width: 100, height: 100)
-
+                                            
                                             Image(systemName: "person.fill")
                                                 .resizable()
                                                 .scaledToFit()
@@ -131,8 +131,8 @@ struct MyAccountView: View {
                                                 icon: "info.circle")
                                 }
                             }
-                                                    .background(Color(.systemBackground))
-                                                    .cornerRadius(10)
+                            .background(Color(.systemBackground))
+                            .cornerRadius(10)
                         }
                         
                         // Security Section
@@ -189,9 +189,9 @@ struct MyAccountView: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-
+                            
                             Divider().padding(.leading, 16)
-
+                            
                             Toggle(isOn: $showEventNotifications) {
                                 HStack {
                                     Image(systemName: "calendar")

@@ -36,59 +36,59 @@ struct RegisterAccountView: View {
             ZStack {
                 VStack(spacing: 20) {
                     VStack(spacing: 16) {
-                             Spacer().frame(height: 20)
-                             TextField("Your Name", text: $name)
-                                 .padding()
-                                 .background(Color(.systemGray6))
-                                 .cornerRadius(8)
-                                 .overlay(
-                                     RoundedRectangle(cornerRadius: 8)
-                                         .stroke(Color(.systemGray3), lineWidth: 2)
-                                 )
-                                 .padding(.horizontal, 10)
-                             
-                             TextField("Email", text: $email)
-                                 .padding()
-                                 .background(Color(.systemGray6))
-                                 .cornerRadius(8)
-                                 .keyboardType(.emailAddress)
-                                 .autocapitalization(.none)
-                                 .overlay(
-                                     RoundedRectangle(cornerRadius: 8)
-                                         .stroke(Color(.systemGray3), lineWidth: 2)
-                                 )
-                                 .padding(.horizontal, 10)
-                             
-                             SecureField("Password", text: $password)
-                                 .padding()
-                                 .background(Color(.systemGray6))
-                                 .cornerRadius(8)
-                                 .overlay(
-                                     RoundedRectangle(cornerRadius: 8)
-                                         .stroke(Color(.systemGray3), lineWidth: 2)
-                                 )
-                                 .padding(.horizontal, 10)
-                             
-                             SecureField("Confirm Password", text: $confirmPassword)
-                                 .padding()
-                                 .background(Color(.systemGray6))
-                                 .cornerRadius(8)
-                                 .overlay(
-                                     RoundedRectangle(cornerRadius: 8)
-                                         .stroke(Color(.systemGray3), lineWidth: 2)
-                                 )
-                                 .padding(.horizontal, 10)
-                         }
-                         
-                         VStack(alignment: .leading, spacing: 4) {
-                             Text("• Password must be at least 8 characters long")
-                             Text("• Two or more types used out of letters, numbers, and symbols")
-                                 .fixedSize(horizontal: false, vertical: true)
-                             Text("• Matching password")
-                         }
-                         .font(.footnote)
-                         .foregroundColor(.gray)
-                         .padding(.horizontal, 30)
+                        Spacer().frame(height: 20)
+                        TextField("Your Name", text: $name)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
+                            .padding(.horizontal, 10)
+                        
+                        TextField("Email", text: $email)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
+                            .padding(.horizontal, 10)
+                        
+                        SecureField("Password", text: $password)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
+                            .padding(.horizontal, 10)
+                        
+                        SecureField("Confirm Password", text: $confirmPassword)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(.systemGray3), lineWidth: 2)
+                            )
+                            .padding(.horizontal, 10)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("• Password must be at least 8 characters long")
+                        Text("• Two or more types used out of letters, numbers, and symbols")
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text("• Matching password")
+                    }
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 30)
                     
                     Button(action: {
                         registerAccount()
@@ -112,24 +112,24 @@ struct RegisterAccountView: View {
                     
                     // Apple Sign In Button
                     SignInWithAppleButton(.continue){ request in
-                            let nonce = randomNonceString()
-                            self.nonce = nonce
-                            request.requestedScopes = [.fullName, .email]
-                            request.nonce = sha256(nonce)
-                        }
-                        onCompletion: { result in
-                            switch result {
-                            case .success(let authResults):
-                                loginWithApple(authResults)
-                            case .failure(let error):
-                                showError("Apple Sign In Failed", message: error.localizedDescription)
-                            }
-                        }
-
-                        .frame(height: 55)
-                        .cornerRadius(50)
-                        .padding(.horizontal, 30)
-                        .padding(.bottom, 5)
+                        let nonce = randomNonceString()
+                        self.nonce = nonce
+                        request.requestedScopes = [.fullName, .email]
+                        request.nonce = sha256(nonce)
+                    }
+                onCompletion: { result in
+                    switch result {
+                    case .success(let authResults):
+                        loginWithApple(authResults)
+                    case .failure(let error):
+                        showError("Apple Sign In Failed", message: error.localizedDescription)
+                    }
+                }
+                    
+                .frame(height: 55)
+                .cornerRadius(50)
+                .padding(.horizontal, 30)
+                .padding(.bottom, 5)
                     
                     // Google Sign In Button
                     Button(action: {
@@ -152,7 +152,7 @@ struct RegisterAccountView: View {
                         )
                         .padding(.horizontal, 30)
                     }
-                                        
+                    
                     HStack {
                         Text("If you already have an account,")
                             .foregroundColor(.black)
@@ -174,7 +174,7 @@ struct RegisterAccountView: View {
                         message: Text(alertMessage),
                         dismissButton: .default(Text("OK")) {
                             handleAlertDismiss()
- 
+                            
                         }
                     )
                 }
@@ -186,12 +186,12 @@ struct RegisterAccountView: View {
                         .navigationBarBackButtonHidden(true)
                         .navigationBarHidden(true)
                 }
-
+                
                 // Show loading indicator
                 if isLoading {
                     LoadingScreen()
                 }
-                    
+                
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -221,19 +221,13 @@ struct RegisterAccountView: View {
     }
     
     func handleAlertDismiss() {
-           if googleSignInSuccess {
-               navigateToHome = true
-               logStatus = true
-           } else if isSuccess {
-               navigateToSignIn = true
-           }
-       }
-    
-//    func hashPassword(_ password: String) -> String {
-//        let data = Data(password.utf8)
-//        let hashed = SHA256.hash(data: data)
-//        return hashed.compactMap { String(format: "%02x", $0) }.joined()
-//    }
+        if googleSignInSuccess {
+            navigateToHome = true
+            logStatus = true
+        } else if isSuccess {
+            navigateToSignIn = true
+        }
+    }
     
     func isPasswordComplex(_ password: String) -> Bool {
         let hasLetter = password.range(of: "[A-Za-z]", options: .regularExpression) != nil
@@ -267,9 +261,6 @@ struct RegisterAccountView: View {
             return
         }
         
-        // Get the device ID
-        //let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "unknown_device_id"
-        
         isLoading = true
         
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
@@ -285,12 +276,9 @@ struct RegisterAccountView: View {
                 return
             }
             
-            //let hashedPassword = hashPassword(password)
-            
             let data: [String: Any] = [
                 "name": name,
                 "email": email,
-                //"password": hashedPassword,
                 "uid": uid
             ]
             
@@ -365,13 +353,6 @@ struct RegisterAccountView: View {
                 // Store username in @AppStorage
                 userName = user.displayName ?? ""
                 userid = user.uid
-                                
-                // Store user ID securely in Keychain
-//                do {
-//                    try keychain.set(user.uid, key: "userID")
-//                } catch {
-//                    self.showError("Keychain Error", message: "Failed to store user ID.")
-//                }
                 
                 Firestore.firestore().collection("users").document(user.uid).setData(data) { error in
                     if let error = error {
@@ -452,7 +433,7 @@ struct RegisterAccountView: View {
             }
         }
     }
-
+    
     
     private func randomNonceString(length: Int = 32) -> String {
         precondition(length > 0)
@@ -463,7 +444,7 @@ struct RegisterAccountView: View {
         }
         
         let charset: [Character] =
-            Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
         
         let nonce = randomBytes.map { byte in
             charset[Int(byte) % charset.count]
@@ -481,7 +462,7 @@ struct RegisterAccountView: View {
         
         return hashString
     }
-
+    
     @ViewBuilder
     func LoadingScreen() -> some View {
         ZStack {

@@ -54,12 +54,16 @@ struct NotificationsView: View {
                     // Show message when both notification types are disabled
                     VStack {
                         Spacer()
+                        Image(systemName: "bell.badge")
+                            .font(.system(size: 40)) 
+                            .foregroundColor(.gray)
                         Text("Turn on your notification settings in your account")
                             .multilineTextAlignment(.center)
                             .foregroundColor(.gray)
                             .padding()
                         Spacer()
                     }
+
                 }  else {
                     if !filteredNotifications.isEmpty {
                         // Clear all notification
@@ -83,10 +87,15 @@ struct NotificationsView: View {
                     } else {
                         VStack {
                             Spacer()
+                            Image(systemName: "bell.slash")
+                                .font(.system(size: 40))
+                                .foregroundColor(.gray)
                             Text("No notifications")
                                 .foregroundColor(.gray)
+                                .padding(.top, 8)
                             Spacer()
                         }
+                        
                     }
                 }
             }
@@ -158,7 +167,7 @@ struct NotificationsView: View {
             self.isLoading = false
         }
     }
-
+    
     
     private func markAllAsRead() {
         guard let currentUserId = Auth.auth().currentUser?.uid else {
@@ -169,7 +178,7 @@ struct NotificationsView: View {
         let db = Firestore.firestore()
         let userRef = db.collection("users").document(currentUserId)
         
-        // Clear notifications or mark them as read in Firestore
+        // Clear notifications in Firestore
         userRef.updateData(["notifications": []]) { error in
             if let error = error {
                 self.errorMessage = "Failed to mark notifications as read: \(error.localizedDescription)"
@@ -187,20 +196,19 @@ struct NotificationCell: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            // Title and timestamp
             VStack(alignment: .leading, spacing: 2) {
-                Text(notification.title) // Display title
+                Text(notification.title)
                     .font(.system(size: 17))
                     .fontWeight(.bold)
                     .foregroundColor(Color("CustomBlue"))
                 
-                Text(notification.timestamp) // Display timestamp under title
+                Text(notification.timestamp)
                     .font(.system(size: 13))
                     .foregroundColor(Color.gray)
             }
             
             // Message
-            Text(notification.message) // Display message
+            Text(notification.message)
                 .font(.system(size: 17))
                 .foregroundColor(Color(.black))
                 .multilineTextAlignment(.leading)
