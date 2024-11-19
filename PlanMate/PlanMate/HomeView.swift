@@ -261,7 +261,6 @@ struct HomeView: View {
                                                     .resizable()
                                                     .clipShape(Circle())
                                                     .frame(width: 30, height: 30)
-                                                    .overlay(Circle().stroke(Color.gray, lineWidth: 1))
                                             } placeholder: {
                                                 ProgressView()
                                             }

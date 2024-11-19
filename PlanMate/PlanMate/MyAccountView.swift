@@ -249,6 +249,7 @@ struct MyAccountView: View {
                         loadNotificationSettings()
                     }
                 }
+                .padding(.top, -70)
                 .navigationBarBackButtonHidden(true)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {

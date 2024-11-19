@@ -69,14 +69,9 @@ struct MyAccountEditView: View {
                                     .scaledToFit()
                                     .frame(width: 90, height: 90)
                                     .foregroundColor(.white)
-                            case .empty:
+                            default:
                                 ProgressView()
-                            @unknown default:
-                                Image(systemName: "person.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 90, height: 90)
-                                    .foregroundColor(.white)
+                                    .frame(width: 150, height: 150)
                             }
                         }
                     } else {
@@ -86,7 +81,7 @@ struct MyAccountEditView: View {
                             .frame(width: 90, height: 90)
                             .foregroundColor(.white)
                     }
-                    
+                    // Photos Picker for Image Selection
                     PhotosPicker(selection: $selectedItem,
                                  matching: .images) {
                         Image(systemName: "camera.fill")
@@ -94,13 +89,29 @@ struct MyAccountEditView: View {
                             .padding(8)
                             .background(Color.black.opacity(0.6))
                             .clipShape(Circle())
+                    }.onChange(of: selectedItem) { newItem in
+                        if let newItem = newItem {
+                            newItem.loadTransferable(type: Data.self) { result in
+                                switch result {
+                                case .success(let data):
+                                    if let data = data {
+                                        DispatchQueue.main.async {
+                                            selectedImageData = data
+                                        }
+                                    }
+                                case .failure(let error):
+                                    print("Error loading image: \(error.localizedDescription)")
+                                }
+                            }
+                        }
                     }
-                    .position(x: 230, y: 240)
+                    .frame(width: 40, height: 40)
+                    .offset(x: 40, y: 50)
                 }
-                .padding(.top, 10)
+                .frame(width: 150, height: 150)
 
                 // Text Fields Section
-                VStack(spacing: 16) {
+                //VStack(spacing: 16) {
                     TextField("Name", text: $userName)
                         .padding()
                         .overlay(
@@ -118,9 +129,9 @@ struct MyAccountEditView: View {
                         .padding(.horizontal, 20)
                         .disabled(true)
                         .opacity(0.7)
-                }
+                //}
 
-                Spacer()
+                //Spacer()
                 
                 // Save Button Section
                 if isLoading {
@@ -138,8 +149,9 @@ struct MyAccountEditView: View {
                             .cornerRadius(50)
                             .padding(.horizontal, 40)
                     }
-                    .padding(.bottom, 40) // Positioned at the bottom
+                    .padding(.top, 20)
                 }
+                Spacer()
             }
             .navigationTitle("Edit Profile")
             .navigationBarTitleDisplayMode(.inline)
@@ -154,22 +166,6 @@ struct MyAccountEditView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(errorMessage)
-            }
-            .onChange(of: selectedItem) { newItem in
-                if let newItem = newItem {
-                    newItem.loadTransferable(type: Data.self) { result in
-                        switch result {
-                        case .success(let data):
-                            if let data = data {
-                                DispatchQueue.main.async {
-                                    selectedImageData = data
-                                }
-                            }
-                        case .failure(let error):
-                            print("Error loading image: \(error.localizedDescription)")
-                        }
-                    }
-                }
             }
         }
     }
