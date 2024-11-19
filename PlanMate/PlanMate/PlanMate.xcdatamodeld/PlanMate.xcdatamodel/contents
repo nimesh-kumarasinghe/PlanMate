@@ -13,15 +13,16 @@
         <relationship name="group" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Group" inverseName="cacheMembers" inverseEntity="Group"/>
     </entity>
     <entity name="Group" representedClassName="Group" syncable="YES" codeGenerationType="class">
+        <attribute name="createdBy" optional="YES" attributeType="String"/>
         <attribute name="groupCode" optional="YES" attributeType="String"/>
         <attribute name="groupDescription" optional="YES" attributeType="String"/>
         <attribute name="groupName" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
         <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="members" optional="YES" attributeType="Transformable"/>
+        <attribute name="profileImage" optional="YES" attributeType="Binary"/>
+        <attribute name="profileImageURL" optional="YES" attributeType="String"/>
         <relationship name="cachedActivities" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CachedActivity" inverseName="group" inverseEntity="CachedActivity"/>
         <relationship name="cacheMembers" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CachedMember" inverseName="group" inverseEntity="CachedMember"/>
-    </entity>
-    <entity name="Item" representedClassName="Item" syncable="YES" codeGenerationType="class">
-        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
 </model>

@@ -31,8 +31,6 @@ struct SignInView: View {
     @AppStorage("log_status") private var logStatus: Bool = false
     @AppStorage("use_face_id") private var useFaceID = false
     @State private var keychainError: String?
-    //@AppStorage("saved_email") private var savedEmail = ""
-    //@AppStorage("saved_password") private var savedPassword = ""
     
     var body: some View {
         NavigationStack {
@@ -96,7 +94,6 @@ struct SignInView: View {
                             .font(.headline)
                             .background(Color("CustomBlue"))
                             .cornerRadius(50)
-                        //.padding(.horizontal, 10)
                     }
                     
                     // Face ID Button (only shown if Face ID is enabled and credentials are saved)

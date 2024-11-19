@@ -176,6 +176,19 @@
 			path = Managers;
 			sourceTree = "<group>";
 		};
+		9EAEF7C82CEC8C750080A09D /* View */ = {
+			isa = PBXGroup;
+			children = (
+				9EE4F11D2CCE1592009D0F71 /* SplashScreenView.swift */,
+				9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */,
+				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
+				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
+				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
+				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		9EE4F0E22CCE1199009D0F71 = {
 			isa = PBXGroup;
 			children = (
@@ -202,15 +215,10 @@
 				9EE7D73B2CD9E36A00F7602D /* PlanMate.entitlements */,
 				9EAC12422CD8BFA3002A84A0 /* Info.plist */,
 				9EE7D73E2CDA152A00F7602D /* GoogleService-Info.plist */,
+				9EA917E22CE209A9003E145F /* Managers */,
+				9EAEF7C82CEC8C750080A09D /* View */,
 				9EE4F0EE2CCE1199009D0F71 /* PlanMateApp.swift */,
 				9EE7D73C2CDA0CB800F7602D /* AppDelegate.swift */,
-				9EE4F11D2CCE1592009D0F71 /* SplashScreenView.swift */,
-				9EE4F11F2CCE17B2009D0F71 /* OnboardingView.swift */,
-				9EE4F1212CCE1A78009D0F71 /* GetstartedView.swift */,
-				9EA917E22CE209A9003E145F /* Managers */,
-				9EE4F1252CCE2B96009D0F71 /* SignInView.swift */,
-				9EE4F1232CCE2634009D0F71 /* RegisterView.swift */,
-				9EE971D62CCF582500108C12 /* FindAccountView.swift */,
 				9E1DB5672CD6183C008639AB /* NotificationsView.swift */,
 				9EE971DC2CCF60B300108C12 /* MainHomeView.swift */,
 				9EE971DA2CCF5C4E00108C12 /* HomeView.swift */,
