@@ -67,6 +67,44 @@ class ActivityChatViewModel: ObservableObject {
     }
 }
 
+struct ChatContentView: View {
+    let messages: [ChatMessage]
+    let currentUserId: String
+    
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ChatMessagesView(
+                        messages: messages,
+                        currentUserId: currentUserId
+                    )
+                    .padding(.vertical)
+                    
+                    // Bottom marker
+                    Color.clear
+                        .frame(height: 1)
+                        .id("bottomMessage")
+                }
+            }
+            .onAppear {
+                scrollToBottom(proxy: proxy)
+            }
+            .onChange(of: messages) { _ in
+                scrollToBottom(proxy: proxy)
+            }
+        }
+    }
+    
+    private func scrollToBottom(proxy: ScrollViewProxy) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation {
+                proxy.scrollTo("bottomMessage", anchor: .bottom)
+            }
+        }
+    }
+}
+
 struct ActivityDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var chatViewModel = ActivityChatViewModel()
@@ -79,36 +117,12 @@ struct ActivityDetailView: View {
     private let db = Firestore.firestore()
     
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                if let activity = activity {
-                    EventDetailsView(event: activity)
-                        .padding(.horizontal)
-                        .padding(.vertical, 16)
-                    
-                    ScrollView {
-                        ChatMessagesView(
-                            messages: chatViewModel.messages,
-                            currentUserId: userId
-                        )
-                        .padding(.vertical)
-                    }
-                    
-                    MessageInputView(messageText: $messageText) {
-                        sendMessage()
-                    }
-                } else {
-                    ProgressView("Loading...")
-                        .progressViewStyle(CircularProgressViewStyle())
-                }
-            }
+        mainContent
             .navigationTitle(activity?.title ?? "Activity Detail")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: CreateActivityView(isEditMode: true, editActivityId: activityId)) {
-                        Text("Edit")
-                    }
+                    editButton
                 }
             }
             .background(Color.white)
@@ -129,6 +143,33 @@ struct ActivityDetailView: View {
                     dismissButton: .default(Text("OK"))
                 )
             }
+    }
+    
+    private var mainContent: some View {
+        VStack(spacing: 0) {
+            if let activity = activity {
+                EventDetailsView(event: activity)
+                    .padding(.horizontal)
+                    .padding(.vertical, 16)
+                
+                ChatContentView(
+                    messages: chatViewModel.messages,
+                    currentUserId: userId
+                )
+                
+                MessageInputView(messageText: $messageText) {
+                    sendMessage()
+                }
+            } else {
+                ProgressView("Loading...")
+                    .progressViewStyle(CircularProgressViewStyle())
+            }
+        }
+    }
+    
+    private var editButton: some View {
+        NavigationLink(destination: CreateActivityView(isEditMode: true, editActivityId: activityId)) {
+            Text("Edit")
         }
     }
     
@@ -225,7 +266,7 @@ struct DetailRow: View {
     }
 }
 
-struct ChatMessage: Identifiable {
+struct ChatMessage: Identifiable, Equatable {
     let id: String
     let text: String
     let senderId: String
@@ -236,6 +277,15 @@ struct ChatMessage: Identifiable {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         return formatter.string(from: timestamp)
+    }
+    
+    // Implement Equatable
+    static func == (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.text == rhs.text &&
+               lhs.senderId == rhs.senderId &&
+               lhs.senderName == rhs.senderName &&
+               lhs.timestamp == rhs.timestamp
     }
 }
 
@@ -282,6 +332,7 @@ struct ChatBubble: View {
                     Text(message.senderName)
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .fontWeight(.semibold)
                 }
                 
                 Text(message.text)
