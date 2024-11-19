@@ -8,35 +8,96 @@
 import SwiftUI
 import FirebaseFirestore
 
+// View Model
+class ActivityChatViewModel: ObservableObject {
+    @Published var messages: [ChatMessage] = []
+    @Published var errorMessage: String?
+    
+    private var db = Firestore.firestore()
+    private var listener: ListenerRegistration?
+    
+    func startListening(activityId: String) {
+        listener?.remove()
+        
+        listener = db.collection("activities")
+            .document(activityId)
+            .collection("messages")
+            .order(by: "timestamp", descending: false)
+            .addSnapshotListener { [weak self] querySnapshot, error in
+                guard let self = self else { return }
+                
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                    return
+                }
+                
+                self.messages = querySnapshot?.documents.compactMap { document in
+                    let data = document.data()
+                    return ChatMessage(
+                        id: document.documentID,
+                        text: data["text"] as? String ?? "",
+                        senderId: data["senderId"] as? String ?? "",
+                        senderName: data["senderName"] as? String ?? "",
+                        timestamp: (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
+                    )
+                } ?? []
+            }
+    }
+    
+    func sendMessage(activityId: String, text: String, senderId: String, senderName: String) {
+        let message = [
+            "text": text,
+            "senderId": senderId,
+            "senderName": senderName,
+            "timestamp": Timestamp(date: Date())
+        ] as [String: Any]
+        
+        db.collection("activities")
+            .document(activityId)
+            .collection("messages")
+            .addDocument(data: message) { [weak self] error in
+                if let error = error {
+                    self?.errorMessage = error.localizedDescription
+                }
+            }
+    }
+    
+    func stopListening() {
+        listener?.remove()
+    }
+}
+
 struct ActivityDetailView: View {
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var chatViewModel = ActivityChatViewModel()
     @State private var messageText = ""
     @State private var activity: Activity?
+    @AppStorage("user_name") private var userName: String = ""
+    @AppStorage("userid") private var userId: String = ""
     
-    // The selected activity ID passed from ActivityListView
     let activityId: String
-    
     private let db = Firestore.firestore()
-
+    
     var body: some View {
-        ZStack{
+        ZStack {
             VStack(spacing: 0) {
                 if let activity = activity {
-                    // Event details card - Fixed at top
                     EventDetailsView(event: activity)
                         .padding(.horizontal)
                         .padding(.vertical, 16)
                     
-                    // Chat messages - Scrollable
                     ScrollView {
-                        ChatMessagesView(messages: sampleMessages) // Replace with real data if needed
-                            .padding(.vertical)
+                        ChatMessagesView(
+                            messages: chatViewModel.messages,
+                            currentUserId: userId
+                        )
+                        .padding(.vertical)
                     }
                     
-                    // Message input - Fixed at bottom
-                    MessageInputView(messageText: $messageText)
+                    MessageInputView(messageText: $messageText) {
+                        sendMessage()
+                    }
                 } else {
-                    // Show a loading spinner while fetching data
                     ProgressView("Loading...")
                         .progressViewStyle(CircularProgressViewStyle())
                 }
@@ -53,13 +114,24 @@ struct ActivityDetailView: View {
             .background(Color.white)
             .onAppear {
                 fetchActivityDetails()
+                chatViewModel.startListening(activityId: activityId)
             }
-            //.toolbar(.hidden, for: .tabBar)
+            .onDisappear {
+                chatViewModel.stopListening()
+            }
+            .alert(item: Binding(
+                get: { chatViewModel.errorMessage.map { ErrorWrapper(error: $0) } },
+                set: { chatViewModel.errorMessage = $0?.error }
+            )) { errorWrapper in
+                Alert(
+                    title: Text("Error"),
+                    message: Text(errorWrapper.error),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
-        
     }
     
-    // Function to fetch activity details from Firestore
     private func fetchActivityDetails() {
         db.collection("activities")
             .document(activityId)
@@ -74,9 +146,22 @@ struct ActivityDetailView: View {
                 }
             }
     }
+    
+    private func sendMessage() {
+        guard !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        
+        chatViewModel.sendMessage(
+            activityId: activityId,
+            text: messageText,
+            senderId: userId,
+            senderName: userName
+        )
+        
+        messageText = ""
+    }
 }
 
-// EventDetailsView updated to work with an Activity model
+// EventDetailsView
 struct EventDetailsView: View {
     let event: Activity
     
@@ -118,7 +203,7 @@ struct EventDetailsView: View {
     }
 }
 
-// Row with icon and text (used in event details view)
+// Row with icon and text for event details
 struct DetailRow: View {
     let icon: String
     let text: String
@@ -140,72 +225,77 @@ struct DetailRow: View {
     }
 }
 
-// Sample chat messages for demonstration purposes
-let sampleMessages: [ChatMessage] = [
-    ChatMessage(text: "Hello", isUser: true, time: ""),
-    ChatMessage(text: "I'm at Galle Face! Just reached.", isUser: true, time: ""),
-    ChatMessage(text: "Where are you all?", isUser: true, time: "09:25"),
-    ChatMessage(text: "Oh, you're there already?", sender: "Kasun", isUser: false, time: ""),
-    ChatMessage(text: "I'm on my way, should be there in 10 minutes.", sender: "Kasun", isUser: false, time: "09:30")
-]
-
-struct ChatMessage {
+struct ChatMessage: Identifiable {
+    let id: String
     let text: String
-    let sender: String?
-    let isUser: Bool
-    let time: String
+    let senderId: String
+    let senderName: String
+    let timestamp: Date
     
-    init(text: String, sender: String? = nil, isUser: Bool, time: String) {
-        self.text = text
-        self.sender = sender
-        self.isUser = isUser
-        self.time = time
+    var timeString: String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: timestamp)
     }
 }
 
 struct ChatMessagesView: View {
     let messages: [ChatMessage]
+    let currentUserId: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ForEach(messages.indices, id: \.self) { index in
-                ChatBubble(message: messages[index])
+        ScrollViewReader { proxy in
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(messages) { message in
+                    ChatBubble(
+                        message: message,
+                        isCurrentUser: message.senderId == currentUserId
+                    )
+                    .id(message.id)
+                }
+            }
+            .padding(.horizontal)
+            .onChange(of: messages.count) { _ in
+                if let lastMessage = messages.last {
+                    withAnimation {
+                        proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                    }
+                }
             }
         }
-        .padding(.horizontal)
     }
 }
 
+
 struct ChatBubble: View {
     let message: ChatMessage
+    let isCurrentUser: Bool
     
     var body: some View {
         HStack {
-            if message.isUser {
+            if isCurrentUser {
                 Spacer()
             }
             
-            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 4) {
-                if let sender = message.sender {
-                    Text(sender)
+            VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
+                if !isCurrentUser {
+                    Text(message.senderName)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 
                 Text(message.text)
                     .padding(12)
-                    .background(message.isUser ? Color("CustomBlue") : Color(UIColor.systemGray5))
-                    .foregroundColor(message.isUser ? .white : .primary)
+                    .background(isCurrentUser ? Color("CustomBlue") : Color(UIColor.systemGray5))
+                    .foregroundColor(isCurrentUser ? .white : .primary)
                     .cornerRadius(16)
                 
-                if !message.time.isEmpty {
-                    Text(message.time)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
+                Text(message.timeString)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
             
-            if !message.isUser {
+            if !isCurrentUser {
                 Spacer()
             }
         }
@@ -214,6 +304,7 @@ struct ChatBubble: View {
 
 struct MessageInputView: View {
     @Binding var messageText: String
+    let onSend: () -> Void
     
     var body: some View {
         HStack(spacing: 12) {
@@ -222,22 +313,21 @@ struct MessageInputView: View {
                 .background(Color(UIColor.systemGray6))
                 .cornerRadius(20)
             
-            Button(action: {}) {
+            Button(action: {
+                onSend()
+            }) {
                 Image(systemName: "arrow.right.circle.fill")
-                    .foregroundColor(Color("CustomBlue"))
+                    .foregroundColor(!messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color("CustomBlue") : .gray)
                     .font(.title2)
             }
-            
-            Button(action: {}) {
-                Image(systemName: "face.smiling")
-                    .foregroundColor(.gray)
-                    .font(.title2)
-            }
+            .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
         .padding()
         .background(Color(UIColor.systemBackground))
+        .shadow(radius: 1)
     }
 }
+
 
 struct ActivityDetailView_Previews: PreviewProvider {
     static var previews: some View {
