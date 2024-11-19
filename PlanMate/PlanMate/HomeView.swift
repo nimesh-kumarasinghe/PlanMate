@@ -254,7 +254,7 @@ struct HomeView: View {
                                         Image(systemName: "bell")
                                             .foregroundColor(.black)
                                     }
-                                    NavigationLink(destination: MyAccountView() .navigationBarHidden(false)) {
+                                    NavigationLink(destination: MyAccountView() .navigationBarHidden(true)) {
                                         if let profileURL = viewModel.profileImageURL, !profileURL.isEmpty {
                                             AsyncImage(url: URL(string: profileURL)) { image in
                                                 image

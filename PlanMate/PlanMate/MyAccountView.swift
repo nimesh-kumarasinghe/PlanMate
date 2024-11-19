@@ -12,6 +12,7 @@ import FirebaseFirestore
 import SDWebImageSwiftUI
 
 struct MyAccountView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var showingDeleteAlert = false
     @State private var showingLogOutAlert = false
     @State private var isLoggedOut = false
@@ -99,16 +100,39 @@ struct MyAccountView: View {
                                 .fontWeight(.bold)
                             
                             VStack(spacing: 0) {
-                                LinkButton(title: "Help Center or FAQ")
+                                NavigationLink(destination:
+                                                ContentDetailView(title: "Help Center or FAQ",
+                                                                  description: "Find answers to common questions and support.")) {
+                                    LinkRowView(title: "Help Center or FAQ",
+                                                icon: "questionmark.circle")
+                                }
                                 Divider().padding(.leading, 16)
-                                LinkButton(title: "Terms & Conditions")
+                                
+                                NavigationLink(destination:
+                                                ContentDetailView(title: "Terms & Conditions",
+                                                                  description: "Learn about our terms and conditions.")) {
+                                    LinkRowView(title: "Terms & Conditions",
+                                                icon: "doc.text")
+                                }
                                 Divider().padding(.leading, 16)
-                                LinkButton(title: "Privacy Policy")
+                                
+                                NavigationLink(destination:
+                                                ContentDetailView(title: "Privacy Policy",
+                                                                  description: "Read about how we protect your data.")) {
+                                    LinkRowView(title: "Privacy Policy",
+                                                icon: "lock.shield")
+                                }
                                 Divider().padding(.leading, 16)
-                                LinkButton(title: "App info")
+                                
+                                NavigationLink(destination:
+                                                ContentDetailView(title: "App info",
+                                                                  description: "View the app version and release notes.")) {
+                                    LinkRowView(title: "App info",
+                                                icon: "info.circle")
+                                }
                             }
-                            .background(Color(.systemBackground))
-                            .cornerRadius(10)
+                                                    .background(Color(.systemBackground))
+                                                    .cornerRadius(10)
                         }
                         
                         // Security Section
@@ -123,7 +147,7 @@ struct MyAccountView: View {
                             Toggle(isOn: $useFaceID) {
                                 HStack {
                                     Image(systemName: "faceid")
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(Color("CustomBlue"))
                                     Text("Enable Face ID Login")
                                         .foregroundColor(.primary)
                                 }
@@ -155,7 +179,7 @@ struct MyAccountView: View {
                             Toggle(isOn: $showProposeNotifications) {
                                 HStack {
                                     Image(systemName: "bell.badge")
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(Color("CustomBlue"))
                                     Text("Show Propose Activity Notifications")
                                         .foregroundColor(.primary)
                                 }
@@ -171,7 +195,7 @@ struct MyAccountView: View {
                             Toggle(isOn: $showEventNotifications) {
                                 HStack {
                                     Image(systemName: "calendar")
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(Color("CustomBlue"))
                                     Text("Show Event Notifications")
                                         .foregroundColor(.primary)
                                 }
@@ -225,6 +249,25 @@ struct MyAccountView: View {
                         loadNotificationSettings()
                     }
                 }
+                .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left")
+                                Text("Back")
+                            }
+                            .foregroundColor(Color("CustomBlue"))
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .principal) {
+                        Text("My Account")
+                            .font(.headline)
+                    }
+                }
                 .sheet(isPresented: $showingEditProfile) {
                     loadProfileImage()
                 }content:{
@@ -257,7 +300,6 @@ struct MyAccountView: View {
                     Text(errorMessage)
                 }
             }
-            .navigationBarTitle("My Account", displayMode: .inline)
             .navigationDestination(isPresented: $isLoggedOut) {
                 SignInView()
                     .navigationBarBackButtonHidden(true)
@@ -485,28 +527,62 @@ struct MyAccountView: View {
     }
 }
 
-struct LinkButton: View {
+struct ContentDetailView: View {
     let title: String
-    var icon: String?
+    let description: String
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationLink(destination: EmptyView()) {
-            HStack {
-                if let icon = icon {
-                    Image(icon)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 20, height: 20)
-                }
-                Text(title)
-                    .foregroundColor(.primary)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+        VStack {
+            Text(description)
+                .font(.system(size: 16))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding()
+            Spacer()
         }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(Color("CustomBlue"))
+                }
+            }
+            
+            ToolbarItem(placement: .principal) {
+                Text(title)
+                    .font(.headline)
+            }
+        }
+    }
+}
+
+// Link Row View
+struct LinkRowView: View {
+    let title: String
+    let icon: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 20, height: 20)
+                .foregroundColor(Color("CustomBlue"))
+            Text(title)
+                .foregroundColor(.primary)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 }
 
