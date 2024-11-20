@@ -132,6 +132,11 @@ class VotingProposeActivityViewModel: ObservableObject {
                             self?.userSubmission = submission
                         }
                     }
+                    self?.userHasSubmitted = true
+                    if let strongSelf = self,
+                       self?.userHasSubmitted == true{
+                        NotificationManager.shared.cancelVoteReminder(for: document.documentID)
+                    }
                     
                     return submission
                 } ?? []
@@ -181,7 +186,6 @@ class VotingProposeActivityViewModel: ObservableObject {
                     selectedLocation: selectedLocation,
                     submittedAt: Date()
                 )
-                NotificationManager.shared.cancelVoteReminder(for: proposeActivity.id)
                 
                 // Refresh vote submissions after successful submission
                 self?.fetchVoteSubmissions(proposeActivityId: proposeActivity.id)
@@ -212,7 +216,9 @@ class VotingProposeActivityViewModel: ObservableObject {
                 
                 // Only schedule notification if showVoteReminders is true
                 if let proposeActivity = self?.proposeActivity,
-                   self?.showVoteReminders == true {
+                   self?.showVoteReminders == true,
+                   self?.userHasSubmitted == false
+                {
                     NotificationManager.shared.scheduleVoteReminder(for: proposeActivity)
                 }
                 

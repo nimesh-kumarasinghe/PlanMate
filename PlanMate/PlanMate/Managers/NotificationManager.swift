@@ -12,7 +12,9 @@ class NotificationManager {
     static let shared = NotificationManager()
     private let notificationCenter = UNUserNotificationCenter.current()
     
-    private init() {}
+    private init() {
+        
+    }
     
     func requestAuthorization() {
         notificationCenter.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -36,7 +38,7 @@ class NotificationManager {
         content.sound = .default
         
         // Schedule notification
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
         
         // Create request
         let request = UNNotificationRequest(
