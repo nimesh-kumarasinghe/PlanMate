@@ -13,6 +13,11 @@ struct SplashScreenView: View {
     @StateObject private var appStateManager = AppStateManager()
     @AppStorage("log_status") private var logStatus: Bool = false
     
+    init() {
+        NotificationManager.shared.requestAuthorization()
+        print("Test Auth")
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {

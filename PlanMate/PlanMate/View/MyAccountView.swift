@@ -25,6 +25,7 @@ struct MyAccountView: View {
     @State private var shouldRefreshProfile = false
     @State private var showProposeNotifications = false
     @State private var showEventNotifications = false
+    @State private var showVoteReminders = false
     
     @StateObject private var biometricManager = BiometricManager()
     
@@ -205,6 +206,22 @@ struct MyAccountView: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
+                            
+                            Divider().padding(.leading, 16)
+                            
+                            Toggle(isOn: $showVoteReminders) {
+                                HStack {
+                                    Image(systemName: "clock")
+                                        .foregroundColor(Color("CustomBlue"))
+                                    Text("Get Activity Voting Reminders")
+                                        .foregroundColor(.primary)
+                                }
+                            }
+                            .onChange(of: showVoteReminders) { newValue in
+                                updateNotificationSettings(voteReminders: newValue)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
                         }
                         
                         // Log Out Button
@@ -342,7 +359,7 @@ struct MyAccountView: View {
         }
     }
     
-    private func updateNotificationSettings(proposeNotifications: Bool? = nil, eventNotifications: Bool? = nil) {
+    private func updateNotificationSettings(proposeNotifications: Bool? = nil, eventNotifications: Bool? = nil, voteReminders: Bool? = nil) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let db = Firestore.firestore()
         
@@ -352,6 +369,9 @@ struct MyAccountView: View {
         }
         if let eventNotifications = eventNotifications {
             updateData["showEventNotifications"] = eventNotifications
+        }
+        if let voteReminders = voteReminders {
+            updateData["showVoteReminders"] = voteReminders
         }
         
         db.collection("users").document(uid).updateData(updateData) { error in
@@ -371,6 +391,7 @@ struct MyAccountView: View {
             if let document = document, document.exists {
                 showProposeNotifications = document.data()?["showProposeNotifications"] as? Bool ?? false
                 showEventNotifications = document.data()?["showEventNotifications"] as? Bool ?? false
+                showVoteReminders = document.data()?["showVoteReminders"] as? Bool ?? false
             }
         }
     }

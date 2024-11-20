@@ -18,12 +18,34 @@ class VotingProposeActivityViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var userHasSubmitted = false
     @Published var userSubmission: VoteSubmission?
+    @Published var showVoteReminders: Bool = false
     @AppStorage("user_name") private var userName: String = ""
     
     private var db = Firestore.firestore()
     
+    // fetch user notification preferences
+    private func fetchUserNotificationPreferences() {
+        guard let currentUserId = Auth.auth().currentUser?.uid else { return }
+        
+        db.collection("users").document(currentUserId).getDocument { [weak self] document, error in
+            if let error = error {
+                print("Error fetching user preferences: \(error)")
+                return
+            }
+            
+            if let data = document?.data(),
+               let showReminders = data["showVoteReminders"] as? Bool {
+                DispatchQueue.main.async {
+                    self?.showVoteReminders = showReminders
+                }
+            }
+        }
+    }
+    
     func fetchProposeActivity(id: String) {
         isLoading = true
+        
+        fetchUserNotificationPreferences()
         
         db.collection("proposeActivities").document(id).getDocument { [weak self] document, error in
             DispatchQueue.main.async {
@@ -65,6 +87,14 @@ class VotingProposeActivityViewModel: ObservableObject {
                 )
                 
                 self?.proposeActivity = proposeActivity
+                
+                // Only schedule notification if showVoteReminders is true
+                if let strongSelf = self,
+                   !strongSelf.userHasSubmitted,
+                   strongSelf.showVoteReminders {
+                    NotificationManager.shared.scheduleVoteReminder(for: proposeActivity)
+                }
+                
                 self?.fetchVoteSubmissions(proposeActivityId: document.documentID)
             }
         }
@@ -151,6 +181,7 @@ class VotingProposeActivityViewModel: ObservableObject {
                     selectedLocation: selectedLocation,
                     submittedAt: Date()
                 )
+                NotificationManager.shared.cancelVoteReminder(for: proposeActivity.id)
                 
                 // Refresh vote submissions after successful submission
                 self?.fetchVoteSubmissions(proposeActivityId: proposeActivity.id)
@@ -178,6 +209,13 @@ class VotingProposeActivityViewModel: ObservableObject {
                 
                 // Reset user submission state
                 self?.userHasSubmitted = false
+                
+                // Only schedule notification if showVoteReminders is true
+                if let proposeActivity = self?.proposeActivity,
+                   self?.showVoteReminders == true {
+                    NotificationManager.shared.scheduleVoteReminder(for: proposeActivity)
+                }
+                
                 self?.userSubmission = nil
                 
                 // Refresh submissions list
