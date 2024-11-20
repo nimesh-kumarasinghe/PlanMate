@@ -9,16 +9,6 @@ import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
 
-struct NotificationItem: Identifiable {
-    let id: String
-    let title: String
-    let message: String
-    let timestamp: String
-    let group: String
-    let type: String
-    var isRead: Bool = false
-}
-
 struct NotificationsView: View {
     
     @State private var notifications: [NotificationItem] = []
@@ -55,7 +45,7 @@ struct NotificationsView: View {
                     VStack {
                         Spacer()
                         Image(systemName: "bell.badge")
-                            .font(.system(size: 40)) 
+                            .font(.system(size: 40))
                             .foregroundColor(.gray)
                         Text("Turn on your notification settings in your account")
                             .multilineTextAlignment(.center)
@@ -63,7 +53,7 @@ struct NotificationsView: View {
                             .padding()
                         Spacer()
                     }
-
+                    
                 }  else {
                     if !filteredNotifications.isEmpty {
                         // Clear all notification
@@ -160,8 +150,12 @@ struct NotificationsView: View {
                     message: message,
                     timestamp: timestampString,
                     group: "",
-                    type: type
+                    type: type,
+                    rawTimestamp: timestamp.dateValue()
                 )
+            }.sorted { notification1, notification2 in
+                // Sort in descending order (newest first)
+                notification1.rawTimestamp > notification2.rawTimestamp
             }
             
             self.isLoading = false

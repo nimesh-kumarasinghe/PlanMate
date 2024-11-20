@@ -40,6 +40,7 @@
 		9EAEF7F92CECC8B20080A09D /* HomeProposeActivityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7F82CECC8B20080A09D /* HomeProposeActivityModel.swift */; };
 		9EAEF7FB2CECC8E10080A09D /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7FA2CECC8E10080A09D /* HomeViewModel.swift */; };
 		9EAEF7FD2CECD0CC0080A09D /* Members.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAEF7FC2CECD0CB0080A09D /* Members.swift */; };
+		9EAF89602CED9FAE001242CE /* NotificationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAF895F2CED9FAE001242CE /* NotificationItem.swift */; };
 		9EB3FB6C2CE0875B00E6D6EA /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */; };
 		9EB740112CE362C90043E809 /* MyAccountEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB740102CE362C90043E809 /* MyAccountEditView.swift */; };
 		9EBDA9AB2CEB0E6800A8205D /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 9EBDA9AA2CEB0E6800A8205D /* FirebaseStorage */; };
@@ -134,6 +135,7 @@
 		9EAEF7F82CECC8B20080A09D /* HomeProposeActivityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeProposeActivityModel.swift; sourceTree = "<group>"; };
 		9EAEF7FA2CECC8E10080A09D /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		9EAEF7FC2CECD0CB0080A09D /* Members.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Members.swift; sourceTree = "<group>"; };
+		9EAF895F2CED9FAE001242CE /* NotificationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationItem.swift; sourceTree = "<group>"; };
 		9EB3FB6B2CE0875B00E6D6EA /* BiometricManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricManager.swift; sourceTree = "<group>"; };
 		9EB740102CE362C90043E809 /* MyAccountEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountEditView.swift; sourceTree = "<group>"; };
 		9EE4F0EB2CCE1199009D0F71 /* PlanMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlanMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -262,6 +264,7 @@
 				9EAEF7F62CECC8980080A09D /* HomeGroupModel.swift */,
 				9EAEF7F82CECC8B20080A09D /* HomeProposeActivityModel.swift */,
 				9EAEF7FC2CECD0CB0080A09D /* Members.swift */,
+				9EAF895F2CED9FAE001242CE /* NotificationItem.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -332,8 +335,8 @@
 				9EE7D73C2CDA0CB800F7602D /* AppDelegate.swift */,
 				9EE971DC2CCF60B300108C12 /* MainHomeView.swift */,
 				9EA917E22CE209A9003E145F /* Managers */,
-				9EAEF7C82CEC8C750080A09D /* View */,
 				9EAEF7C92CECACDD0080A09D /* Model */,
+				9EAEF7C82CEC8C750080A09D /* View */,
 				9EAEF7CC2CECB5150080A09D /* ViewModel */,
 				9EE4F0F22CCE119A009D0F71 /* Assets.xcassets */,
 				9EE4F0F72CCE119A009D0F71 /* Persistence.swift */,
@@ -565,6 +568,7 @@
 				9EE971E52CCF6E5500108C12 /* JoinGroupView.swift in Sources */,
 				9EE971EB2CCF8A1200108C12 /* GroupListView.swift in Sources */,
 				9EAC12412CD8AB9A002A84A0 /* LocationSearchView.swift in Sources */,
+				9EAF89602CED9FAE001242CE /* NotificationItem.swift in Sources */,
 				9EE971E32CCF6DB500108C12 /* CreateGroupView.swift in Sources */,
 				9EE4F0FB2CCE119A009D0F71 /* PlanMate.xcdatamodeld in Sources */,
 				9EAEF7EC2CECC5D20080A09D /* GroupMember.swift in Sources */,
