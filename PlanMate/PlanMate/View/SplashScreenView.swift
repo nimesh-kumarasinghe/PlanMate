@@ -15,7 +15,6 @@ struct SplashScreenView: View {
     
     init() {
         NotificationManager.shared.requestAuthorization()
-        print("Test Auth")
     }
     
     var body: some View {

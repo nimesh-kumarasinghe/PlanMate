@@ -35,7 +35,7 @@ class NotificationManager {
         content.body = "Don't forget to submit your vote for '\(activity.title)' proposed activity"
         content.sound = .default
         
-        // Schedule notification for 24 hours from now
+        // Schedule notification
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
         
         // Create request
