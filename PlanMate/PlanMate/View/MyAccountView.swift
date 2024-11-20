@@ -23,9 +23,6 @@ struct MyAccountView: View {
     @State private var profileImageURL: String?
     @State private var isImageLoading = false
     @State private var shouldRefreshProfile = false
-    @State private var showProposeNotifications = false
-    @State private var showEventNotifications = false
-    @State private var showVoteReminders = false
     
     @StateObject private var biometricManager = BiometricManager()
     
@@ -101,6 +98,12 @@ struct MyAccountView: View {
                                 .fontWeight(.bold)
                             
                             VStack(spacing: 0) {
+                                NavigationLink(destination: NotificationSetting()) {
+                                    LinkRowView(title: "Notifications",
+                                                icon: "bell")
+                                }
+                                Divider().padding(.leading, 16)
+                                
                                 NavigationLink(destination:
                                                 ContentDetailView(title: "Help Center or FAQ",
                                                                   description: "Find answers to common questions and support.")) {
@@ -168,62 +171,6 @@ struct MyAccountView: View {
                             .background(Color(.systemBackground))
                             .cornerRadius(10)
                         }
-                        
-                        VStack(alignment: .leading, spacing: 0){
-                            Text("Notification Settings")
-                                .font(.system(size: 17))
-                                .foregroundColor(.black)
-                                .padding(.leading, 16)
-                                .padding(.bottom, 8)
-                                .fontWeight(.bold)
-                            
-                            Toggle(isOn: $showProposeNotifications) {
-                                HStack {
-                                    Image(systemName: "bell.badge")
-                                        .foregroundColor(Color("CustomBlue"))
-                                    Text("Show Propose Activity Notifications")
-                                        .foregroundColor(.primary)
-                                }
-                            }
-                            .onChange(of: showProposeNotifications) { newValue in
-                                updateNotificationSettings(proposeNotifications: newValue)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            
-                            Divider().padding(.leading, 16)
-                            
-                            Toggle(isOn: $showEventNotifications) {
-                                HStack {
-                                    Image(systemName: "calendar")
-                                        .foregroundColor(Color("CustomBlue"))
-                                    Text("Show Event Notifications")
-                                        .foregroundColor(.primary)
-                                }
-                            }
-                            .onChange(of: showEventNotifications) { newValue in
-                                updateNotificationSettings(eventNotifications: newValue)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            
-                            Divider().padding(.leading, 16)
-                            
-                            Toggle(isOn: $showVoteReminders) {
-                                HStack {
-                                    Image(systemName: "clock")
-                                        .foregroundColor(Color("CustomBlue"))
-                                    Text("Get Activity Voting Reminders")
-                                        .foregroundColor(.primary)
-                                }
-                            }
-                            .onChange(of: showVoteReminders) { newValue in
-                                updateNotificationSettings(voteReminders: newValue)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                        }
-                        
                         // Log Out Button
                         Button(action: {
                             showingLogOutAlert = true
@@ -263,7 +210,6 @@ struct MyAccountView: View {
                     .padding(.vertical, 16)
                     .onAppear {
                         loadProfileImage()
-                        loadNotificationSettings()
                     }
                 }
                 .padding(.top, -70)
@@ -355,43 +301,6 @@ struct MyAccountView: View {
                 if newProfileImageURL != profileImageURL {
                     profileImageURL = newProfileImageURL
                 }
-            }
-        }
-    }
-    
-    private func updateNotificationSettings(proposeNotifications: Bool? = nil, eventNotifications: Bool? = nil, voteReminders: Bool? = nil) {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        let db = Firestore.firestore()
-        
-        var updateData: [String: Any] = [:]
-        if let proposeNotifications = proposeNotifications {
-            updateData["showProposeNotifications"] = proposeNotifications
-        }
-        if let eventNotifications = eventNotifications {
-            updateData["showEventNotifications"] = eventNotifications
-        }
-        if let voteReminders = voteReminders {
-            updateData["showVoteReminders"] = voteReminders
-        }
-        
-        db.collection("users").document(uid).updateData(updateData) { error in
-            if let error = error {
-                errorMessage = "Error updating notification settings: \(error.localizedDescription)"
-                showError = true
-            }
-        }
-    }
-    
-    // load initial settings
-    private func loadNotificationSettings() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        let db = Firestore.firestore()
-        
-        db.collection("users").document(uid).getDocument { document, error in
-            if let document = document, document.exists {
-                showProposeNotifications = document.data()?["showProposeNotifications"] as? Bool ?? false
-                showEventNotifications = document.data()?["showEventNotifications"] as? Bool ?? false
-                showVoteReminders = document.data()?["showVoteReminders"] as? Bool ?? false
             }
         }
     }
@@ -545,6 +454,110 @@ struct MyAccountView: View {
         } catch {
             errorMessage = "Error signing out: \(error.localizedDescription)"
             showError = true
+        }
+    }
+}
+
+// notification setting page
+struct NotificationSetting: View{
+    @State private var showProposeNotifications = false
+    @State private var showEventNotifications = false
+    @State private var showVoteReminders = false
+    @State private var errorMessage = ""
+    @State private var showError = false
+    
+    var body: some View{
+        ScrollView{
+            VStack(spacing: 0){
+                
+                Toggle(isOn: $showProposeNotifications) {
+                    HStack {
+                        Image(systemName: "bell.badge")
+                            .foregroundColor(Color("CustomBlue"))
+                        Text("Show Propose Activity Notifications")
+                            .foregroundColor(.primary)
+                    }
+                }
+                .onChange(of: showProposeNotifications) { newValue in
+                    updateNotificationSettings(proposeNotifications: newValue)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                
+                Divider().padding(.leading, 16)
+                
+                Toggle(isOn: $showEventNotifications) {
+                    HStack {
+                        Image(systemName: "calendar")
+                            .foregroundColor(Color("CustomBlue"))
+                        Text("Show Event Notifications")
+                            .foregroundColor(.primary)
+                    }
+                }
+                .onChange(of: showEventNotifications) { newValue in
+                    updateNotificationSettings(eventNotifications: newValue)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                
+                Divider().padding(.leading, 16)
+                
+                Toggle(isOn: $showVoteReminders) {
+                    HStack {
+                        Image(systemName: "clock")
+                            .foregroundColor(Color("CustomBlue"))
+                        Text("Get Activity Voting Reminders")
+                            .foregroundColor(.primary)
+                    }
+                }
+                .onChange(of: showVoteReminders) { newValue in
+                    updateNotificationSettings(voteReminders: newValue)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+        }
+        .navigationTitle("Notification Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            loadNotificationSettings()
+        }
+    }
+    
+    private func updateNotificationSettings(proposeNotifications: Bool? = nil, eventNotifications: Bool? = nil, voteReminders: Bool? = nil) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        
+        var updateData: [String: Any] = [:]
+        if let proposeNotifications = proposeNotifications {
+            updateData["showProposeNotifications"] = proposeNotifications
+        }
+        if let eventNotifications = eventNotifications {
+            updateData["showEventNotifications"] = eventNotifications
+        }
+        if let voteReminders = voteReminders {
+            updateData["showVoteReminders"] = voteReminders
+        }
+        
+        db.collection("users").document(uid).updateData(updateData) { error in
+            if let error = error {
+                errorMessage = "Error updating notification settings: \(error.localizedDescription)"
+                showError = true
+            }
+        }
+    }
+    
+    // load initial settings
+    private func loadNotificationSettings() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        
+        db.collection("users").document(uid).getDocument { document, error in
+            if let document = document, document.exists {
+                showProposeNotifications = document.data()?["showProposeNotifications"] as? Bool ?? false
+                showEventNotifications = document.data()?["showEventNotifications"] as? Bool ?? false
+                showVoteReminders = document.data()?["showVoteReminders"] as? Bool ?? false
+            }
         }
     }
 }
