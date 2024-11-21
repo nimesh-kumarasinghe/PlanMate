@@ -6,14 +6,18 @@
 //
 
 import SwiftUI
+import Firebase
 
 @main
 struct PlanMateApp: App {
+    
+    // Link the AppDelegate to the SwiftUI lifecycle
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     let persistenceController = PersistenceController.shared
-
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreenView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
