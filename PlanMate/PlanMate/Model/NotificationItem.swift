@@ -17,3 +17,13 @@ struct NotificationItem: Identifiable {
     var isRead: Bool = false
     let rawTimestamp: Date
 }
+
+// Notification Model
+struct UserNotification {
+    let id: String
+    let activityId: String
+    let title: String
+    let message: String
+    let type: String
+    let timestamp: Date
+}

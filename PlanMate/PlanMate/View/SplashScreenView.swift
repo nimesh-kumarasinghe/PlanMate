@@ -6,17 +6,14 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct SplashScreenView: View {
     
     @State private var isActive: Bool = false
     @StateObject private var appStateManager = AppStateManager()
     @AppStorage("log_status") private var logStatus: Bool = false
-    
-    init() {
-        NotificationManager.shared.requestAuthorization()
-    }
-    
+
     var body: some View {
         NavigationView {
             ZStack {
