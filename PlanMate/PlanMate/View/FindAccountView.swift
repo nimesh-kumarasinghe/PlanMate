@@ -32,7 +32,7 @@ struct FindAccountView: View {
                 .frame(height: 250)
                 .padding(.bottom, 24)
             
-            Text("Enter your email address to find & get the verification code")
+            Text("Enter your email address to find & get the resert password link")
                 .font(.title3)
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
